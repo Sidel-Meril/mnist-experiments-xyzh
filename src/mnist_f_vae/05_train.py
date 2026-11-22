@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 from mnist_f_vae.config import MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_f_vae.model import FVAE
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _save_loss(history: dict[str, list[float]], plot_path: Path) -> None:

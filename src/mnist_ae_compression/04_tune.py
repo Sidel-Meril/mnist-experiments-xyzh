@@ -45,7 +45,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from mnist_ae_compression.config import LATENT_SIZES, MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_ae_compression.model import Autoencoder
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "hidden_dim": 256,

@@ -12,7 +12,7 @@ That installs the shared stack every source repo already pinned: PyTorch, torchv
 
 | Path | What it is |
 | --- | --- |
-| `src/mnist_contracts/` | Shared `data_contract.py` and `model_contract.py` |
+| `src/input_contracts/` | Shared `data_contract.py` and `model_contract.py` |
 | `src/<experiment>/` | Stages, model, and that experiment's YAML |
 | `data/<experiment>/` | Pipeline tables and pixel arrays. Produced by DVC, not copied here |
 | `models/<experiment>/` | Checkpoints copied from the source checkout |
@@ -24,8 +24,8 @@ That installs the shared stack every source repo already pinned: PyTorch, torchv
 Each experiment keeps its own `data_contract.yaml` and `model_contract.yaml` next to its stages. The Python that reads those files is shared:
 
 ```python
-from mnist_contracts.data_contract import DataContract
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.data_contract import DataContract
+from input_contracts.model_contract import ModelingContract
 ```
 
 Call `load` with that package's YAML path (`DATA_CONTRACT_PATH` and `MODELING_CONTRACT_PATH` in its `config.py`).

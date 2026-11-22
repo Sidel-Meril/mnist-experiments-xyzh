@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from tensordict import TensorDict
 
 from mnist_f_vae.config import MODELING_CONTRACT_PATH, RANDOM_SEED
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _SPLIT = "image_split"
 

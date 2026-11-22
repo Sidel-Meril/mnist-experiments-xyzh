@@ -24,7 +24,7 @@ import numpy as np
 from mnist_realnvp.config import MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_realnvp.figures import save_curve, save_grid
 from mnist_realnvp.model import RealNVP, rows_for_dataset, seed_all
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def run(

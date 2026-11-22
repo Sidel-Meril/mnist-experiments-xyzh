@@ -51,7 +51,7 @@ from mnist_gan_extensions.config import (
     RANDOM_SEED,
 )
 from mnist_gan_extensions.model import ConditionalGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "noise_dim": 64,

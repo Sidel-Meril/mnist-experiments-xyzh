@@ -27,7 +27,7 @@ import numpy as np
 
 from mnist_vae_comparison.config import MODELING_CONTRACT_PATH, PIXEL_MEAN, PIXEL_STD, RANDOM_SEED
 from mnist_vae_comparison.model import VAE, seed_all
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | str]) -> None:

@@ -26,7 +26,7 @@ import numpy as np
 from mnist_pg_gan.config import COLLAPSE_STD_RATIO, MODELING_CONTRACT_PATH, PREVIEW_COUNT
 from mnist_pg_gan.figures import save_grid, unit_interval
 from mnist_pg_gan.model import ProgressiveGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | bool]) -> None:

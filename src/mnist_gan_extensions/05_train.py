@@ -27,7 +27,7 @@ import numpy as np
 
 from mnist_gan_extensions.config import MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_gan_extensions.model import ConditionalGAN, complete_hparams
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _save_loss(history: dict[str, list[float]], plot_path: Path) -> None:

@@ -36,7 +36,7 @@ from mnist_betta_vae.config import (
     TRAVERSAL_STEPS,
 )
 from mnist_betta_vae.model import VAE, seed_all
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | str]) -> None:

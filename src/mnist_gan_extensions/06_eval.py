@@ -38,7 +38,7 @@ from mnist_gan_extensions.config import (
 )
 from mnist_gan_extensions.figures import save_class_grid, save_grid, unit_interval
 from mnist_gan_extensions.model import ConditionalGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | bool | str]) -> None:

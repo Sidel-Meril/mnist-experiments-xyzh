@@ -54,7 +54,7 @@ from mnist_f_vae.config import (
     RANDOM_SEED,
 )
 from mnist_f_vae.model import FVAE
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "hidden_dim": 256,

@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 from mnist_gan_comparison.config import MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_gan_comparison.model import VanillaGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _save_loss(history: dict[str, list[float]], plot_path: Path) -> None:

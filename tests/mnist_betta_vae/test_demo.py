@@ -19,9 +19,9 @@ from mnist_betta_vae.config import (
     MODELING_CONTRACT_PATH,
     project_root,
 )
-from mnist_contracts.data_contract import DataContract
+from input_contracts.data_contract import DataContract
 from mnist_betta_vae.model import VAE
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "src" / "mnist_betta_vae" / "queries" / "images.sql"

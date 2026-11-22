@@ -40,7 +40,7 @@ from mnist_betta_vae.config import (
     TRAVERSAL_STEPS,
 )
 from mnist_betta_vae.model import VAE
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def beta_stem(beta: float) -> str:

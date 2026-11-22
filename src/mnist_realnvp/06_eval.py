@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from mnist_realnvp.config import MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_realnvp.figures import save_grid, save_reconstructions
 from mnist_realnvp.model import RealNVP, bpd_from_nll, rows_for_dataset, seed_all
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | str]) -> None:

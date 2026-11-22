@@ -13,9 +13,9 @@ import pandera.errors
 import pytest
 
 from mnist_ae_compression.config import DATA_CONTRACT_PATH, MODELING_CONTRACT_PATH, project_root
-from mnist_contracts.data_contract import DataContract
+from input_contracts.data_contract import DataContract
 from mnist_ae_compression.model import Autoencoder
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "src" / "mnist_ae_compression" / "queries" / "images.sql"

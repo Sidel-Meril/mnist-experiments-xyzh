@@ -45,7 +45,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from mnist_gan_comparison.config import MODELING_CONTRACT_PATH, NOISE_DIMS, RANDOM_SEED
 from mnist_gan_comparison.model import VanillaGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "noise_dim": 64,

@@ -48,7 +48,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = [
-  "src/mnist_contracts",
+  "src/input_contracts",
   "src/mnist_ae_compression",
   "src/mnist_ae_sompression",
   "src/mnist_betta_vae",

@@ -28,7 +28,7 @@ import numpy as np
 from mnist_gan_comparison.config import COLLAPSE_STD_RATIO, MODELING_CONTRACT_PATH, PREVIEW_COUNT
 from mnist_gan_comparison.figures import save_grid, unit_interval
 from mnist_gan_comparison.model import VanillaGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _write(path: Path, metrics: dict[str, float | int | bool]) -> None:

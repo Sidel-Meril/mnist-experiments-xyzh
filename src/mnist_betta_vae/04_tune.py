@@ -48,7 +48,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from mnist_betta_vae.config import BETAS, LATENT_DIM, MODELING_CONTRACT_PATH, RANDOM_SEED
 from mnist_betta_vae.model import VAE
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "hidden_dim": 256,

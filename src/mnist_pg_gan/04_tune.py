@@ -44,7 +44,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from mnist_pg_gan.config import MODELING_CONTRACT_PATH, NOISE_DIMS, RANDOM_SEED, WIDTHS
 from mnist_pg_gan.model import ProgressiveGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 _FIXED = {
     "noise_dim": 8,

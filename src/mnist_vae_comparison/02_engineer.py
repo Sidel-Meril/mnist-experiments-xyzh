@@ -26,8 +26,8 @@ from mnist_vae_comparison.config import (
     PIXEL_MEAN,
     PIXEL_STD,
 )
-from mnist_contracts.data_contract import DataContract
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.data_contract import DataContract
+from input_contracts.model_contract import ModelingContract
 
 
 def run(raw_path: Path, images_path: Path, out_path: Path, pixels_path: Path) -> TensorDict:

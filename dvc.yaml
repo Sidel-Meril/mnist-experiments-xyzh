@@ -23,9 +23,9 @@ stages:
       --pixels data/mnist_ae_compression/pixels.npy
     deps:
       - src/mnist_ae_compression/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_ae_compression/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_ae_compression/model_contract.yaml
       - data/mnist_ae_compression/raw_images.parquet
       - data/mnist_ae_compression/raw_images.npy
@@ -40,7 +40,7 @@ stages:
       --out data/mnist_ae_compression/split.json
     deps:
       - src/mnist_ae_compression/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_ae_compression/model_contract.yaml
       - data/mnist_ae_compression/images.parquet
     outs:
@@ -62,7 +62,7 @@ stages:
     deps:
       - src/mnist_ae_compression/04_tune.py
       - src/mnist_ae_compression/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_ae_compression/model_contract.yaml
       - data/mnist_ae_compression/images.parquet
       - data/mnist_ae_compression/pixels.npy
@@ -89,7 +89,7 @@ stages:
     deps:
       - src/mnist_ae_compression/05_train.py
       - src/mnist_ae_compression/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_ae_compression/model_contract.yaml
       - data/mnist_ae_compression/images.parquet
       - data/mnist_ae_compression/pixels.npy
@@ -114,7 +114,7 @@ stages:
     deps:
       - src/mnist_ae_compression/06_eval.py
       - src/mnist_ae_compression/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_ae_compression/model_contract.yaml
       - data/mnist_ae_compression/images.parquet
       - data/mnist_ae_compression/pixels.npy
@@ -151,9 +151,9 @@ stages:
       --pixels data/mnist_betta_vae/pixels.npy
     deps:
       - src/mnist_betta_vae/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_betta_vae/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/raw_images.parquet
       - data/mnist_betta_vae/raw_images.npy
@@ -168,7 +168,7 @@ stages:
       --out data/mnist_betta_vae/split.json
     deps:
       - src/mnist_betta_vae/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/images.parquet
     outs:
@@ -190,7 +190,7 @@ stages:
     deps:
       - src/mnist_betta_vae/04_tune.py
       - src/mnist_betta_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/images.parquet
       - data/mnist_betta_vae/pixels.npy
@@ -216,7 +216,7 @@ stages:
     deps:
       - src/mnist_betta_vae/05_train.py
       - src/mnist_betta_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/images.parquet
       - data/mnist_betta_vae/pixels.npy
@@ -242,7 +242,7 @@ stages:
     deps:
       - src/mnist_betta_vae/06_eval.py
       - src/mnist_betta_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/images.parquet
       - data/mnist_betta_vae/pixels.npy
@@ -269,7 +269,7 @@ stages:
     deps:
       - src/mnist_betta_vae/07_explore.py
       - src/mnist_betta_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_betta_vae/model_contract.yaml
       - data/mnist_betta_vae/images.parquet
       - data/mnist_betta_vae/pixels.npy
@@ -312,9 +312,9 @@ stages:
       --pixels data/mnist_f_vae/pixels.npy
     deps:
       - src/mnist_f_vae/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_f_vae/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_f_vae/model_contract.yaml
       - data/mnist_f_vae/raw_images.parquet
       - data/mnist_f_vae/raw_images.npy
@@ -329,7 +329,7 @@ stages:
       --out data/mnist_f_vae/split.json
     deps:
       - src/mnist_f_vae/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_f_vae/model_contract.yaml
       - data/mnist_f_vae/images.parquet
     outs:
@@ -351,7 +351,7 @@ stages:
     deps:
       - src/mnist_f_vae/04_tune.py
       - src/mnist_f_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_f_vae/model_contract.yaml
       - data/mnist_f_vae/images.parquet
       - data/mnist_f_vae/pixels.npy
@@ -377,7 +377,7 @@ stages:
     deps:
       - src/mnist_f_vae/05_train.py
       - src/mnist_f_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_f_vae/model_contract.yaml
       - data/mnist_f_vae/images.parquet
       - data/mnist_f_vae/pixels.npy
@@ -402,7 +402,7 @@ stages:
     deps:
       - src/mnist_f_vae/06_eval.py
       - src/mnist_f_vae/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_f_vae/model_contract.yaml
       - data/mnist_f_vae/images.parquet
       - data/mnist_f_vae/pixels.npy
@@ -440,9 +440,9 @@ stages:
       --pixels data/mnist_gan_comparison/pixels.npy
     deps:
       - src/mnist_gan_comparison/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_gan_comparison/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_comparison/model_contract.yaml
       - data/mnist_gan_comparison/raw_images.parquet
       - data/mnist_gan_comparison/raw_images.npy
@@ -457,7 +457,7 @@ stages:
       --out data/mnist_gan_comparison/split.json
     deps:
       - src/mnist_gan_comparison/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_comparison/model_contract.yaml
       - data/mnist_gan_comparison/images.parquet
     outs:
@@ -482,7 +482,7 @@ stages:
     deps:
       - src/mnist_gan_comparison/04_tune.py
       - src/mnist_gan_comparison/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_comparison/model_contract.yaml
       - data/mnist_gan_comparison/images.parquet
       - data/mnist_gan_comparison/pixels.npy
@@ -510,7 +510,7 @@ stages:
       - src/mnist_gan_comparison/05_train.py
       - src/mnist_gan_comparison/model.py
       - src/mnist_gan_comparison/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_comparison/model_contract.yaml
       - data/mnist_gan_comparison/images.parquet
       - data/mnist_gan_comparison/pixels.npy
@@ -535,7 +535,7 @@ stages:
       - src/mnist_gan_comparison/06_eval.py
       - src/mnist_gan_comparison/model.py
       - src/mnist_gan_comparison/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_comparison/model_contract.yaml
       - data/mnist_gan_comparison/images.parquet
       - data/mnist_gan_comparison/pixels.npy
@@ -572,9 +572,9 @@ stages:
       --pixels data/mnist_gan_extensions/pixels.npy
     deps:
       - src/mnist_gan_extensions/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_gan_extensions/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_extensions/model_contract.yaml
       - data/mnist_gan_extensions/raw_images.parquet
       - data/mnist_gan_extensions/raw_images.npy
@@ -589,7 +589,7 @@ stages:
       --out data/mnist_gan_extensions/split.json
     deps:
       - src/mnist_gan_extensions/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_extensions/model_contract.yaml
       - data/mnist_gan_extensions/images.parquet
     outs:
@@ -614,7 +614,7 @@ stages:
     deps:
       - src/mnist_gan_extensions/04_tune.py
       - src/mnist_gan_extensions/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_extensions/model_contract.yaml
       - data/mnist_gan_extensions/images.parquet
       - data/mnist_gan_extensions/pixels.npy
@@ -642,7 +642,7 @@ stages:
       - src/mnist_gan_extensions/05_train.py
       - src/mnist_gan_extensions/model.py
       - src/mnist_gan_extensions/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_extensions/model_contract.yaml
       - data/mnist_gan_extensions/images.parquet
       - data/mnist_gan_extensions/pixels.npy
@@ -668,7 +668,7 @@ stages:
       - src/mnist_gan_extensions/06_eval.py
       - src/mnist_gan_extensions/model.py
       - src/mnist_gan_extensions/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_gan_extensions/model_contract.yaml
       - data/mnist_gan_extensions/images.parquet
       - data/mnist_gan_extensions/pixels.npy
@@ -706,9 +706,9 @@ stages:
       --pixels data/mnist_pg_gan/pixels.npy
     deps:
       - src/mnist_pg_gan/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_pg_gan/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_pg_gan/model_contract.yaml
       - data/mnist_pg_gan/raw_images.parquet
       - data/mnist_pg_gan/raw_images.npy
@@ -723,7 +723,7 @@ stages:
       --out data/mnist_pg_gan/split.json
     deps:
       - src/mnist_pg_gan/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_pg_gan/model_contract.yaml
       - data/mnist_pg_gan/images.parquet
     outs:
@@ -748,7 +748,7 @@ stages:
     deps:
       - src/mnist_pg_gan/04_tune.py
       - src/mnist_pg_gan/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_pg_gan/model_contract.yaml
       - data/mnist_pg_gan/images.parquet
       - data/mnist_pg_gan/pixels.npy
@@ -777,7 +777,7 @@ stages:
       - src/mnist_pg_gan/05_train.py
       - src/mnist_pg_gan/model.py
       - src/mnist_pg_gan/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_pg_gan/model_contract.yaml
       - data/mnist_pg_gan/images.parquet
       - data/mnist_pg_gan/pixels.npy
@@ -802,7 +802,7 @@ stages:
       - src/mnist_pg_gan/06_eval.py
       - src/mnist_pg_gan/model.py
       - src/mnist_pg_gan/figures.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_pg_gan/model_contract.yaml
       - data/mnist_pg_gan/images.parquet
       - data/mnist_pg_gan/pixels.npy
@@ -838,9 +838,9 @@ stages:
       --pixels data/mnist_realnvp/pixels.npy
     deps:
       - src/mnist_realnvp/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_realnvp/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_realnvp/model_contract.yaml
       - data/mnist_realnvp/raw_images.parquet
       - data/mnist_realnvp/raw_images.npy
@@ -855,7 +855,7 @@ stages:
       --out data/mnist_realnvp/split.json
     deps:
       - src/mnist_realnvp/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_realnvp/model_contract.yaml
       - data/mnist_realnvp/images.parquet
     outs:
@@ -880,7 +880,7 @@ stages:
     deps:
       - src/mnist_realnvp/04_tune.py
       - src/mnist_realnvp/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_realnvp/model_contract.yaml
       - data/mnist_realnvp/images.parquet
       - data/mnist_realnvp/pixels.npy
@@ -910,7 +910,7 @@ stages:
       - src/mnist_realnvp/05_train.py
       - src/mnist_realnvp/figures.py
       - src/mnist_realnvp/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_realnvp/model_contract.yaml
       - data/mnist_realnvp/images.parquet
       - data/mnist_realnvp/pixels.npy
@@ -937,7 +937,7 @@ stages:
       - src/mnist_realnvp/06_eval.py
       - src/mnist_realnvp/figures.py
       - src/mnist_realnvp/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_realnvp/model_contract.yaml
       - data/mnist_realnvp/images.parquet
       - data/mnist_realnvp/pixels.npy
@@ -1027,9 +1027,9 @@ stages:
       --pixels data/mnist_vae_comparison/pixels.npy
     deps:
       - src/mnist_vae_comparison/02_engineer.py
-      - src/mnist_contracts/data_contract.py
+      - src/input_contracts/data_contract.py
       - src/mnist_vae_comparison/data_contract.yaml
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_vae_comparison/model_contract.yaml
       - data/mnist_vae_comparison/raw_images.parquet
       - data/mnist_vae_comparison/raw_images.npy
@@ -1044,7 +1044,7 @@ stages:
       --out data/mnist_vae_comparison/split.json
     deps:
       - src/mnist_vae_comparison/03_split.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_vae_comparison/model_contract.yaml
       - data/mnist_vae_comparison/images.parquet
     outs:
@@ -1066,7 +1066,7 @@ stages:
     deps:
       - src/mnist_vae_comparison/04_tune.py
       - src/mnist_vae_comparison/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_vae_comparison/model_contract.yaml
       - data/mnist_vae_comparison/images.parquet
       - data/mnist_vae_comparison/pixels.npy
@@ -1092,7 +1092,7 @@ stages:
     deps:
       - src/mnist_vae_comparison/05_train.py
       - src/mnist_vae_comparison/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_vae_comparison/model_contract.yaml
       - data/mnist_vae_comparison/images.parquet
       - data/mnist_vae_comparison/pixels.npy
@@ -1117,7 +1117,7 @@ stages:
     deps:
       - src/mnist_vae_comparison/06_eval.py
       - src/mnist_vae_comparison/model.py
-      - src/mnist_contracts/model_contract.py
+      - src/input_contracts/model_contract.py
       - src/mnist_vae_comparison/model_contract.yaml
       - data/mnist_vae_comparison/images.parquet
       - data/mnist_vae_comparison/pixels.npy

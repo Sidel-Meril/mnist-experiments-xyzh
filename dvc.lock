@@ -1,0 +1,95 @@
+schema: '2.0'
+stages:
+  mnist_betta_vae_get_data:
+    cmd: "uv run python src/mnist_betta_vae/01_get_data.py --sql src/mnist_betta_vae/queries/images.sql
+      --out data/mnist_betta_vae/raw_images.parquet --images data/mnist_betta_vae/raw_images.npy
+      --dataset mnist_digits\n"
+    deps:
+    - path: src/mnist_betta_vae/01_get_data.py
+      hash: md5
+      md5: 96ad484d80c83dc1364e3bb9b2eb3a41
+      size: 4178
+    - path: src/mnist_betta_vae/config.py
+      hash: md5
+      md5: 25eb1640a64c8b51b9da984fa3369e28
+      size: 1734
+    - path: src/mnist_betta_vae/queries/images.sql
+      hash: md5
+      md5: 4ad364f95388e5c77e972a3427a57f13
+      size: 275
+    outs:
+    - path: data/mnist_betta_vae/raw_images.npy
+      hash: md5
+      md5: 036f9a9159f15de0dc30e1f151717cac
+      size: 54880128
+    - path: data/mnist_betta_vae/raw_images.parquet
+      hash: md5
+      md5: 8b7430947bd5a4e4d2f37a832837e57d
+      size: 457994
+  mnist_betta_vae_engineer:
+    cmd: "uv run python src/mnist_betta_vae/02_engineer.py --raw data/mnist_betta_vae/raw_images.parquet
+      --images data/mnist_betta_vae/raw_images.npy --out data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy\n"
+    deps:
+    - path: data/mnist_betta_vae/raw_images.npy
+      hash: md5
+      md5: 036f9a9159f15de0dc30e1f151717cac
+      size: 54880128
+    - path: data/mnist_betta_vae/raw_images.parquet
+      hash: md5
+      md5: 8b7430947bd5a4e4d2f37a832837e57d
+      size: 457994
+    - path: src/mnist_betta_vae/02_engineer.py
+      hash: md5
+      md5: dcadef572fb7e384265f8ebcb462b0f4
+      size: 3770
+    - path: src/mnist_betta_vae/data_contract.yaml
+      hash: md5
+      md5: ea7a8ab9b64ccbf1bebd1682d684c829
+      size: 543
+    - path: src/mnist_betta_vae/model_contract.yaml
+      hash: md5
+      md5: acb50ff795135914954b630185f19d15
+      size: 1406
+    - path: src/input_contracts/data_contract.py
+      hash: md5
+      md5: 23f6ea0a6b7a48823c2640c75f8c0bb8
+      size: 9244
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    outs:
+    - path: data/mnist_betta_vae/images.parquet
+      hash: md5
+      md5: 30c0126be1a9ca683863392001845bb6
+      size: 775498
+    - path: data/mnist_betta_vae/pixels.npy
+      hash: md5
+      md5: 08d40e709565b6ebe8cccc49be432f94
+      size: 219520128
+  mnist_betta_vae_split:
+    cmd: "uv run python src/mnist_betta_vae/03_split.py --data data/mnist_betta_vae/images.parquet
+      --out data/mnist_betta_vae/split.json\n"
+    deps:
+    - path: data/mnist_betta_vae/images.parquet
+      hash: md5
+      md5: 30c0126be1a9ca683863392001845bb6
+      size: 775498
+    - path: src/mnist_betta_vae/03_split.py
+      hash: md5
+      md5: 8249c290beaec82ee25a3f3d557fc5da
+      size: 4200
+    - path: src/mnist_betta_vae/model_contract.yaml
+      hash: md5
+      md5: acb50ff795135914954b630185f19d15
+      size: 1406
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    outs:
+    - path: data/mnist_betta_vae/split.json
+      hash: md5
+      md5: 3d04be0f112e75bda9bd252dd451eb90
+      size: 478919

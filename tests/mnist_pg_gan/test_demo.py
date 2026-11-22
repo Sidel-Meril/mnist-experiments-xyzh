@@ -15,9 +15,9 @@ import torch
 from torch.nn import functional as F
 
 from mnist_pg_gan.config import DATA_CONTRACT_PATH, MODELING_CONTRACT_PATH, project_root
-from mnist_contracts.data_contract import DataContract
+from input_contracts.data_contract import DataContract
 from mnist_pg_gan.model import ProgressiveGAN
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "src" / "mnist_pg_gan" / "queries" / "images.sql"

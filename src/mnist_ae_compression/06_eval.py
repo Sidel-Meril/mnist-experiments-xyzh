@@ -25,7 +25,7 @@ import numpy as np
 
 from mnist_ae_compression.config import MODELING_CONTRACT_PATH
 from mnist_ae_compression.model import Autoencoder, _save_reconstructions
-from mnist_contracts.model_contract import ModelingContract
+from input_contracts.model_contract import ModelingContract
 
 
 def _errors(original: np.ndarray, reconstructed: np.ndarray) -> tuple[float, float]:
