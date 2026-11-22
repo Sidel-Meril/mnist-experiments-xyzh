@@ -90,6 +90,8 @@ Copied from the source checkouts:
 - `models/mnist_gan_comparison/mnist_gan.pt`
 - `models/mnist_gan_extensions/mnist_cgan.pt`
 - `models/mnist_vae_comparison/mnist_vae.pt`
+- `models/mnist_betta_vae/mnist_betta_vae.pt` and `models/mnist_betta_vae/beta_0_1.pt`, `beta_1.pt`, `beta_4.pt`, `beta_10.pt`
+- `models/mnist_f_vae/mnist_f_vae.pt`
 - `reference/mnist_digits/models/mnist_vae.pt` and `reference/fashion_mnist/models/mnist_vae.pt`
 
-`mnist_betta_vae`, `mnist_f_vae`, `mnist_pg_gan`, and `mnist_realnvp` had no checkpoint file in the source checkout. `dvc repro` writes those under `models/<experiment>/`.
+`mnist_pg_gan` and `mnist_realnvp` had no checkpoint file in the source checkout. `dvc repro` writes those under `models/<experiment>/`.

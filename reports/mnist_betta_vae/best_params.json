@@ -1,0 +1,16 @@
+{
+  "params": {
+    "latent_dim": 8,
+    "hidden_dim": 256,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "weight_decay": 1e-06,
+    "batch_size": 128,
+    "beta": 0.1,
+    "in_features": 784
+  },
+  "val_loss": 100.37149633178711,
+  "n_trials": 4,
+  "epochs": 4,
+  "n_splits": 2
+}
