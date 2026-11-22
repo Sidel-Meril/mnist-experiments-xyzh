@@ -1,0 +1,5 @@
+[core]
+    no_scm = true
+    remote = demo
+['remote "demo"']
+    url = ../dvc-remote

@@ -1,0 +1,42 @@
+version: 1
+query: src/mnist_pg_gan/queries/images.sql
+
+columns:
+
+  image_id:
+    dtype: integer
+    nullable: false
+    sources: ["image_id"]
+    transform:
+      - num: to_int
+
+  label:
+    dtype: integer
+    nullable: false
+    sources: ["label"]
+    transform:
+      - num: to_int
+
+  cifar_split:
+    dtype: string
+    nullable: false
+    sources: ["cifar_split"]
+    values: ["train", "test"]
+
+  label_name:
+    dtype: string
+    nullable: false
+    sources: ["label"]
+    values:
+      - "0": airplane
+      - "1": automobile
+      - "2": bird
+      - "3": cat
+      - "4": deer
+      - "5": dog
+      - "6": frog
+      - "7": horse
+      - "8": ship
+      - "9": truck
+    transform:
+      - map: ${label_name.values}

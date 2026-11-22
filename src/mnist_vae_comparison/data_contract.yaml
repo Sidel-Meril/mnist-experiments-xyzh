@@ -1,0 +1,26 @@
+version: 1
+query: src/mnist_vae_comparison/queries/images.sql
+
+columns:
+  image_id:
+    dtype: integer
+    nullable: false
+    sources: ["image_id"]
+    transform:
+      - num: to_int
+  label:
+    dtype: integer
+    nullable: false
+    sources: ["label"]
+    transform:
+      - num: to_int
+  image_split:
+    dtype: string
+    nullable: false
+    sources: ["image_split"]
+    values: ["train", "test"]
+  dataset:
+    dtype: string
+    nullable: false
+    sources: ["dataset"]
+    values: ["mnist_digits", "fashion_mnist"]

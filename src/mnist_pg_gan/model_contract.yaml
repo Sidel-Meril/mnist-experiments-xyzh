@@ -1,0 +1,42 @@
+# Modeling table for the progressive GAN.
+# The pixel tensor is the real sample the discriminator scores.
+# It is stored as NCHW float32 in data/pixels.npy, aligned to this table's
+# row order, scaled to [-1, 1]. Tabular columns stay in the parquet.
+# The class label is the contract target so splits can be stratified.
+# The adversarial loss does not use it. Training starts at 4x4 and grows
+# to this 32x32 RGB tensor.
+version: 1
+
+key:
+  image_id:
+    dtype: int
+    nullable: false
+    min: 1
+
+target:
+  label:
+    dtype: int
+    nullable: false
+    categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+features:
+  pixels:
+    dtype: float
+    nullable: false
+    storage: npy
+    shape: [3, 32, 32]
+
+log:
+  label_name:
+    dtype: string
+    nullable: false
+    categories: [airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck]
+  cifar_split:
+    dtype: string
+    nullable: false
+    categories: [train, test]
+  pixel_mean:
+    dtype: float
+    nullable: false
+    min: -1
+    max: 1

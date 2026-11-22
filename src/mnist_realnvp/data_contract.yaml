@@ -1,0 +1,56 @@
+version: 1
+query: src/mnist_realnvp/queries/images.sql
+
+columns:
+
+  image_id:
+    dtype: integer
+    nullable: false
+    sources: ["image_id"]
+    transform:
+      - num: to_int
+
+  label:
+    dtype: integer
+    nullable: false
+    sources: ["label"]
+    transform:
+      - num: to_int
+
+  mnist_split:
+    dtype: string
+    nullable: false
+    sources: ["mnist_split"]
+    values: ["train", "test"]
+
+  dataset:
+    dtype: string
+    nullable: false
+    sources: ["dataset"]
+    values: ["digits", "fashion"]
+
+  label_name:
+    dtype: string
+    nullable: false
+    sources: ["label_name"]
+    values:
+      - zero
+      - one
+      - two
+      - three
+      - four
+      - five
+      - six
+      - seven
+      - eight
+      - nine
+      - t-shirt
+      - trouser
+      - pullover
+      - dress
+      - coat
+      - sandal
+      - shirt
+      - sneaker
+      - bag
+      - ankle-boot

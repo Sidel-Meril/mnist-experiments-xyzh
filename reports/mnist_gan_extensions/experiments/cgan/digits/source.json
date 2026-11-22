@@ -1,0 +1,20 @@
+{
+  "dataset": "digits",
+  "variant": "cgan",
+  "experiment": "cgan",
+  "train_per_class": 250,
+  "test_per_class": 50,
+  "epochs": 40,
+  "params": {
+    "noise_dim": 64,
+    "hidden_dim": 256,
+    "in_features": 784,
+    "n_classes": 10,
+    "lr_g": 0.0002,
+    "lr_d": 0.0002,
+    "beta1": 0.5,
+    "batch_size": 128,
+    "fm_weight": 10.0,
+    "variant": "cgan"
+  }
+}

@@ -1,0 +1,1131 @@
+stages:
+  # mnist_ae_compression
+  mnist_ae_compression_get_data:
+    cmd: >
+      uv run python src/mnist_ae_compression/01_get_data.py
+      --sql src/mnist_ae_compression/queries/images.sql
+      --out data/mnist_ae_compression/raw_images.parquet
+      --images data/mnist_ae_compression/raw_images.npy
+    deps:
+      - src/mnist_ae_compression/01_get_data.py
+      - src/mnist_ae_compression/queries/images.sql
+      - src/mnist_ae_compression/config.py
+    outs:
+      - data/mnist_ae_compression/raw_images.parquet
+      - data/mnist_ae_compression/raw_images.npy
+
+  mnist_ae_compression_engineer:
+    cmd: >
+      uv run python src/mnist_ae_compression/02_engineer.py
+      --raw data/mnist_ae_compression/raw_images.parquet
+      --images data/mnist_ae_compression/raw_images.npy
+      --out data/mnist_ae_compression/images.parquet
+      --pixels data/mnist_ae_compression/pixels.npy
+    deps:
+      - src/mnist_ae_compression/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_ae_compression/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_ae_compression/model_contract.yaml
+      - data/mnist_ae_compression/raw_images.parquet
+      - data/mnist_ae_compression/raw_images.npy
+    outs:
+      - data/mnist_ae_compression/images.parquet
+      - data/mnist_ae_compression/pixels.npy
+
+  mnist_ae_compression_split:
+    cmd: >
+      uv run python src/mnist_ae_compression/03_split.py
+      --data data/mnist_ae_compression/images.parquet
+      --out data/mnist_ae_compression/split.json
+    deps:
+      - src/mnist_ae_compression/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_ae_compression/model_contract.yaml
+      - data/mnist_ae_compression/images.parquet
+    outs:
+      - data/mnist_ae_compression/split.json
+
+  mnist_ae_compression_tune:
+    cmd: >
+      uv run python src/mnist_ae_compression/04_tune.py
+      --data data/mnist_ae_compression/images.parquet
+      --pixels data/mnist_ae_compression/pixels.npy
+      --split data/mnist_ae_compression/split.json
+      --out reports/mnist_ae_compression/best_params.json
+      --storage reports/mnist_ae_compression/mnist_ae.db
+      --history reports/mnist_ae_compression/plots/optimization_history.html
+      --importances reports/mnist_ae_compression/plots/param_importances.html
+      --parallel reports/mnist_ae_compression/plots/parallel_coordinate.html
+      --slice reports/mnist_ae_compression/plots/parameter_slice.html
+      --latent-curve reports/mnist_ae_compression/plots/reconstruction_error_vs_latent.png
+    deps:
+      - src/mnist_ae_compression/04_tune.py
+      - src/mnist_ae_compression/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_ae_compression/model_contract.yaml
+      - data/mnist_ae_compression/images.parquet
+      - data/mnist_ae_compression/pixels.npy
+      - data/mnist_ae_compression/split.json
+    outs:
+      - reports/mnist_ae_compression/best_params.json
+      - reports/mnist_ae_compression/mnist_ae.db
+      - reports/mnist_ae_compression/plots/optimization_history.html
+      - reports/mnist_ae_compression/plots/param_importances.html
+      - reports/mnist_ae_compression/plots/parallel_coordinate.html
+      - reports/mnist_ae_compression/plots/parameter_slice.html
+      - reports/mnist_ae_compression/plots/reconstruction_error_vs_latent.png
+
+  mnist_ae_compression_train:
+    cmd: >
+      uv run python src/mnist_ae_compression/05_train.py
+      --data data/mnist_ae_compression/images.parquet
+      --pixels data/mnist_ae_compression/pixels.npy
+      --split data/mnist_ae_compression/split.json
+      --params reports/mnist_ae_compression/best_params.json
+      --model models/mnist_ae_compression/mnist_ae.pt
+      --plot reports/mnist_ae_compression/plots/loss.png
+      --reconstructions reports/mnist_ae_compression/reconstructions
+    deps:
+      - src/mnist_ae_compression/05_train.py
+      - src/mnist_ae_compression/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_ae_compression/model_contract.yaml
+      - data/mnist_ae_compression/images.parquet
+      - data/mnist_ae_compression/pixels.npy
+      - data/mnist_ae_compression/split.json
+      - reports/mnist_ae_compression/best_params.json
+    outs:
+      - models/mnist_ae_compression/mnist_ae.pt
+      - reports/mnist_ae_compression/plots/loss.png
+      - reports/mnist_ae_compression/reconstructions
+
+  mnist_ae_compression_eval:
+    cmd: >
+      uv run python src/mnist_ae_compression/06_eval.py
+      --data data/mnist_ae_compression/images.parquet
+      --pixels data/mnist_ae_compression/pixels.npy
+      --split data/mnist_ae_compression/split.json
+      --model models/mnist_ae_compression/mnist_ae.pt
+      --train-metrics reports/mnist_ae_compression/evaluation_train.json
+      --test-metrics reports/mnist_ae_compression/evaluation_test.json
+      --reconstructions-train reports/mnist_ae_compression/plots/reconstructions_train.png
+      --reconstructions-test reports/mnist_ae_compression/plots/reconstructions_test.png
+    deps:
+      - src/mnist_ae_compression/06_eval.py
+      - src/mnist_ae_compression/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_ae_compression/model_contract.yaml
+      - data/mnist_ae_compression/images.parquet
+      - data/mnist_ae_compression/pixels.npy
+      - data/mnist_ae_compression/split.json
+      - models/mnist_ae_compression/mnist_ae.pt
+    outs:
+      - reports/mnist_ae_compression/evaluation_train.json
+      - reports/mnist_ae_compression/evaluation_test.json
+      - reports/mnist_ae_compression/plots/reconstructions_train.png
+      - reports/mnist_ae_compression/plots/reconstructions_test.png
+
+  # mnist_betta_vae
+  mnist_betta_vae_get_data:
+    cmd: >
+      uv run python src/mnist_betta_vae/01_get_data.py
+      --sql src/mnist_betta_vae/queries/images.sql
+      --out data/mnist_betta_vae/raw_images.parquet
+      --images data/mnist_betta_vae/raw_images.npy
+      --dataset mnist_digits
+    deps:
+      - src/mnist_betta_vae/01_get_data.py
+      - src/mnist_betta_vae/queries/images.sql
+      - src/mnist_betta_vae/config.py
+    outs:
+      - data/mnist_betta_vae/raw_images.parquet
+      - data/mnist_betta_vae/raw_images.npy
+
+  mnist_betta_vae_engineer:
+    cmd: >
+      uv run python src/mnist_betta_vae/02_engineer.py
+      --raw data/mnist_betta_vae/raw_images.parquet
+      --images data/mnist_betta_vae/raw_images.npy
+      --out data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy
+    deps:
+      - src/mnist_betta_vae/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_betta_vae/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/raw_images.parquet
+      - data/mnist_betta_vae/raw_images.npy
+    outs:
+      - data/mnist_betta_vae/images.parquet
+      - data/mnist_betta_vae/pixels.npy
+
+  mnist_betta_vae_split:
+    cmd: >
+      uv run python src/mnist_betta_vae/03_split.py
+      --data data/mnist_betta_vae/images.parquet
+      --out data/mnist_betta_vae/split.json
+    deps:
+      - src/mnist_betta_vae/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/images.parquet
+    outs:
+      - data/mnist_betta_vae/split.json
+
+  mnist_betta_vae_tune:
+    cmd: >
+      uv run python src/mnist_betta_vae/04_tune.py
+      --data data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy
+      --split data/mnist_betta_vae/split.json
+      --out reports/mnist_betta_vae/best_params.json
+      --storage reports/mnist_betta_vae/mnist_betta_vae.db
+      --history reports/mnist_betta_vae/plots/optimization_history.html
+      --importances reports/mnist_betta_vae/plots/param_importances.html
+      --parallel reports/mnist_betta_vae/plots/parallel_coordinate.html
+      --slice reports/mnist_betta_vae/plots/parameter_slice.html
+      --beta-curve reports/mnist_betta_vae/plots/loss_vs_beta.png
+    deps:
+      - src/mnist_betta_vae/04_tune.py
+      - src/mnist_betta_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/images.parquet
+      - data/mnist_betta_vae/pixels.npy
+      - data/mnist_betta_vae/split.json
+    outs:
+      - reports/mnist_betta_vae/best_params.json
+      - reports/mnist_betta_vae/mnist_betta_vae.db
+      - reports/mnist_betta_vae/plots/optimization_history.html
+      - reports/mnist_betta_vae/plots/param_importances.html
+      - reports/mnist_betta_vae/plots/parallel_coordinate.html
+      - reports/mnist_betta_vae/plots/parameter_slice.html
+      - reports/mnist_betta_vae/plots/loss_vs_beta.png
+
+  mnist_betta_vae_train:
+    cmd: >
+      uv run python src/mnist_betta_vae/05_train.py
+      --data data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy
+      --split data/mnist_betta_vae/split.json
+      --params reports/mnist_betta_vae/best_params.json
+      --model models/mnist_betta_vae/mnist_betta_vae.pt
+      --plot reports/mnist_betta_vae/plots/loss.png
+    deps:
+      - src/mnist_betta_vae/05_train.py
+      - src/mnist_betta_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/images.parquet
+      - data/mnist_betta_vae/pixels.npy
+      - data/mnist_betta_vae/split.json
+      - reports/mnist_betta_vae/best_params.json
+    outs:
+      - models/mnist_betta_vae/mnist_betta_vae.pt
+      - reports/mnist_betta_vae/plots/loss.png
+
+  mnist_betta_vae_eval:
+    cmd: >
+      uv run python src/mnist_betta_vae/06_eval.py
+      --data data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy
+      --split data/mnist_betta_vae/split.json
+      --model models/mnist_betta_vae/mnist_betta_vae.pt
+      --train-metrics reports/mnist_betta_vae/evaluation_train.json
+      --test-metrics reports/mnist_betta_vae/evaluation_test.json
+      --reconstructions-train reports/mnist_betta_vae/plots/reconstructions_train.png
+      --reconstructions-test reports/mnist_betta_vae/plots/reconstructions_test.png
+      --generated-samples reports/mnist_betta_vae/plots/generated_samples.png
+      --latent-traversal reports/mnist_betta_vae/plots/latent_traversals.png
+    deps:
+      - src/mnist_betta_vae/06_eval.py
+      - src/mnist_betta_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/images.parquet
+      - data/mnist_betta_vae/pixels.npy
+      - data/mnist_betta_vae/split.json
+      - models/mnist_betta_vae/mnist_betta_vae.pt
+    outs:
+      - reports/mnist_betta_vae/evaluation_train.json
+      - reports/mnist_betta_vae/evaluation_test.json
+      - reports/mnist_betta_vae/plots/reconstructions_train.png
+      - reports/mnist_betta_vae/plots/reconstructions_test.png
+      - reports/mnist_betta_vae/plots/generated_samples.png
+      - reports/mnist_betta_vae/plots/latent_traversals.png
+
+  mnist_betta_vae_explore:
+    cmd: >
+      uv run python src/mnist_betta_vae/07_explore.py
+      --data data/mnist_betta_vae/images.parquet
+      --pixels data/mnist_betta_vae/pixels.npy
+      --split data/mnist_betta_vae/split.json
+      --params reports/mnist_betta_vae/best_params.json
+      --out reports/mnist_betta_vae/beta_exploration.json
+      --models models
+      --plots reports/mnist_betta_vae/plots
+    deps:
+      - src/mnist_betta_vae/07_explore.py
+      - src/mnist_betta_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_betta_vae/model_contract.yaml
+      - data/mnist_betta_vae/images.parquet
+      - data/mnist_betta_vae/pixels.npy
+      - data/mnist_betta_vae/split.json
+      - reports/mnist_betta_vae/best_params.json
+    outs:
+      - reports/mnist_betta_vae/beta_exploration.json
+      - reports/mnist_betta_vae/plots/metrics_vs_beta.png
+      - reports/mnist_betta_vae/plots/traversal_beta_0_1.png
+      - reports/mnist_betta_vae/plots/traversal_beta_1.png
+      - reports/mnist_betta_vae/plots/traversal_beta_4.png
+      - reports/mnist_betta_vae/plots/traversal_beta_10.png
+      - models/mnist_betta_vae/beta_0_1.pt
+      - models/mnist_betta_vae/beta_1.pt
+      - models/mnist_betta_vae/beta_4.pt
+      - models/mnist_betta_vae/beta_10.pt
+
+  # mnist_f_vae
+  mnist_f_vae_get_data:
+    cmd: >
+      uv run python src/mnist_f_vae/01_get_data.py
+      --sql src/mnist_f_vae/queries/images.sql
+      --out data/mnist_f_vae/raw_images.parquet
+      --images data/mnist_f_vae/raw_images.npy
+      --dataset mnist_digits
+    deps:
+      - src/mnist_f_vae/01_get_data.py
+      - src/mnist_f_vae/queries/images.sql
+      - src/mnist_f_vae/config.py
+    outs:
+      - data/mnist_f_vae/raw_images.parquet
+      - data/mnist_f_vae/raw_images.npy
+
+  mnist_f_vae_engineer:
+    cmd: >
+      uv run python src/mnist_f_vae/02_engineer.py
+      --raw data/mnist_f_vae/raw_images.parquet
+      --images data/mnist_f_vae/raw_images.npy
+      --out data/mnist_f_vae/images.parquet
+      --pixels data/mnist_f_vae/pixels.npy
+    deps:
+      - src/mnist_f_vae/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_f_vae/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/raw_images.parquet
+      - data/mnist_f_vae/raw_images.npy
+    outs:
+      - data/mnist_f_vae/images.parquet
+      - data/mnist_f_vae/pixels.npy
+
+  mnist_f_vae_split:
+    cmd: >
+      uv run python src/mnist_f_vae/03_split.py
+      --data data/mnist_f_vae/images.parquet
+      --out data/mnist_f_vae/split.json
+    deps:
+      - src/mnist_f_vae/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/images.parquet
+    outs:
+      - data/mnist_f_vae/split.json
+
+  mnist_f_vae_tune:
+    cmd: >
+      uv run python src/mnist_f_vae/04_tune.py
+      --data data/mnist_f_vae/images.parquet
+      --pixels data/mnist_f_vae/pixels.npy
+      --split data/mnist_f_vae/split.json
+      --out reports/mnist_f_vae/best_params.json
+      --storage reports/mnist_f_vae/mnist_f_vae.db
+      --history reports/mnist_f_vae/plots/optimization_history.html
+      --importances reports/mnist_f_vae/plots/param_importances.html
+      --parallel reports/mnist_f_vae/plots/parallel_coordinate.html
+      --slice reports/mnist_f_vae/plots/parameter_slice.html
+      --latent-curve reports/mnist_f_vae/plots/loss_vs_latent.png
+    deps:
+      - src/mnist_f_vae/04_tune.py
+      - src/mnist_f_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/images.parquet
+      - data/mnist_f_vae/pixels.npy
+      - data/mnist_f_vae/split.json
+    outs:
+      - reports/mnist_f_vae/best_params.json
+      - reports/mnist_f_vae/mnist_f_vae.db
+      - reports/mnist_f_vae/plots/optimization_history.html
+      - reports/mnist_f_vae/plots/param_importances.html
+      - reports/mnist_f_vae/plots/parallel_coordinate.html
+      - reports/mnist_f_vae/plots/parameter_slice.html
+      - reports/mnist_f_vae/plots/loss_vs_latent.png
+
+  mnist_f_vae_train:
+    cmd: >
+      uv run python src/mnist_f_vae/05_train.py
+      --data data/mnist_f_vae/images.parquet
+      --pixels data/mnist_f_vae/pixels.npy
+      --split data/mnist_f_vae/split.json
+      --params reports/mnist_f_vae/best_params.json
+      --model models/mnist_f_vae/mnist_f_vae.pt
+      --plot reports/mnist_f_vae/plots/loss.png
+    deps:
+      - src/mnist_f_vae/05_train.py
+      - src/mnist_f_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/images.parquet
+      - data/mnist_f_vae/pixels.npy
+      - data/mnist_f_vae/split.json
+      - reports/mnist_f_vae/best_params.json
+    outs:
+      - models/mnist_f_vae/mnist_f_vae.pt
+      - reports/mnist_f_vae/plots/loss.png
+
+  mnist_f_vae_eval:
+    cmd: >
+      uv run python src/mnist_f_vae/06_eval.py
+      --data data/mnist_f_vae/images.parquet
+      --pixels data/mnist_f_vae/pixels.npy
+      --split data/mnist_f_vae/split.json
+      --model models/mnist_f_vae/mnist_f_vae.pt
+      --train-metrics reports/mnist_f_vae/evaluation_train.json
+      --test-metrics reports/mnist_f_vae/evaluation_test.json
+      --reconstructions-train reports/mnist_f_vae/plots/reconstructions_train.png
+      --reconstructions-test reports/mnist_f_vae/plots/reconstructions_test.png
+      --generated-samples reports/mnist_f_vae/plots/generated_samples.png
+    deps:
+      - src/mnist_f_vae/06_eval.py
+      - src/mnist_f_vae/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/images.parquet
+      - data/mnist_f_vae/pixels.npy
+      - data/mnist_f_vae/split.json
+      - models/mnist_f_vae/mnist_f_vae.pt
+    outs:
+      - reports/mnist_f_vae/evaluation_train.json
+      - reports/mnist_f_vae/evaluation_test.json
+      - reports/mnist_f_vae/plots/reconstructions_train.png
+      - reports/mnist_f_vae/plots/reconstructions_test.png
+      - reports/mnist_f_vae/plots/generated_samples.png
+
+  # mnist_gan_comparison
+  mnist_gan_comparison_get_data:
+    cmd: >
+      uv run python src/mnist_gan_comparison/01_get_data.py
+      --sql src/mnist_gan_comparison/queries/images.sql
+      --out data/mnist_gan_comparison/raw_images.parquet
+      --images data/mnist_gan_comparison/raw_images.npy
+      --dataset digits
+    deps:
+      - src/mnist_gan_comparison/01_get_data.py
+      - src/mnist_gan_comparison/queries/images.sql
+      - src/mnist_gan_comparison/config.py
+    outs:
+      - data/mnist_gan_comparison/raw_images.parquet
+      - data/mnist_gan_comparison/raw_images.npy
+
+  mnist_gan_comparison_engineer:
+    cmd: >
+      uv run python src/mnist_gan_comparison/02_engineer.py
+      --raw data/mnist_gan_comparison/raw_images.parquet
+      --images data/mnist_gan_comparison/raw_images.npy
+      --out data/mnist_gan_comparison/images.parquet
+      --pixels data/mnist_gan_comparison/pixels.npy
+    deps:
+      - src/mnist_gan_comparison/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_gan_comparison/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_comparison/model_contract.yaml
+      - data/mnist_gan_comparison/raw_images.parquet
+      - data/mnist_gan_comparison/raw_images.npy
+    outs:
+      - data/mnist_gan_comparison/images.parquet
+      - data/mnist_gan_comparison/pixels.npy
+
+  mnist_gan_comparison_split:
+    cmd: >
+      uv run python src/mnist_gan_comparison/03_split.py
+      --data data/mnist_gan_comparison/images.parquet
+      --out data/mnist_gan_comparison/split.json
+    deps:
+      - src/mnist_gan_comparison/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_comparison/model_contract.yaml
+      - data/mnist_gan_comparison/images.parquet
+    outs:
+      - data/mnist_gan_comparison/split.json
+
+  mnist_gan_comparison_tune:
+    cmd: >
+      uv run python src/mnist_gan_comparison/04_tune.py
+      --data data/mnist_gan_comparison/images.parquet
+      --pixels data/mnist_gan_comparison/pixels.npy
+      --split data/mnist_gan_comparison/split.json
+      --out reports/mnist_gan_comparison/best_params.json
+      --storage reports/mnist_gan_comparison/mnist_gan.db
+      --history reports/mnist_gan_comparison/plots/optimization_history.html
+      --importances reports/mnist_gan_comparison/plots/param_importances.html
+      --parallel reports/mnist_gan_comparison/plots/parallel_coordinate.html
+      --slice reports/mnist_gan_comparison/plots/parameter_slice.html
+      --noise-curve reports/mnist_gan_comparison/plots/stability_vs_noise.png
+      --n-trials 1
+      --epochs 1
+      --n-splits 2
+    deps:
+      - src/mnist_gan_comparison/04_tune.py
+      - src/mnist_gan_comparison/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_comparison/model_contract.yaml
+      - data/mnist_gan_comparison/images.parquet
+      - data/mnist_gan_comparison/pixels.npy
+      - data/mnist_gan_comparison/split.json
+    outs:
+      - reports/mnist_gan_comparison/best_params.json
+      - reports/mnist_gan_comparison/mnist_gan.db
+      - reports/mnist_gan_comparison/plots/optimization_history.html
+      - reports/mnist_gan_comparison/plots/param_importances.html
+      - reports/mnist_gan_comparison/plots/parallel_coordinate.html
+      - reports/mnist_gan_comparison/plots/parameter_slice.html
+      - reports/mnist_gan_comparison/plots/stability_vs_noise.png
+
+  mnist_gan_comparison_train:
+    cmd: >
+      uv run python src/mnist_gan_comparison/05_train.py
+      --data data/mnist_gan_comparison/images.parquet
+      --pixels data/mnist_gan_comparison/pixels.npy
+      --split data/mnist_gan_comparison/split.json
+      --params reports/mnist_gan_comparison/best_params.json
+      --model models/mnist_gan_comparison/mnist_gan.pt
+      --plot reports/mnist_gan_comparison/plots/loss.png
+      --generations reports/mnist_gan_comparison/generations/digits
+    deps:
+      - src/mnist_gan_comparison/05_train.py
+      - src/mnist_gan_comparison/model.py
+      - src/mnist_gan_comparison/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_comparison/model_contract.yaml
+      - data/mnist_gan_comparison/images.parquet
+      - data/mnist_gan_comparison/pixels.npy
+      - data/mnist_gan_comparison/split.json
+      - reports/mnist_gan_comparison/best_params.json
+    outs:
+      - models/mnist_gan_comparison/mnist_gan.pt
+      - reports/mnist_gan_comparison/plots/loss.png
+
+  mnist_gan_comparison_eval:
+    cmd: >
+      uv run python src/mnist_gan_comparison/06_eval.py
+      --data data/mnist_gan_comparison/images.parquet
+      --pixels data/mnist_gan_comparison/pixels.npy
+      --split data/mnist_gan_comparison/split.json
+      --model models/mnist_gan_comparison/mnist_gan.pt
+      --train-metrics reports/mnist_gan_comparison/evaluation_train.json
+      --test-metrics reports/mnist_gan_comparison/evaluation_test.json
+      --generated reports/mnist_gan_comparison/plots/generated.png
+      --real reports/mnist_gan_comparison/plots/real_test.png
+    deps:
+      - src/mnist_gan_comparison/06_eval.py
+      - src/mnist_gan_comparison/model.py
+      - src/mnist_gan_comparison/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_comparison/model_contract.yaml
+      - data/mnist_gan_comparison/images.parquet
+      - data/mnist_gan_comparison/pixels.npy
+      - data/mnist_gan_comparison/split.json
+      - models/mnist_gan_comparison/mnist_gan.pt
+    outs:
+      - reports/mnist_gan_comparison/evaluation_train.json
+      - reports/mnist_gan_comparison/evaluation_test.json
+      - reports/mnist_gan_comparison/plots/generated.png
+      - reports/mnist_gan_comparison/plots/real_test.png
+
+  # mnist_gan_extensions
+  mnist_gan_extensions_get_data:
+    cmd: >
+      uv run python src/mnist_gan_extensions/01_get_data.py
+      --sql src/mnist_gan_extensions/queries/images.sql
+      --out data/mnist_gan_extensions/raw_images.parquet
+      --images data/mnist_gan_extensions/raw_images.npy
+      --dataset digits
+    deps:
+      - src/mnist_gan_extensions/01_get_data.py
+      - src/mnist_gan_extensions/queries/images.sql
+      - src/mnist_gan_extensions/config.py
+    outs:
+      - data/mnist_gan_extensions/raw_images.parquet
+      - data/mnist_gan_extensions/raw_images.npy
+
+  mnist_gan_extensions_engineer:
+    cmd: >
+      uv run python src/mnist_gan_extensions/02_engineer.py
+      --raw data/mnist_gan_extensions/raw_images.parquet
+      --images data/mnist_gan_extensions/raw_images.npy
+      --out data/mnist_gan_extensions/images.parquet
+      --pixels data/mnist_gan_extensions/pixels.npy
+    deps:
+      - src/mnist_gan_extensions/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_gan_extensions/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_extensions/model_contract.yaml
+      - data/mnist_gan_extensions/raw_images.parquet
+      - data/mnist_gan_extensions/raw_images.npy
+    outs:
+      - data/mnist_gan_extensions/images.parquet
+      - data/mnist_gan_extensions/pixels.npy
+
+  mnist_gan_extensions_split:
+    cmd: >
+      uv run python src/mnist_gan_extensions/03_split.py
+      --data data/mnist_gan_extensions/images.parquet
+      --out data/mnist_gan_extensions/split.json
+    deps:
+      - src/mnist_gan_extensions/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_extensions/model_contract.yaml
+      - data/mnist_gan_extensions/images.parquet
+    outs:
+      - data/mnist_gan_extensions/split.json
+
+  mnist_gan_extensions_tune:
+    cmd: >
+      uv run python src/mnist_gan_extensions/04_tune.py
+      --data data/mnist_gan_extensions/images.parquet
+      --pixels data/mnist_gan_extensions/pixels.npy
+      --split data/mnist_gan_extensions/split.json
+      --out reports/mnist_gan_extensions/best_params.json
+      --storage reports/mnist_gan_extensions/mnist_cgan.db
+      --history reports/mnist_gan_extensions/plots/optimization_history.html
+      --importances reports/mnist_gan_extensions/plots/param_importances.html
+      --parallel reports/mnist_gan_extensions/plots/parallel_coordinate.html
+      --slice reports/mnist_gan_extensions/plots/parameter_slice.html
+      --noise-curve reports/mnist_gan_extensions/plots/stability_vs_noise.png
+      --n-trials 1
+      --epochs 1
+      --n-splits 2
+    deps:
+      - src/mnist_gan_extensions/04_tune.py
+      - src/mnist_gan_extensions/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_extensions/model_contract.yaml
+      - data/mnist_gan_extensions/images.parquet
+      - data/mnist_gan_extensions/pixels.npy
+      - data/mnist_gan_extensions/split.json
+    outs:
+      - reports/mnist_gan_extensions/best_params.json
+      - reports/mnist_gan_extensions/mnist_cgan.db
+      - reports/mnist_gan_extensions/plots/optimization_history.html
+      - reports/mnist_gan_extensions/plots/param_importances.html
+      - reports/mnist_gan_extensions/plots/parallel_coordinate.html
+      - reports/mnist_gan_extensions/plots/parameter_slice.html
+      - reports/mnist_gan_extensions/plots/stability_vs_noise.png
+
+  mnist_gan_extensions_train:
+    cmd: >
+      uv run python src/mnist_gan_extensions/05_train.py
+      --data data/mnist_gan_extensions/images.parquet
+      --pixels data/mnist_gan_extensions/pixels.npy
+      --split data/mnist_gan_extensions/split.json
+      --params reports/mnist_gan_extensions/best_params.json
+      --model models/mnist_gan_extensions/mnist_cgan.pt
+      --plot reports/mnist_gan_extensions/plots/loss.png
+      --generations reports/mnist_gan_extensions/experiments/cgan/digits
+    deps:
+      - src/mnist_gan_extensions/05_train.py
+      - src/mnist_gan_extensions/model.py
+      - src/mnist_gan_extensions/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_extensions/model_contract.yaml
+      - data/mnist_gan_extensions/images.parquet
+      - data/mnist_gan_extensions/pixels.npy
+      - data/mnist_gan_extensions/split.json
+      - reports/mnist_gan_extensions/best_params.json
+    outs:
+      - models/mnist_gan_extensions/mnist_cgan.pt
+      - reports/mnist_gan_extensions/plots/loss.png
+
+  mnist_gan_extensions_eval:
+    cmd: >
+      uv run python src/mnist_gan_extensions/06_eval.py
+      --data data/mnist_gan_extensions/images.parquet
+      --pixels data/mnist_gan_extensions/pixels.npy
+      --split data/mnist_gan_extensions/split.json
+      --model models/mnist_gan_extensions/mnist_cgan.pt
+      --train-metrics reports/mnist_gan_extensions/evaluation_train.json
+      --test-metrics reports/mnist_gan_extensions/evaluation_test.json
+      --generated reports/mnist_gan_extensions/plots/generated.png
+      --real reports/mnist_gan_extensions/plots/real_test.png
+      --classes reports/mnist_gan_extensions/plots/classes.png
+    deps:
+      - src/mnist_gan_extensions/06_eval.py
+      - src/mnist_gan_extensions/model.py
+      - src/mnist_gan_extensions/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_gan_extensions/model_contract.yaml
+      - data/mnist_gan_extensions/images.parquet
+      - data/mnist_gan_extensions/pixels.npy
+      - data/mnist_gan_extensions/split.json
+      - models/mnist_gan_extensions/mnist_cgan.pt
+    outs:
+      - reports/mnist_gan_extensions/evaluation_train.json
+      - reports/mnist_gan_extensions/evaluation_test.json
+      - reports/mnist_gan_extensions/plots/generated.png
+      - reports/mnist_gan_extensions/plots/real_test.png
+      - reports/mnist_gan_extensions/plots/classes.png
+
+  # mnist_pg_gan
+  mnist_pg_gan_get_data:
+    cmd: >
+      uv run python src/mnist_pg_gan/01_get_data.py
+      --sql src/mnist_pg_gan/queries/images.sql
+      --out data/mnist_pg_gan/raw_images.parquet
+      --images data/mnist_pg_gan/raw_images.npy
+      --dataset cifar
+    deps:
+      - src/mnist_pg_gan/01_get_data.py
+      - src/mnist_pg_gan/queries/images.sql
+      - src/mnist_pg_gan/config.py
+    outs:
+      - data/mnist_pg_gan/raw_images.parquet
+      - data/mnist_pg_gan/raw_images.npy
+
+  mnist_pg_gan_engineer:
+    cmd: >
+      uv run python src/mnist_pg_gan/02_engineer.py
+      --raw data/mnist_pg_gan/raw_images.parquet
+      --images data/mnist_pg_gan/raw_images.npy
+      --out data/mnist_pg_gan/images.parquet
+      --pixels data/mnist_pg_gan/pixels.npy
+    deps:
+      - src/mnist_pg_gan/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_pg_gan/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_pg_gan/model_contract.yaml
+      - data/mnist_pg_gan/raw_images.parquet
+      - data/mnist_pg_gan/raw_images.npy
+    outs:
+      - data/mnist_pg_gan/images.parquet
+      - data/mnist_pg_gan/pixels.npy
+
+  mnist_pg_gan_split:
+    cmd: >
+      uv run python src/mnist_pg_gan/03_split.py
+      --data data/mnist_pg_gan/images.parquet
+      --out data/mnist_pg_gan/split.json
+    deps:
+      - src/mnist_pg_gan/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_pg_gan/model_contract.yaml
+      - data/mnist_pg_gan/images.parquet
+    outs:
+      - data/mnist_pg_gan/split.json
+
+  mnist_pg_gan_tune:
+    cmd: >
+      uv run python src/mnist_pg_gan/04_tune.py
+      --data data/mnist_pg_gan/images.parquet
+      --pixels data/mnist_pg_gan/pixels.npy
+      --split data/mnist_pg_gan/split.json
+      --out reports/mnist_pg_gan/best_params.json
+      --storage reports/mnist_pg_gan/mnist_pg_gan.db
+      --history reports/mnist_pg_gan/plots/optimization_history.html
+      --importances reports/mnist_pg_gan/plots/param_importances.html
+      --parallel reports/mnist_pg_gan/plots/parallel_coordinate.html
+      --slice reports/mnist_pg_gan/plots/parameter_slice.html
+      --noise-curve reports/mnist_pg_gan/plots/stability_vs_noise.png
+      --n-trials 1
+      --epochs 1
+      --n-splits 2
+    deps:
+      - src/mnist_pg_gan/04_tune.py
+      - src/mnist_pg_gan/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_pg_gan/model_contract.yaml
+      - data/mnist_pg_gan/images.parquet
+      - data/mnist_pg_gan/pixels.npy
+      - data/mnist_pg_gan/split.json
+    outs:
+      - reports/mnist_pg_gan/best_params.json
+      - reports/mnist_pg_gan/mnist_pg_gan.db
+      - reports/mnist_pg_gan/plots/optimization_history.html
+      - reports/mnist_pg_gan/plots/param_importances.html
+      - reports/mnist_pg_gan/plots/parallel_coordinate.html
+      - reports/mnist_pg_gan/plots/parameter_slice.html
+      - reports/mnist_pg_gan/plots/stability_vs_noise.png
+
+  mnist_pg_gan_train:
+    cmd: >
+      uv run python src/mnist_pg_gan/05_train.py
+      --data data/mnist_pg_gan/images.parquet
+      --pixels data/mnist_pg_gan/pixels.npy
+      --split data/mnist_pg_gan/split.json
+      --params reports/mnist_pg_gan/best_params.json
+      --model models/mnist_pg_gan/mnist_pg_gan.pt
+      --plot reports/mnist_pg_gan/plots/loss.png
+      --generations reports/mnist_pg_gan/generations/cifar
+      --epochs 1
+    deps:
+      - src/mnist_pg_gan/05_train.py
+      - src/mnist_pg_gan/model.py
+      - src/mnist_pg_gan/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_pg_gan/model_contract.yaml
+      - data/mnist_pg_gan/images.parquet
+      - data/mnist_pg_gan/pixels.npy
+      - data/mnist_pg_gan/split.json
+      - reports/mnist_pg_gan/best_params.json
+    outs:
+      - models/mnist_pg_gan/mnist_pg_gan.pt
+      - reports/mnist_pg_gan/plots/loss.png
+
+  mnist_pg_gan_eval:
+    cmd: >
+      uv run python src/mnist_pg_gan/06_eval.py
+      --data data/mnist_pg_gan/images.parquet
+      --pixels data/mnist_pg_gan/pixels.npy
+      --split data/mnist_pg_gan/split.json
+      --model models/mnist_pg_gan/mnist_pg_gan.pt
+      --train-metrics reports/mnist_pg_gan/evaluation_train.json
+      --test-metrics reports/mnist_pg_gan/evaluation_test.json
+      --generated reports/mnist_pg_gan/plots/generated.png
+      --real reports/mnist_pg_gan/plots/real_test.png
+    deps:
+      - src/mnist_pg_gan/06_eval.py
+      - src/mnist_pg_gan/model.py
+      - src/mnist_pg_gan/figures.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_pg_gan/model_contract.yaml
+      - data/mnist_pg_gan/images.parquet
+      - data/mnist_pg_gan/pixels.npy
+      - data/mnist_pg_gan/split.json
+      - models/mnist_pg_gan/mnist_pg_gan.pt
+    outs:
+      - reports/mnist_pg_gan/evaluation_train.json
+      - reports/mnist_pg_gan/evaluation_test.json
+      - reports/mnist_pg_gan/plots/generated.png
+      - reports/mnist_pg_gan/plots/real_test.png
+
+  # mnist_realnvp
+  mnist_realnvp_get_data:
+    cmd: >
+      uv run python src/mnist_realnvp/01_get_data.py
+      --sql src/mnist_realnvp/queries/images.sql
+      --out data/mnist_realnvp/raw_images.parquet
+      --images data/mnist_realnvp/raw_images.npy
+    deps:
+      - src/mnist_realnvp/01_get_data.py
+      - src/mnist_realnvp/queries/images.sql
+      - src/mnist_realnvp/config.py
+    outs:
+      - data/mnist_realnvp/raw_images.parquet
+      - data/mnist_realnvp/raw_images.npy
+
+  mnist_realnvp_engineer:
+    cmd: >
+      uv run python src/mnist_realnvp/02_engineer.py
+      --raw data/mnist_realnvp/raw_images.parquet
+      --images data/mnist_realnvp/raw_images.npy
+      --out data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+    deps:
+      - src/mnist_realnvp/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_realnvp/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_realnvp/model_contract.yaml
+      - data/mnist_realnvp/raw_images.parquet
+      - data/mnist_realnvp/raw_images.npy
+    outs:
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+
+  mnist_realnvp_split:
+    cmd: >
+      uv run python src/mnist_realnvp/03_split.py
+      --data data/mnist_realnvp/images.parquet
+      --out data/mnist_realnvp/split.json
+    deps:
+      - src/mnist_realnvp/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_realnvp/model_contract.yaml
+      - data/mnist_realnvp/images.parquet
+    outs:
+      - data/mnist_realnvp/split.json
+
+  mnist_realnvp_tune:
+    cmd: >
+      uv run python src/mnist_realnvp/04_tune.py
+      --data data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+      --split data/mnist_realnvp/split.json
+      --out reports/mnist_realnvp/best_params.json
+      --storage reports/mnist_realnvp/mnist_realnvp.db
+      --history reports/mnist_realnvp/plots/optimization_history.html
+      --importances reports/mnist_realnvp/plots/param_importances.html
+      --parallel reports/mnist_realnvp/plots/parallel_coordinate.html
+      --slice reports/mnist_realnvp/plots/parameter_slice.html
+      --n-trials 2
+      --epochs 1
+      --n-splits 2
+      --dataset digits
+    deps:
+      - src/mnist_realnvp/04_tune.py
+      - src/mnist_realnvp/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_realnvp/model_contract.yaml
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+      - data/mnist_realnvp/split.json
+    outs:
+      - reports/mnist_realnvp/best_params.json
+      - reports/mnist_realnvp/mnist_realnvp.db
+      - reports/mnist_realnvp/plots/optimization_history.html
+      - reports/mnist_realnvp/plots/param_importances.html
+      - reports/mnist_realnvp/plots/parallel_coordinate.html
+      - reports/mnist_realnvp/plots/parameter_slice.html
+
+  mnist_realnvp_train:
+    cmd: >
+      uv run python src/mnist_realnvp/05_train.py
+      --data data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+      --split data/mnist_realnvp/split.json
+      --params reports/mnist_realnvp/best_params.json
+      --model models/mnist_realnvp/mnist_realnvp.pt
+      --plot reports/mnist_realnvp/plots/loss.png
+      --bpd-plot reports/mnist_realnvp/plots/bpd.png
+      --samples reports/mnist_realnvp/plots/samples.png
+      --epochs 20
+      --dataset digits
+    deps:
+      - src/mnist_realnvp/05_train.py
+      - src/mnist_realnvp/figures.py
+      - src/mnist_realnvp/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_realnvp/model_contract.yaml
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+      - data/mnist_realnvp/split.json
+      - reports/mnist_realnvp/best_params.json
+    outs:
+      - models/mnist_realnvp/mnist_realnvp.pt
+      - reports/mnist_realnvp/plots/loss.png
+      - reports/mnist_realnvp/plots/bpd.png
+      - reports/mnist_realnvp/plots/samples.png
+
+  mnist_realnvp_eval:
+    cmd: >
+      uv run python src/mnist_realnvp/06_eval.py
+      --data data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+      --split data/mnist_realnvp/split.json
+      --model models/mnist_realnvp/mnist_realnvp.pt
+      --train-metrics reports/mnist_realnvp/evaluation_train.json
+      --test-metrics reports/mnist_realnvp/evaluation_test.json
+      --generated reports/mnist_realnvp/plots/generated.png
+      --reconstructions reports/mnist_realnvp/plots/reconstructions.png
+    deps:
+      - src/mnist_realnvp/06_eval.py
+      - src/mnist_realnvp/figures.py
+      - src/mnist_realnvp/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_realnvp/model_contract.yaml
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+      - data/mnist_realnvp/split.json
+      - models/mnist_realnvp/mnist_realnvp.pt
+    outs:
+      - reports/mnist_realnvp/evaluation_train.json
+      - reports/mnist_realnvp/evaluation_test.json
+      - reports/mnist_realnvp/plots/generated.png
+      - reports/mnist_realnvp/plots/reconstructions.png
+
+  mnist_realnvp_train_fashion:
+    cmd: >
+      uv run python src/mnist_realnvp/05_train.py
+      --data data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+      --split data/mnist_realnvp/split.json
+      --params reports/mnist_realnvp/best_params.json
+      --model models/mnist_realnvp/mnist_realnvp_fashion.pt
+      --plot reports/mnist_realnvp/plots/loss_fashion.png
+      --bpd-plot reports/mnist_realnvp/plots/bpd_fashion.png
+      --samples reports/mnist_realnvp/plots/samples_fashion.png
+      --epochs 20
+      --dataset fashion
+    deps:
+      - src/mnist_realnvp/05_train.py
+      - src/mnist_realnvp/figures.py
+      - src/mnist_realnvp/model.py
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+      - data/mnist_realnvp/split.json
+      - reports/mnist_realnvp/best_params.json
+      - models/mnist_realnvp/mnist_realnvp.pt
+    outs:
+      - models/mnist_realnvp/mnist_realnvp_fashion.pt
+      - reports/mnist_realnvp/plots/loss_fashion.png
+      - reports/mnist_realnvp/plots/bpd_fashion.png
+      - reports/mnist_realnvp/plots/samples_fashion.png
+
+  mnist_realnvp_eval_fashion:
+    cmd: >
+      uv run python src/mnist_realnvp/06_eval.py
+      --data data/mnist_realnvp/images.parquet
+      --pixels data/mnist_realnvp/pixels.npy
+      --split data/mnist_realnvp/split.json
+      --model models/mnist_realnvp/mnist_realnvp_fashion.pt
+      --train-metrics reports/mnist_realnvp/evaluation_train_fashion.json
+      --test-metrics reports/mnist_realnvp/evaluation_test_fashion.json
+      --generated reports/mnist_realnvp/plots/generated_fashion.png
+      --reconstructions reports/mnist_realnvp/plots/reconstructions_fashion.png
+    deps:
+      - src/mnist_realnvp/06_eval.py
+      - src/mnist_realnvp/figures.py
+      - src/mnist_realnvp/model.py
+      - data/mnist_realnvp/images.parquet
+      - data/mnist_realnvp/pixels.npy
+      - data/mnist_realnvp/split.json
+      - models/mnist_realnvp/mnist_realnvp_fashion.pt
+    outs:
+      - reports/mnist_realnvp/evaluation_train_fashion.json
+      - reports/mnist_realnvp/evaluation_test_fashion.json
+      - reports/mnist_realnvp/plots/generated_fashion.png
+      - reports/mnist_realnvp/plots/reconstructions_fashion.png
+
+  # mnist_vae_comparison
+  mnist_vae_comparison_get_data:
+    cmd: >
+      uv run python src/mnist_vae_comparison/01_get_data.py
+      --sql src/mnist_vae_comparison/queries/images.sql
+      --out data/mnist_vae_comparison/raw_images.parquet
+      --images data/mnist_vae_comparison/raw_images.npy
+      --dataset mnist_digits
+    deps:
+      - src/mnist_vae_comparison/01_get_data.py
+      - src/mnist_vae_comparison/queries/images.sql
+      - src/mnist_vae_comparison/config.py
+    outs:
+      - data/mnist_vae_comparison/raw_images.parquet
+      - data/mnist_vae_comparison/raw_images.npy
+
+  mnist_vae_comparison_engineer:
+    cmd: >
+      uv run python src/mnist_vae_comparison/02_engineer.py
+      --raw data/mnist_vae_comparison/raw_images.parquet
+      --images data/mnist_vae_comparison/raw_images.npy
+      --out data/mnist_vae_comparison/images.parquet
+      --pixels data/mnist_vae_comparison/pixels.npy
+    deps:
+      - src/mnist_vae_comparison/02_engineer.py
+      - src/mnist_contracts/data_contract.py
+      - src/mnist_vae_comparison/data_contract.yaml
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_vae_comparison/model_contract.yaml
+      - data/mnist_vae_comparison/raw_images.parquet
+      - data/mnist_vae_comparison/raw_images.npy
+    outs:
+      - data/mnist_vae_comparison/images.parquet
+      - data/mnist_vae_comparison/pixels.npy
+
+  mnist_vae_comparison_split:
+    cmd: >
+      uv run python src/mnist_vae_comparison/03_split.py
+      --data data/mnist_vae_comparison/images.parquet
+      --out data/mnist_vae_comparison/split.json
+    deps:
+      - src/mnist_vae_comparison/03_split.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_vae_comparison/model_contract.yaml
+      - data/mnist_vae_comparison/images.parquet
+    outs:
+      - data/mnist_vae_comparison/split.json
+
+  mnist_vae_comparison_tune:
+    cmd: >
+      uv run python src/mnist_vae_comparison/04_tune.py
+      --data data/mnist_vae_comparison/images.parquet
+      --pixels data/mnist_vae_comparison/pixels.npy
+      --split data/mnist_vae_comparison/split.json
+      --out reports/mnist_vae_comparison/best_params.json
+      --storage reports/mnist_vae_comparison/mnist_vae.db
+      --history reports/mnist_vae_comparison/plots/optimization_history.html
+      --importances reports/mnist_vae_comparison/plots/param_importances.html
+      --parallel reports/mnist_vae_comparison/plots/parallel_coordinate.html
+      --slice reports/mnist_vae_comparison/plots/parameter_slice.html
+      --latent-curve reports/mnist_vae_comparison/plots/loss_vs_latent.png
+    deps:
+      - src/mnist_vae_comparison/04_tune.py
+      - src/mnist_vae_comparison/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_vae_comparison/model_contract.yaml
+      - data/mnist_vae_comparison/images.parquet
+      - data/mnist_vae_comparison/pixels.npy
+      - data/mnist_vae_comparison/split.json
+    outs:
+      - reports/mnist_vae_comparison/best_params.json
+      - reports/mnist_vae_comparison/mnist_vae.db
+      - reports/mnist_vae_comparison/plots/optimization_history.html
+      - reports/mnist_vae_comparison/plots/param_importances.html
+      - reports/mnist_vae_comparison/plots/parallel_coordinate.html
+      - reports/mnist_vae_comparison/plots/parameter_slice.html
+      - reports/mnist_vae_comparison/plots/loss_vs_latent.png
+
+  mnist_vae_comparison_train:
+    cmd: >
+      uv run python src/mnist_vae_comparison/05_train.py
+      --data data/mnist_vae_comparison/images.parquet
+      --pixels data/mnist_vae_comparison/pixels.npy
+      --split data/mnist_vae_comparison/split.json
+      --params reports/mnist_vae_comparison/best_params.json
+      --model models/mnist_vae_comparison/mnist_vae.pt
+      --plot reports/mnist_vae_comparison/plots/loss.png
+    deps:
+      - src/mnist_vae_comparison/05_train.py
+      - src/mnist_vae_comparison/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_vae_comparison/model_contract.yaml
+      - data/mnist_vae_comparison/images.parquet
+      - data/mnist_vae_comparison/pixels.npy
+      - data/mnist_vae_comparison/split.json
+      - reports/mnist_vae_comparison/best_params.json
+    outs:
+      - models/mnist_vae_comparison/mnist_vae.pt
+      - reports/mnist_vae_comparison/plots/loss.png
+
+  mnist_vae_comparison_eval:
+    cmd: >
+      uv run python src/mnist_vae_comparison/06_eval.py
+      --data data/mnist_vae_comparison/images.parquet
+      --pixels data/mnist_vae_comparison/pixels.npy
+      --split data/mnist_vae_comparison/split.json
+      --model models/mnist_vae_comparison/mnist_vae.pt
+      --train-metrics reports/mnist_vae_comparison/evaluation_train.json
+      --test-metrics reports/mnist_vae_comparison/evaluation_test.json
+      --reconstructions-train reports/mnist_vae_comparison/plots/reconstructions_train.png
+      --reconstructions-test reports/mnist_vae_comparison/plots/reconstructions_test.png
+      --generated-samples reports/mnist_vae_comparison/plots/generated_samples.png
+    deps:
+      - src/mnist_vae_comparison/06_eval.py
+      - src/mnist_vae_comparison/model.py
+      - src/mnist_contracts/model_contract.py
+      - src/mnist_vae_comparison/model_contract.yaml
+      - data/mnist_vae_comparison/images.parquet
+      - data/mnist_vae_comparison/pixels.npy
+      - data/mnist_vae_comparison/split.json
+      - models/mnist_vae_comparison/mnist_vae.pt
+    outs:
+      - reports/mnist_vae_comparison/evaluation_train.json
+      - reports/mnist_vae_comparison/evaluation_test.json
+      - reports/mnist_vae_comparison/plots/reconstructions_train.png
+      - reports/mnist_vae_comparison/plots/reconstructions_test.png
+      - reports/mnist_vae_comparison/plots/generated_samples.png

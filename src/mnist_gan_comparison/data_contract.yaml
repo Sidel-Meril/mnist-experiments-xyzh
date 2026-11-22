@@ -1,0 +1,42 @@
+version: 1
+query: src/mnist_gan_comparison/queries/images.sql
+
+columns:
+
+  image_id:
+    dtype: integer
+    nullable: false
+    sources: ["image_id"]
+    transform:
+      - num: to_int
+
+  label:
+    dtype: integer
+    nullable: false
+    sources: ["label"]
+    transform:
+      - num: to_int
+
+  mnist_split:
+    dtype: string
+    nullable: false
+    sources: ["mnist_split"]
+    values: ["train", "test"]
+
+  label_name:
+    dtype: string
+    nullable: false
+    sources: ["label"]
+    values:
+      - "0": zero
+      - "1": one
+      - "2": two
+      - "3": three
+      - "4": four
+      - "5": five
+      - "6": six
+      - "7": seven
+      - "8": eight
+      - "9": nine
+    transform:
+      - map: ${label_name.values}

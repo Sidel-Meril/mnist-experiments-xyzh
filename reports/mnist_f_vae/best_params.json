@@ -1,0 +1,20 @@
+{
+  "params": {
+    "latent_dim": 32,
+    "hidden_dim": 256,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "weight_decay": 0.000001,
+    "batch_size": 128,
+    "in_features": 784,
+    "beta": 1.0,
+    "n_flows": 4,
+    "flow_hidden": 256,
+    "flow_scale": 1.0
+  },
+  "val_loss": null,
+  "n_trials": 1,
+  "epochs": 4,
+  "n_splits": 2,
+  "note": "Fixed first-trial hyperparameters. Latent size 32 is the default probe; the RealNVP depth is not searched."
+}

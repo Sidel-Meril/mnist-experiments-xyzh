@@ -1,0 +1,65 @@
+# Modeling table for grayscale MNIST digits and Fashion-MNIST.
+# The pixel tensor is the RealNVP input. It is stored as NCHW float32 in
+# [0, 1] at data/pixels.npy, aligned to this table's row order.
+# Dequantization and the logit transform live in the flow, not in this table.
+version: 1
+
+key:
+  image_id:
+    dtype: int
+    nullable: false
+    min: 1
+
+target:
+  label:
+    dtype: int
+    nullable: false
+    categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+features:
+  pixels:
+    dtype: float
+    nullable: false
+    storage: npy
+    shape: [1, 28, 28]
+
+log:
+  label_name:
+    dtype: string
+    nullable: false
+    categories:
+      [
+        zero,
+        one,
+        two,
+        three,
+        four,
+        five,
+        six,
+        seven,
+        eight,
+        nine,
+        t-shirt,
+        trouser,
+        pullover,
+        dress,
+        coat,
+        sandal,
+        shirt,
+        sneaker,
+        bag,
+        ankle-boot,
+      ]
+  dataset:
+    dtype: string
+    nullable: false
+    categories: [digits, fashion]
+  mnist_split:
+    dtype: string
+    nullable: false
+    categories: [train, test]
+  pixel_mean:
+    dtype: float
+    nullable: false
+    min: 0
+    max: 1

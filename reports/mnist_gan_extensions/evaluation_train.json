@@ -1,0 +1,16 @@
+{
+  "discriminator_loss": 0.3249368361949921,
+  "generator_loss": 1.7110932264328003,
+  "generator_bce": 1.7110932264328003,
+  "sample_std": 0.6496303589111644,
+  "real_std": 0.6081831023054479,
+  "mode_collapse": false,
+  "noise_dim": 64,
+  "n_train": 2500,
+  "n_test": 500,
+  "variant": "cgan",
+  "diversity": 0.6468300587770005,
+  "class_separation": 0.6509226052527484,
+  "sharpness": 0.640983665872253,
+  "real_sharpness": 0.2661798750321386
+}

@@ -1,0 +1,15 @@
+{
+  "dataset": "fashion",
+  "train_per_class": 400,
+  "test_per_class": 80,
+  "epochs": 40,
+  "params": {
+    "noise_dim": 64,
+    "hidden_dim": 256,
+    "in_features": 784,
+    "lr_g": 0.0002,
+    "lr_d": 0.0002,
+    "beta1": 0.5,
+    "batch_size": 128
+  }
+}
