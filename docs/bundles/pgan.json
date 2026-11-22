@@ -1,0 +1,67 @@
+{
+  "id": "pgan",
+  "nav": "Progressive GAN",
+  "lede": "The growth schedule is in the code. No CIFAR-10 archive was written, so there is no timeline to show.",
+  "accent": "#4a5560",
+  "points": "GAN · bonus progressive growing",
+  "title": "Progressive GAN on CIFAR-10",
+  "question": "Does growing the resolution from 4×4 to 32×32 stabilize CIFAR-10 samples?",
+  "process": "The model grows through 4×4, 8×8, 16×16, and 32×32 on CIFAR-10, classes airplane through truck. The growth notebook reads reports/mnist_pg_gan/generations/cifar/growth.json, history.json, and growth_timeline.png, and would print one row per phase with epoch, resolution, phase, and alpha. Those files are absent. The notebook’s own empty branch says there is no archive yet. The DVC train stage is a short 1-epoch pipeline and is separate from scripts/mnist_pg_gan/train_progan.py. models/mnist_pg_gan contains only a placeholder.",
+  "opening": {
+    "answers": "What didn't turn out as expected?",
+    "summary": "There is no loss curve and no image timeline. Hovering a resolution only confirms that the phase file is missing. This bonus cannot be scored from the tree as it stands.",
+    "hover": "Hover a resolution."
+  },
+  "charts": [
+    {
+      "type": "rows",
+      "title": "Growth phases with no archive",
+      "marks": [
+        {
+          "label": "4×4",
+          "valueText": "growth.json row missing",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The first phase would be a 4×4 generator, with an alpha blend into the next resolution. No image and no loss were saved for it.",
+          "hover": "4×4 · no phase row"
+        },
+        {
+          "label": "8×8",
+          "valueText": "growth.json row missing",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "8×8 is the second growth step. The notebook would show the batch at this resolution beside the phase index. The file is not there.",
+          "hover": "8×8 · no phase row"
+        },
+        {
+          "label": "16×16",
+          "valueText": "growth.json row missing",
+          "state": "missing",
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Without the 16×16 frame there is no way to see whether stability improved as the canvas grew. The bonus is specifically about that visual.",
+          "hover": "16×16 · no phase row"
+        },
+        {
+          "label": "32×32",
+          "valueText": "eval JSON missing",
+          "state": "missing",
+          "answers": "How could the results be improved?",
+          "summary": "The eval stage would score discriminator and generator BCE plus sample std and mode collapse at 32×32. None of those numbers exist. Run scripts/mnist_pg_gan/train_progan.py and this chart can be replaced with the phase rows.",
+          "hover": "32×32 · no evaluation"
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "The growth schedule and the notebook that would read it are in the repo. The empty state is explicit: the notebook already branches to “no archive yet,” and this page repeats that instead of inventing a CIFAR timeline.",
+    "unexpected": "The bonus asked for the evolution of the images as the model grows. The generations directory has no CIFAR run, so there is nothing to watch.",
+    "why": "The DVC stage is a one-epoch pipeline, and the longer growth script was not the run that landed in reports/. Progressive training is the part that takes time. A placeholder checkpoint cannot show resolution fade-in.",
+    "improve": "Run the growth script, keep one grid per phase, and log epoch, resolution, and alpha into growth.json. Then a D3 line of generator and discriminator loss can be colored by resolution. Until those files exist, this section has no visual result."
+  },
+  "figures": [],
+  "sources": [
+    "notebooks/mnist_pg_gan/growth.ipynb",
+    "src/mnist_pg_gan/",
+    "dvc.yaml mnist_pg_gan"
+  ]
+}

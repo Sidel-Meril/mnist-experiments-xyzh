@@ -1,8 +1,10 @@
-"""Stage 06: score reconstruction quality and likelihood, and draw samples.
+"""Stage 06: score reconstruction quality, likelihood, and domain KID, and draw samples.
 
 MSE and MAE are per pixel. KL is the per-image sum. ELBO is the negative of
-the training objective. Reconstruction grids decode the posterior mean.
-Generated samples decode draws from the unit normal prior.
+the training objective. Domain KID is written on the test metrics only: the
+unbiased degree-3 polynomial MMD between the test images and the same number
+of draws from the unit normal prior. Reconstruction grids decode the posterior
+mean. Generated samples decode 64 draws from that prior.
 
 Usage::
 
@@ -25,9 +27,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mnist_vae_comparison.config import MODELING_CONTRACT_PATH, PIXEL_MEAN, PIXEL_STD, RANDOM_SEED
-from mnist_vae_comparison.model import VAE, seed_all
 from input_contracts.model_contract import ModelingContract
+from mnist_vae_comparison.config import MODELING_CONTRACT_PATH, PIXEL_MEAN, PIXEL_STD, RANDOM_SEED
+from mnist_vae_comparison.kid import domain_kid
+from mnist_vae_comparison.model import VAE, seed_all
 
 
 def _write(path: Path, metrics: dict[str, float | int | str]) -> None:
@@ -168,14 +171,18 @@ def run(
             "n_train": n_train,
             "n_test": n_test,
         }
+        if name == "test":
+            seed_all(RANDOM_SEED)
+            metrics["kid"] = domain_kid(rows, model.sample(len(rows)))
         _write(metrics_path, metrics)
         picked = _class_rows(labels, idx)
         original = contract.feature_matrix(pixels, picked)
         restored = model.reconstruct(original, batch_size)
         _save_reconstructions(original, restored, grid_path)
+        kid_text = f" kid={float(metrics['kid']):.4f}" if "kid" in metrics else ""
         print(
             f"{name} mse={metrics['mse']:.4f} mae={metrics['mae']:.4f} "
-            f"kl={metrics['kl']:.4f} elbo={metrics['elbo']:.4f} -> {metrics_path}"
+            f"kl={metrics['kl']:.4f} elbo={metrics['elbo']:.4f}{kid_text} -> {metrics_path}"
         )
         print(f"{name} reconstructions -> {grid_path}")
         written[name] = metrics

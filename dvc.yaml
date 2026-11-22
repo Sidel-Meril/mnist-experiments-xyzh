@@ -415,6 +415,106 @@ stages:
       - reports/mnist_f_vae/plots/reconstructions_test.png
       - reports/mnist_f_vae/plots/generated_samples.png
 
+  # Fashion-MNIST uses reports/mnist_f_vae/best_params.json. That file is not
+  # a dependency: it is an output of the digits tune, and listing it would
+  # retune digits. Tables live under data/mnist_f_vae/fashion.
+  mnist_f_vae_get_data_fashion:
+    cmd: >
+      uv run python src/mnist_f_vae/01_get_data.py
+      --sql src/mnist_f_vae/queries/images.sql
+      --out data/mnist_f_vae/fashion/raw_images.parquet
+      --images data/mnist_f_vae/fashion/raw_images.npy
+      --dataset fashion_mnist
+    deps:
+      - src/mnist_f_vae/01_get_data.py
+      - src/mnist_f_vae/queries/images.sql
+      - src/mnist_f_vae/config.py
+    outs:
+      - data/mnist_f_vae/fashion/raw_images.parquet
+      - data/mnist_f_vae/fashion/raw_images.npy
+
+  mnist_f_vae_engineer_fashion:
+    cmd: >
+      uv run python src/mnist_f_vae/02_engineer.py
+      --raw data/mnist_f_vae/fashion/raw_images.parquet
+      --images data/mnist_f_vae/fashion/raw_images.npy
+      --out data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy
+    deps:
+      - src/mnist_f_vae/02_engineer.py
+      - src/input_contracts/data_contract.py
+      - src/mnist_f_vae/data_contract.yaml
+      - src/input_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/fashion/raw_images.parquet
+      - data/mnist_f_vae/fashion/raw_images.npy
+    outs:
+      - data/mnist_f_vae/fashion/images.parquet
+      - data/mnist_f_vae/fashion/pixels.npy
+
+  mnist_f_vae_split_fashion:
+    cmd: >
+      uv run python src/mnist_f_vae/03_split.py
+      --data data/mnist_f_vae/fashion/images.parquet
+      --out data/mnist_f_vae/fashion/split.json
+    deps:
+      - src/mnist_f_vae/03_split.py
+      - src/input_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/fashion/images.parquet
+    outs:
+      - data/mnist_f_vae/fashion/split.json
+
+  mnist_f_vae_train_fashion:
+    cmd: >
+      uv run python src/mnist_f_vae/05_train.py
+      --data data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy
+      --split data/mnist_f_vae/fashion/split.json
+      --params reports/mnist_f_vae/best_params.json
+      --model models/mnist_f_vae/mnist_f_vae_fashion.pt
+      --plot reports/mnist_f_vae/plots/loss_fashion.png
+      --epochs 20
+    deps:
+      - src/mnist_f_vae/05_train.py
+      - src/mnist_f_vae/model.py
+      - src/input_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/fashion/images.parquet
+      - data/mnist_f_vae/fashion/pixels.npy
+      - data/mnist_f_vae/fashion/split.json
+    outs:
+      - models/mnist_f_vae/mnist_f_vae_fashion.pt
+      - reports/mnist_f_vae/plots/loss_fashion.png
+
+  mnist_f_vae_eval_fashion:
+    cmd: >
+      uv run python src/mnist_f_vae/06_eval.py
+      --data data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy
+      --split data/mnist_f_vae/fashion/split.json
+      --model models/mnist_f_vae/mnist_f_vae_fashion.pt
+      --train-metrics reports/mnist_f_vae/evaluation_train_fashion.json
+      --test-metrics reports/mnist_f_vae/evaluation_test_fashion.json
+      --reconstructions-train reports/mnist_f_vae/plots/reconstructions_train_fashion.png
+      --reconstructions-test reports/mnist_f_vae/plots/reconstructions_test_fashion.png
+      --generated-samples reports/mnist_f_vae/plots/generated_samples_fashion.png
+    deps:
+      - src/mnist_f_vae/06_eval.py
+      - src/mnist_f_vae/model.py
+      - src/input_contracts/model_contract.py
+      - src/mnist_f_vae/model_contract.yaml
+      - data/mnist_f_vae/fashion/images.parquet
+      - data/mnist_f_vae/fashion/pixels.npy
+      - data/mnist_f_vae/fashion/split.json
+      - models/mnist_f_vae/mnist_f_vae_fashion.pt
+    outs:
+      - reports/mnist_f_vae/evaluation_train_fashion.json
+      - reports/mnist_f_vae/evaluation_test_fashion.json
+      - reports/mnist_f_vae/plots/reconstructions_train_fashion.png
+      - reports/mnist_f_vae/plots/reconstructions_test_fashion.png
+      - reports/mnist_f_vae/plots/generated_samples_fashion.png
+
   # mnist_gan_comparison
   mnist_gan_comparison_get_data:
     cmd: >

@@ -44,7 +44,7 @@ uv run dvc repro <stage>
 | --- | --- | --- |
 | `src/mnist_ae_compression` | `uv run dvc repro mnist_ae_compression_eval` | MNIST autoencoder. Optuna compares latent sizes by reconstruction MSE, then trains and writes reconstruction grids. |
 | `src/mnist_betta_vae` | `uv run dvc repro mnist_betta_vae_eval mnist_betta_vae_explore` | β-VAE on MNIST digits. `eval` scores the tuned checkpoint. `explore` fits β in {0.1, 1, 4, 10} and writes the sweep the notebook reads. |
-| `src/mnist_f_vae` | `uv run dvc repro mnist_f_vae_eval` | VAE whose posterior is a RealNVP flow in the latent space. |
+| `src/mnist_f_vae` | `uv run dvc repro mnist_f_vae_eval mnist_f_vae_eval_fashion` | VAE whose posterior is a RealNVP flow in the latent space. `eval` is MNIST digits. `eval_fashion` trains and scores Fashion-MNIST with the digits hyperparameters, writing `data/mnist_f_vae/fashion/` and `*_fashion` reports. |
 | `src/mnist_gan_comparison` | `uv run dvc repro mnist_gan_comparison_eval` | Vanilla GAN. This stage trains the dataset currently in `data/mnist_gan_comparison/`. The comparison notebook needs both archives; build them with the script below. |
 | `src/mnist_gan_extensions` | `uv run dvc repro mnist_gan_extensions_eval` | Class-conditional GAN. The DVC stage is one run. The six-archive comparison is the script below. |
 | `src/mnist_pg_gan` | `uv run dvc repro mnist_pg_gan_eval` | Progressive GAN on CIFAR-10. The DVC train stage is the short pipeline (`--epochs 1` in `dvc.yaml`). The growth notebook reads the longer archive from the script below. |
@@ -78,7 +78,7 @@ Open these from the repository root after the files they name exist.
 | `notebooks/mnist_gan_comparison/comparison.ipynb` | Reads `reports/mnist_gan_comparison/generations/digits/` and `.../fashion/`. Plots discriminator and generator loss, the logged pixel std, epoch grids, and the eval table (`sample_std`, mode collapse). Does not train. |
 | `notebooks/mnist_gan_extensions/comparison.ipynb` | Reads `reports/mnist_gan_extensions/experiments/<cgan\|patchgan\|feature-matching-loss>/<digits\|fashion>/`. Compares diversity, sharpness, and class grids. Does not train. |
 | `notebooks/mnist_pg_gan/growth.ipynb` | Reads `reports/mnist_pg_gan/generations/cifar/` after `scripts/mnist_pg_gan/train_progan.py`. One row of the timeline is one growth phase, from 4×4 up to 32×32. |
-| `notebooks/mnist_vae_comparison/comparison.ipynb` | Reads `reference/mnist_digits/` and `reference/fashion_mnist/`. Compares ELBO and MSE, shows reconstruction and sample grids, then encodes both checkpoints for a latent scatter. It does not train. Those two caches are already in `reference/`. |
+| `notebooks/mnist_vae_comparison/comparison.ipynb` | Reads `reference/mnist_digits/` and `reference/fashion_mnist/`. Compares ELBO and MSE, writes domain KID into each cache's `evaluation_test.json`, shows reconstruction and sample grids, then encodes both checkpoints for a latent scatter. It does not train. Those two caches are already in `reference/`. |
 
 `src/mnist_f_vae` and `src/mnist_realnvp` have no notebooks. Their charts are the PNG and HTML files under `reports/<experiment>/plots/`.
 

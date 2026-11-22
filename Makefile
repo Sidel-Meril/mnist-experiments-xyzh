@@ -17,7 +17,7 @@ repro-mnist_betta_vae:
 	uv run dvc repro mnist_betta_vae_eval mnist_betta_vae_explore
 
 repro-mnist_f_vae:
-	uv run dvc repro mnist_f_vae_eval
+	uv run dvc repro mnist_f_vae_eval mnist_f_vae_eval_fashion
 
 repro-mnist_gan_comparison:
 	uv run dvc repro mnist_gan_comparison_eval

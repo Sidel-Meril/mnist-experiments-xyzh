@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generative models on MNIST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <div class="shell">
+    <nav class="nav" aria-label="Sections">
+      <a class="brand" href="#top">MNIST report</a>
+      <p class="nav-note">Hover a mark. The sentence beside the chart is that point’s bundle summary.</p>
+      <ol id="toc"></ol>
+    </nav>
+    <main id="top">
+      <header class="hero">
+        <p class="eyebrow">Homework report · digits, Fashion-MNIST, CIFAR-10</p>
+        <h1>Generative models on MNIST</h1>
+        <p class="lede">The autoencoder and the variational models reconstruct. Fashion is the easier sample domain, because a soft decoder still reads as clothing. The RealNVP digits run lowers bits per dimension and then flattens, and its inverse samples are still stroke fragments. Both vanilla GANs collapse to one shape. Conditioning on the class label stops that collapse for digits. PatchGAN, feature matching, the Fashion GAN extensions, and the progressive GAN do not have a finished scored run.</p>
+        <ul class="jump" id="jump"></ul>
+      </header>
+      <div id="chapters"></div>
+      <footer class="colophon">
+        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the executed notebooks. The JSON files in <code>docs/bundles/</code> are the hover copy for each chart. Curves that were never written as a series are shown as the original PNG instead of a redrawn D3 line.</p>
+        <p>GitHub Pages: Settings → Pages → Deploy from a branch → folder <code>/docs</code>. The site root is this folder, so <code>bundles/</code> and <code>figures/</code> resolve as they do here. Open it with a local server (<code>python -m http.server -d docs</code>). A <code>file://</code> tab cannot fetch the bundles.</p>
+      </footer>
+    </main>
+  </div>
+  <div id="tip" class="tip" role="status" hidden></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="js/story.js"></script>
+</body>
+</html>

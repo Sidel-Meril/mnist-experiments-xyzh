@@ -7,5 +7,6 @@
   "latent_dim": 8,
   "dataset": "fashion_mnist",
   "n_train": 10000,
-  "n_test": 2000
+  "n_test": 2000,
+  "kid": 0.20431880749378584
 }

@@ -1,0 +1,105 @@
+{
+  "id": "ae",
+  "nav": "Autoencoder",
+  "lede": "Validation error drops until latent 16–32, then extra coordinates buy almost nothing.",
+  "accent": "#9a3412",
+  "points": "VAE · autoencoder compression",
+  "title": "Autoencoder compression",
+  "question": "How does latent size change reconstruction error on MNIST digits?",
+  "process": "A plain autoencoder compresses a 784-pixel digit. Compression ratio is 784 / latent size. Optuna compared latent sizes with the other trial settings fixed, and the notebook averages validation MSE for trials that share a size. The checkpoint that was scored uses latent 128 on the full split, 60,000 train and 10,000 test. Pixels are in [−1, 1]. The search curve and the final test MSE are different stages.",
+  "opening": {
+    "answers": "What worked well?",
+    "summary": "Error is highest at latent 2 and falls as the code gets longer. Most of the drop is over by latent 16. The latent-128 checkpoint reconstructs the test digit, softly, at MSE 0.0414.",
+    "hover": "Hover a latent size."
+  },
+  "charts": [
+    {
+      "type": "line",
+      "title": "Validation MSE against latent size",
+      "xKey": "latent",
+      "yKey": "val_mse",
+      "xLabel": "latent size",
+      "yLabel": "validation MSE",
+      "xScale": "log",
+      "marks": [
+        {
+          "latent": 2,
+          "val_mse": 0.1867,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Latent 2 is a 392× compression. Validation MSE is 0.1867. A code that short keeps a blurry class average: the digit class may survive, the stroke does not.",
+          "hover": "latent 2 · 392× · val MSE 0.1867"
+        },
+        {
+          "latent": 4,
+          "val_mse": 0.1496,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Latent 4 is 196× and validation MSE is 0.1496. The bottleneck is still too small for thickness and slant, so the error stays high.",
+          "hover": "latent 4 · 196× · val MSE 0.1496"
+        },
+        {
+          "latent": 8,
+          "val_mse": 0.1154,
+          "answers": "How could the results be improved?",
+          "summary": "Latent 8 is 98× and validation MSE is 0.1154. This is the steep part of the curve. The next doublings are where digits usually become recognizable.",
+          "hover": "latent 8 · 98× · val MSE 0.1154"
+        },
+        {
+          "latent": 16,
+          "val_mse": 0.1042,
+          "answers": "What worked well?",
+          "summary": "Latent 16 is 49× and validation MSE is 0.1042. This is the start of the useful range: a code of this length can store thickness and slant.",
+          "hover": "latent 16 · 49× · val MSE 0.1042"
+        },
+        {
+          "latent": 32,
+          "val_mse": 0.0999,
+          "answers": "What worked well?",
+          "summary": "Latent 32 is 24.5× and validation MSE is 0.0999. Recognizable digits show up around 16–32. Past this point the curve is almost flat.",
+          "hover": "latent 32 · 24.5× · val MSE 0.0999"
+        },
+        {
+          "latent": 64,
+          "val_mse": 0.0975,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Latent 64 is 12.25× and validation MSE is 0.0975. The drop from 32 is 0.0024. Extra coordinates are copying detail the decoder already approximated.",
+          "hover": "latent 64 · 12.25× · val MSE 0.0975"
+        },
+        {
+          "latent": 128,
+          "val_mse": 0.0964,
+          "answers": "What worked well?",
+          "summary": "Latent 128 is 6.12×. The search-curve validation MSE is 0.0964, only 0.0011 under latent 64. The trained checkpoint’s test MSE is 0.0414 and test MAE is 0.0771. The reconstruction grid is that checkpoint: 7, 2, 1, 0, 4, and 9 stay readable and slightly soft.",
+          "hover": "latent 128 · 6.12× · val MSE 0.0964 · test MSE 0.0414"
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "The curve falls in the direction compression says it should, and the latent-128 test reconstructions keep the digit. Test MSE 0.0414 on the full 10,000-image split is a faithful, slightly blurry copy.",
+    "unexpected": "Almost all of the validation-MSE drop happens by latent 16. From 64 to 128 the search curve moves from 0.0975 to 0.0964. A longer code does not keep buying visible strokes.",
+    "why": "A digit is a low-dimensional stroke. Once thickness and slant fit, further coordinates have little left to store. Latent 2 cannot hold ten shapes, so it averages them. The search MSE and the checkpoint test MSE differ because they come from different stages; the notebook treats the curve as the bottleneck comparison and the test number as the model that was kept.",
+    "improve": "If the goal is compression, stop near latent 16–32. If the goal is a sharper copy, a longer code is the wrong knob: the latent-128 grid is already soft, so a sharper decoder or a loss that cares about edges would move the picture more than latent 256."
+  },
+  "figures": [
+    {
+      "src": "figures/ae/reconstruction_error_vs_latent.png",
+      "alt": "Original plot of reconstruction error against latent size.",
+      "caption": "The same sweep, as saved by the pipeline. The D3 chart replots the notebook’s averaged validation MSE."
+    },
+    {
+      "src": "figures/ae/reconstructions_test.png",
+      "alt": "Original MNIST digits above their latent-128 reconstructions. The reconstructions are slightly soft but the same digits.",
+      "caption": "Test reconstructions for the latent-128 checkpoint. Top row original, bottom row reconstruction."
+    },
+    {
+      "src": "figures/ae/loss.png",
+      "alt": "Training loss curve for the autoencoder.",
+      "caption": "Training loss for the checkpoint, separate from the latent-size sweep."
+    }
+  ],
+  "sources": [
+    "notebooks/mnist_ae_compression/task_analysis.ipynb",
+    "reports/mnist_ae_compression/evaluation_test.json",
+    "reports/mnist_ae_compression/plots/reconstruction_error_vs_latent.png"
+  ]
+}

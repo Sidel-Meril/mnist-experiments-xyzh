@@ -1,0 +1,278 @@
+:root {
+  --paper: #f3efe6;
+  --ink: #1c1915;
+  --muted: #5e584e;
+  --rule: #ddd4c4;
+  --card: #fffdf8;
+  --hot: #fff6e8;
+  --tip: #1c1915;
+  --serif: "Fraunces", Georgia, serif;
+  --sans: "Source Sans 3", "Segoe UI", sans-serif;
+  --accent: #9a3412;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #efe4cf 0%, transparent 55%),
+    var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 2rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+.nav {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  padding-top: 0.4rem;
+}
+
+.brand {
+  font-family: var(--serif);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 1.15rem;
+}
+
+.nav-note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 0.6rem 0 1rem;
+}
+
+#toc { list-style: none; margin: 0; padding: 0; }
+
+#toc a {
+  display: flex;
+  gap: 0.55rem;
+  align-items: baseline;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 0.28rem 0;
+  font-size: 0.95rem;
+}
+
+#toc a:hover { color: var(--accent); }
+
+#toc .swatch {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--swatch, var(--accent));
+  flex: none;
+  transform: translateY(0.05rem);
+}
+
+.hero { max-width: 46rem; padding-bottom: 0.5rem; }
+
+.eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 560; letter-spacing: -0.02em; }
+
+h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1.05; margin: 0 0 0.8rem; }
+
+h2 { font-size: 1.85rem; margin: 0; }
+
+h3 { font-size: 1.05rem; margin: 0; }
+
+.lede { font-size: 1.12rem; margin: 0; }
+
+.jump { list-style: none; padding: 0; margin: 1.2rem 0 0; display: grid; gap: 0.35rem; }
+
+.jump a { color: var(--ink); }
+
+.chapter {
+  --accent: #9a3412;
+  margin-top: 3.2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+
+.chapter-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; }
+
+.points { margin: 0 0 0.2rem; color: var(--accent); font-weight: 600; font-size: 0.86rem; }
+
+.question { font-family: var(--serif); font-size: 1.2rem; margin: 0.45rem 0 0; max-width: 40rem; }
+
+.process { max-width: 44rem; color: var(--ink); }
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.8fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.charts { display: grid; gap: 1.1rem; }
+
+.chart {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 0.8rem 0.8rem 0.4rem;
+}
+
+.chart-head, .switcher { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; }
+
+.switcher { justify-content: flex-end; }
+
+.switcher button, .play {
+  font: inherit;
+  border: 1px solid var(--rule);
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.switcher button.is-on, .play:hover { background: var(--ink); color: var(--paper); }
+
+.plot { width: 100%; min-height: 180px; }
+.plot.panels { display: flex; min-height: 0; }
+
+.plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.axis text, .tick text, .row-label, .row-value, .legend text {
+  font-family: var(--sans);
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.axis path, .axis line, .grid line { stroke: var(--rule); }
+
+.grid line { stroke-dasharray: 2 3; }
+
+.mark { cursor: pointer; }
+
+.mark.dim { opacity: 0.35; }
+
+.hit { fill: transparent; }
+
+.finding {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 0.9rem 1rem 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.finding .who {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.finding .summary { margin: 0.45rem 0 0; font-size: 1.05rem; }
+
+.hint { margin: 0.8rem 0 0; color: var(--muted); font-size: 0.86rem; }
+
+.reflection {
+  list-style: none;
+  padding: 0;
+  margin: 1.2rem 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.reflection li {
+  background: transparent;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid transparent;
+}
+
+.reflection li.is-hot {
+  background: var(--hot);
+  border-color: var(--rule);
+}
+
+.reflection h3 { font-family: var(--sans); font-size: 0.92rem; margin-bottom: 0.25rem; }
+
+.reflection p { margin: 0; }
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+figure { margin: 0; }
+
+figure img {
+  width: 100%;
+  height: auto;
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+
+.live img { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+figcaption { color: var(--muted); font-size: 0.86rem; margin-top: 0.35rem; }
+
+.sources { color: var(--muted); font-size: 0.86rem; }
+
+.sources code, .colophon code, p code {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.84em;
+}
+
+.colophon { margin-top: 3rem; color: var(--muted); max-width: 46rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+
+.tip {
+  position: fixed;
+  z-index: 20;
+  max-width: 280px;
+  background: var(--tip);
+  color: #f6f1e7;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: pre-line;
+}
+
+.guide-label { font-size: 11px; fill: var(--accent); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; gap: 0.5rem; }
+  .nav { position: static; }
+  #toc { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; }
+  .stage, .reflection { grid-template-columns: 1fr; }
+  .finding { position: static; }
+  .chapter-head { flex-direction: column; align-items: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

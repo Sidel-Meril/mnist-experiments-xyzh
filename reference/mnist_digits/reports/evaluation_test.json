@@ -7,5 +7,6 @@
   "latent_dim": 8,
   "dataset": "mnist_digits",
   "n_train": 10000,
-  "n_test": 2000
+  "n_test": 2000,
+  "kid": 3.1051730397801847
 }

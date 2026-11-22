@@ -93,3 +93,96 @@ stages:
       hash: md5
       md5: 3d04be0f112e75bda9bd252dd451eb90
       size: 478919
+  mnist_f_vae_get_data_fashion:
+    cmd: "uv run python src/mnist_f_vae/01_get_data.py --sql src/mnist_f_vae/queries/images.sql
+      --out data/mnist_f_vae/fashion/raw_images.parquet --images data/mnist_f_vae/fashion/raw_images.npy
+      --dataset fashion_mnist\n"
+    deps:
+    - path: src/mnist_f_vae/01_get_data.py
+      hash: md5
+      md5: 42328a1d760aecfd3c5f09677c6e8ce4
+      size: 4158
+    - path: src/mnist_f_vae/config.py
+      hash: md5
+      md5: 3ef21f894f315bb2e3cc2bc0c60dd55f
+      size: 1594
+    - path: src/mnist_f_vae/queries/images.sql
+      hash: md5
+      md5: 4ad364f95388e5c77e972a3427a57f13
+      size: 275
+    outs:
+    - path: data/mnist_f_vae/fashion/raw_images.npy
+      hash: md5
+      md5: a3fdc309f16e8507309eb1a712d89c80
+      size: 54880128
+    - path: data/mnist_f_vae/fashion/raw_images.parquet
+      hash: md5
+      md5: a1cd0e104c16efa46eae948895c31d5f
+      size: 458005
+  mnist_f_vae_engineer_fashion:
+    cmd: "uv run python src/mnist_f_vae/02_engineer.py --raw data/mnist_f_vae/fashion/raw_images.parquet
+      --images data/mnist_f_vae/fashion/raw_images.npy --out data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy\n"
+    deps:
+    - path: data/mnist_f_vae/fashion/raw_images.npy
+      hash: md5
+      md5: a3fdc309f16e8507309eb1a712d89c80
+      size: 54880128
+    - path: data/mnist_f_vae/fashion/raw_images.parquet
+      hash: md5
+      md5: a1cd0e104c16efa46eae948895c31d5f
+      size: 458005
+    - path: src/input_contracts/data_contract.py
+      hash: md5
+      md5: 23f6ea0a6b7a48823c2640c75f8c0bb8
+      size: 9244
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    - path: src/mnist_f_vae/02_engineer.py
+      hash: md5
+      md5: 830e71c975331452f55c5b7f2c756823
+      size: 3746
+    - path: src/mnist_f_vae/data_contract.yaml
+      hash: md5
+      md5: 8c465c92ba38e9c69b89a5c1d4266748
+      size: 539
+    - path: src/mnist_f_vae/model_contract.yaml
+      hash: md5
+      md5: 539dba7f8212990c945a7ca78f3c6b3c
+      size: 1408
+    outs:
+    - path: data/mnist_f_vae/fashion/images.parquet
+      hash: md5
+      md5: 22c14fd8381d2ba3c50d9fdd5b87832a
+      size: 856382
+    - path: data/mnist_f_vae/fashion/pixels.npy
+      hash: md5
+      md5: 816c3ee817c452351a2b8dcb73c215a3
+      size: 219520128
+  mnist_f_vae_split_fashion:
+    cmd: "uv run python src/mnist_f_vae/03_split.py --data data/mnist_f_vae/fashion/images.parquet
+      --out data/mnist_f_vae/fashion/split.json\n"
+    deps:
+    - path: data/mnist_f_vae/fashion/images.parquet
+      hash: md5
+      md5: 22c14fd8381d2ba3c50d9fdd5b87832a
+      size: 856382
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    - path: src/mnist_f_vae/03_split.py
+      hash: md5
+      md5: 1cdfec4ff1d495a8b11cc865541ecad9
+      size: 4184
+    - path: src/mnist_f_vae/model_contract.yaml
+      hash: md5
+      md5: 539dba7f8212990c945a7ca78f3c6b3c
+      size: 1408
+    outs:
+    - path: data/mnist_f_vae/fashion/split.json
+      hash: md5
+      md5: 3d04be0f112e75bda9bd252dd451eb90
+      size: 478919

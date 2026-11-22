@@ -1,0 +1,10 @@
+[
+  {"id": "realnvp", "file": "bundles/realnvp.json"},
+  {"id": "ae", "file": "bundles/ae.json"},
+  {"id": "vae", "file": "bundles/vae.json"},
+  {"id": "fvae", "file": "bundles/fvae.json"},
+  {"id": "betavae", "file": "bundles/betavae.json"},
+  {"id": "gan", "file": "bundles/gan.json"},
+  {"id": "cgan", "file": "bundles/cgan.json"},
+  {"id": "pgan", "file": "bundles/pgan.json"}
+]

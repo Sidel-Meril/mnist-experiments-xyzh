@@ -1,0 +1,98 @@
+{
+  "id": "realnvp",
+  "nav": "RealNVP",
+  "lede": "Digits likelihood falls, then the inverse samples stay broken; Fashion was never trained.",
+  "accent": "#0f6e6e",
+  "points": "Norm Flow · 5pt",
+  "title": "Multi-scale RealNVP",
+  "question": "Does the coupling flow assign high likelihood to MNIST and invert into digit-like samples?",
+  "process": "The model is a convolutional RealNVP. A checkerboard-style mask holds one part fixed and two heads predict scale and shift, y = m·x + (1−m)·(x·exp(s) + t), with s bounded by scale·tanh. The log-determinant sums s only on the changed coordinates. Multi-scale squeezes space into channels and factors half of them out at 14×14 and at 7×7. Pixels in [0, 1] are dequantized and logit-transformed. The recorded search is 2 trials and 1 epoch on digits (hidden 64, 4 layers, scale 2, lr 0.001). The train stage is configured for 20 epochs and wrote loss, bits-per-dimension, and inverse-sample plots. It did not write evaluation JSON. Fashion stages exist in dvc.yaml and were not run.",
+  "opening": {
+    "answers": "What worked well?",
+    "summary": "The digits train plot shows negative log-likelihood and bits per dimension falling, then flattening, with the test curve under the train curve. The only numeric likelihood on disk is the search: validation BPD 1.583 after one epoch.",
+    "hover": "Start here, then hover a row."
+  },
+  "charts": [
+    {
+      "type": "rows",
+      "title": "What is actually on disk",
+      "marks": [
+        {
+          "label": "Search, digits",
+          "valueText": "val BPD 1.583 · val NLL 860.1 · 1 epoch · 2 trials",
+          "state": "have",
+          "answers": "Why do you think the results might not be great?",
+          "summary": "best_params.json records validation BPD 1.583 and NLL 860.1. That number is a 1-epoch, 2-trial search, not the score of the longer train.",
+          "hover": "Tune only\nval BPD 1.583\nval NLL 860.1"
+        },
+        {
+          "label": "Train curves, digits",
+          "valueText": "loss.png and bpd.png fall, then level off",
+          "state": "have",
+          "answers": "What worked well?",
+          "summary": "The saved curves drop quickly and then flatten. Train keeps a smooth decline. The test curve sits below train and jitters. The stage is set to 20 epochs; the figures level off after about ten points. The series itself was not written to JSON, so this chart does not redraw those lines.",
+          "hover": "Likelihood improved, then flattened",
+          "frame": "figures/realnvp/bpd.png",
+          "frameCaption": "Bits per dimension during the digits train."
+        },
+        {
+          "label": "Inverse samples, digits",
+          "valueText": "64 draws, mostly stroke fragments",
+          "state": "have",
+          "answers": "What didn't turn out as expected?",
+          "summary": "Inverting the flow does produce bright strokes on black, and a few cells suggest a loop or a stem. Most cells are hooks, specks, and broken junctions. Likelihood moved; the samples did not become a digit set.",
+          "hover": "samples.png · inverse flow",
+          "frame": "figures/realnvp/samples.png",
+          "frameCaption": "64 inverse-flow samples from the digits train."
+        },
+        {
+          "label": "Test evaluation",
+          "valueText": "evaluation_test.json was not written",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The eval stage would have written test NLL and BPD. Those files are absent, so the plot is the likelihood record and there is no held-out number to quote beside the tune.",
+          "hover": "Missing test NLL and BPD"
+        },
+        {
+          "label": "Fashion-MNIST",
+          "valueText": "no loss, samples, or scores",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The same coupling stack was meant to train on Fashion from the same split. No fashion checkpoint, curve, or sample grid is in the tree, so there is no second dataset to compare.",
+          "hover": "Fashion stage not run"
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "Coupling layers, the masked log-determinant, and the two squeeze scales are in the model, and the digits train does reduce bits per dimension before the curve flattens. The inverse pass runs and writes a 64-image grid.",
+    "unexpected": "The grid is stroke fragments rather than digits. The search file and the train plots are different runs, and the test JSON never landed. Fashion is entirely absent.",
+    "why": "A short search cannot place a 28×28 density on the digit manifold. Dequantization and the logit transform let likelihood improve by explaining background and rough stroke mass while individual glyphs stay off-manifold. About ten plotted epochs is still a short fit for this stack, and the missing eval means the flatten point was never frozen as a test score.",
+    "improve": "Finish the 20-epoch digits train, write evaluation_test.json, and keep a sample grid every few epochs next to BPD. Then run the fashion train and eval with the same depth. If BPD keeps falling while samples stay broken, check the masked log-det and how many channels the squeezes factor out before adding more layers."
+  },
+  "live": {
+    "src": "figures/realnvp/samples.png",
+    "alt": "Grid of 64 RealNVP inverse samples on digits. Most cells are stroke fragments rather than complete digits.",
+    "caption": "Inverse samples. Hover a row to swap this frame for the BPD curve."
+  },
+  "figures": [
+    {
+      "src": "figures/realnvp/loss.png",
+      "alt": "Train and test negative log-likelihood falling and then flattening.",
+      "caption": "Negative log-likelihood. Train is smooth; test sits lower and jitters."
+    },
+    {
+      "src": "figures/realnvp/bpd.png",
+      "alt": "Train and test bits per dimension falling and then flattening.",
+      "caption": "Bits per dimension for the same digits train. Not the 1-epoch search number."
+    }
+  ],
+  "sources": [
+    "reports/mnist_realnvp/best_params.json",
+    "reports/mnist_realnvp/plots/loss.png",
+    "reports/mnist_realnvp/plots/bpd.png",
+    "reports/mnist_realnvp/plots/samples.png",
+    "src/mnist_realnvp/model.py",
+    "dvc.yaml mnist_realnvp_train --epochs 20"
+  ]
+}

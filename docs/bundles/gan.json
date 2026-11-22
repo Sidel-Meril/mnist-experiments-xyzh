@@ -1,0 +1,103 @@
+{
+  "id": "gan",
+  "nav": "Vanilla GAN",
+  "lede": "Both datasets collapse. The loss curve’s sample std stays large while the scored grid does not.",
+  "accent": "#8c2f2f",
+  "points": "GAN · vanilla",
+  "title": "Vanilla GAN",
+  "question": "Do the generator and discriminator stay stable, and do the samples cover more than one mode?",
+  "process": "A two-network GAN, noise size 64, hidden 256, Adam with lr 0.0002 and β1 0.5, trained 40 epochs. Each archive uses 400 train and 80 test images per class (4,000 / 800). The chart is eval discriminator and generator loss. Logged sample std is the pixel std of a fixed noise batch during training. The score file’s sample std is a different measurement, mean per-pixel deviation on a fixed noise batch, and that is the one compared with real std to set mode_collapse. Hover an epoch to bring up the nearest saved grid.",
+  "opening": {
+    "answers": "What didn't turn out as expected?",
+    "summary": "Discriminator loss falls and generator loss climbs on both datasets. By epoch 40 the digits grid is one fuzzy vertical stroke and the Fashion grid is one shirt. Both score files set mode_collapse to true.",
+    "hover": "Hover the curve, or switch dataset."
+  },
+  "charts": [
+    {
+      "type": "series",
+      "title": "Eval loss over 40 epochs",
+      "datasets": [
+        {"id": "digits", "label": "digits"},
+        {"id": "fashion", "label": "fashion"}
+      ],
+      "fallbackAnswers": "Why do you think the results might not be great?",
+      "fallback": "Epoch {epoch}: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The scored grid uses a different sample std than this logged series.",
+      "frames": {
+        "digits": {
+          "1": "figures/gan/digits/epoch_0001.png",
+          "10": "figures/gan/digits/epoch_0010.png",
+          "20": "figures/gan/digits/epoch_0020.png",
+          "30": "figures/gan/digits/epoch_0030.png",
+          "40": "figures/gan/digits/final.png"
+        },
+        "fashion": {
+          "1": "figures/gan/fashion/epoch_0001.png",
+          "10": "figures/gan/fashion/epoch_0010.png",
+          "20": "figures/gan/fashion/epoch_0020.png",
+          "30": "figures/gan/fashion/epoch_0030.png",
+          "40": "figures/gan/fashion/final.png"
+        }
+      },
+      "beats": [
+        {
+          "dataset": "digits",
+          "epoch": 1,
+          "answers": "What worked well?",
+          "summary": "Epoch 1 on digits still looks like the start of a GAN. Eval D is {eval_d} and eval G is {eval_g}, near each other. Logged sample std is {sample_std}."
+        },
+        {
+          "dataset": "digits",
+          "epoch": 40,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 40 on digits: eval D is {eval_d} and eval G is {eval_g}. Train G has climbed to {train_g}. Logged sample std is still {sample_std}, but the scored grid has sample std 0.0358 against real std 0.378, so mode_collapse is true. The picture is one repeated fuzzy vertical stroke."
+        },
+        {
+          "dataset": "fashion",
+          "epoch": 1,
+          "answers": "What worked well?",
+          "summary": "Epoch 1 on Fashion starts in the same place. Eval D is {eval_d}, eval G is {eval_g}, logged sample std {sample_std}."
+        },
+        {
+          "dataset": "fashion",
+          "epoch": 40,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 40 on Fashion: eval D is {eval_d}, eval G is {eval_g}, train G is {train_g}. Logged sample std is {sample_std}. The scored grid has sample std 0.0413 against real std 0.531, mode_collapse is true, and every cell is the same shirt."
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "Both runs finished 40 epochs with a full loss history and a grid at every epoch. The collapse flag matches the pictures: one shape, sample std about a tenth of the real image std.",
+    "unexpected": "The logged sample-std series does not announce the collapse. Digits ends at 0.505 and Fashion at 0.641, while the scored grids are 0.036 and 0.041. Watching the wrong std would say the generator is still varied.",
+    "why": "Once the discriminator is sure, its loss sits near zero (0.061 on digits, 0.204 on Fashion) and the generator is pushed toward the single image that still fools it. The slice is small, 400 images per class, and vanilla BCE gives the generator no reason to cover the other nine classes. A repeated high-contrast shape can still have a large per-pixel std in the training log.",
+    "improve": "Plot the eval sample std next to real std, and look at the grid, not only the two loss lines. The class-conditional run below is the control: labels give the generator a class to hit, and that digits run does not collapse. A smaller discriminator step would be the other lever. Feature matching was not finished, so it is not evidence yet."
+  },
+  "live": {
+    "src": "figures/gan/digits/final.png",
+    "alt": "Vanilla GAN digits at the end of training: the same fuzzy vertical stroke repeated.",
+    "caption": "Nearest saved grid for the hovered epoch. This frame starts at the digits eval grid."
+  },
+  "figures": [
+    {
+      "src": "figures/gan/digits/real_test.png",
+      "alt": "Real MNIST test digits, varied classes.",
+      "caption": "Real digits test batch. Sample std of the generator is 0.036 against real std 0.378."
+    },
+    {
+      "src": "figures/gan/fashion/final.png",
+      "alt": "Vanilla GAN Fashion samples collapsed to one shirt.",
+      "caption": "Fashion eval grid. One shirt, mode_collapse true."
+    },
+    {
+      "src": "figures/gan/fashion/real_test.png",
+      "alt": "Real Fashion-MNIST test images with many garment types.",
+      "caption": "Real Fashion test batch. Generator sample std 0.041 against real std 0.531."
+    }
+  ],
+  "sources": [
+    "reports/mnist_gan_comparison/generations/digits/history.json",
+    "reports/mnist_gan_comparison/generations/digits/evaluation_test.json",
+    "reports/mnist_gan_comparison/generations/fashion/history.json",
+    "reports/mnist_gan_comparison/generations/fashion/evaluation_test.json"
+  ]
+}

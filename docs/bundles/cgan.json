@@ -1,0 +1,168 @@
+{
+  "id": "cgan",
+  "nav": "cGAN and variants",
+  "lede": "Class labels stop the digits collapse. PatchGAN’s saved grids fall into one glyph, and feature matching was not scored.",
+  "accent": "#1f4d3a",
+  "points": "GAN · conditional, PatchGAN, feature matching",
+  "title": "Conditional GAN and the unfinished variants",
+  "question": "Does a class label, a PatchGAN discriminator, or feature matching change quality and diversity?",
+  "process": "The finished run is a class-conditional GAN on digits: 250 train and 50 test images per class, 40 epochs, 10 classes, noise 64. Its generator loss equals generator BCE, so this scored objective has no feature-matching term. Diversity, class separation, and sharpness are in the test JSON. The spread ratio below is scored sample std divided by real std. Vanilla ratios use the previous chapter’s test files. PatchGAN digits left four epoch grids and no history or scores. best_params.json says variant patchgan, while evaluation_test.json says cgan. There is no feature-matching-loss directory and no Fashion extension run.",
+  "opening": {
+    "answers": "What worked well?",
+    "summary": "A spread ratio near 0 means the generator’s pixels barely move compared with real images. Vanilla digits and Fashion sit near 0.09 and 0.08. The cGAN sits at 1.08, and its class grid has a different digit on each row.",
+    "hover": "Hover a bar, then a PatchGAN row."
+  },
+  "charts": [
+    {
+      "type": "hbar",
+      "title": "Sample spread ÷ real spread",
+      "guide": {"value": 1, "label": "matches real spread"},
+      "marks": [
+        {
+          "label": "vanilla digits",
+          "value": 0.0946,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Vanilla digits: sample std 0.0358 / real std 0.378 = 0.095. mode_collapse is true. The grid is one stroke. This is the before picture, on a larger slice (400 per class) than the cGAN.",
+          "hover": "0.0358 / 0.378 = 0.095\nmode_collapse true",
+          "frame": "figures/gan/digits/final.png",
+          "frameCaption": "Vanilla digits eval grid, one repeated stroke."
+        },
+        {
+          "label": "vanilla fashion",
+          "value": 0.0778,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Vanilla Fashion: sample std 0.0413 / real std 0.531 = 0.078. mode_collapse is true. The grid is one shirt. Same failure mode, different silhouette.",
+          "hover": "0.0413 / 0.531 = 0.078\nmode_collapse true",
+          "frame": "figures/gan/fashion/final.png",
+          "frameCaption": "Vanilla Fashion eval grid, one repeated shirt."
+        },
+        {
+          "label": "cGAN digits",
+          "value": 1.076,
+          "answers": "What worked well?",
+          "summary": "cGAN digits: sample std 0.653 / real std 0.607 = 1.08. mode_collapse is false. Diversity is 0.647 and class separation is 0.651. The class grid is one row per digit. Sharpness is 0.641 against real sharpness 0.256, so the samples are harsher and speckled rather than pen ink. The slice is smaller (250 per class), so this is a directional comparison, not a matched ablation.",
+          "hover": "0.653 / 0.607 = 1.08\ndiversity 0.647 · class separation 0.651",
+          "frame": "figures/cgan/classes.png",
+          "frameCaption": "cGAN class grid. Each row is one digit."
+        }
+      ]
+    },
+    {
+      "type": "series",
+      "title": "cGAN eval loss",
+      "datasets": [{"id": "cgan", "label": "cGAN digits"}],
+      "fallbackAnswers": "What worked well?",
+      "fallback": "Epoch {epoch}: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. Discriminator loss stays away from zero, unlike the vanilla run.",
+      "frames": {
+        "cgan": {
+          "1": "figures/cgan/epoch_0001.png",
+          "20": "figures/cgan/epoch_0020.png",
+          "40": "figures/cgan/epoch_0040.png"
+        }
+      },
+      "beats": [
+        {
+          "dataset": "cgan",
+          "epoch": 1,
+          "answers": "How could the results be improved?",
+          "summary": "Epoch 1 of the cGAN is still noise: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. Class rows are not visible yet."
+        },
+        {
+          "dataset": "cgan",
+          "epoch": 40,
+          "answers": "What worked well?",
+          "summary": "Epoch 40: eval D is {eval_d} and eval G is {eval_g}. Logged sample std {sample_std} matches the scored sample std 0.653. The discriminator never collapses to a sure zero the way the vanilla digits discriminator does (eval D 0.061). generator_loss equals generator_bce, so feature matching is not in this curve."
+        }
+      ]
+    },
+    {
+      "type": "rows",
+      "title": "Variants that were not scored",
+      "marks": [
+        {
+          "label": "PatchGAN, epoch 4",
+          "valueText": "soft blobs, some variety, no score",
+          "state": "have",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The epoch-4 PatchGAN grid is soft and not yet one shape. There is no history.json and no evaluation file, so this is only the picture.",
+          "hover": "patchgan epoch 4",
+          "frame": "figures/patchgan/epoch_0004.png",
+          "frameCaption": "PatchGAN digits, epoch 4."
+        },
+        {
+          "label": "PatchGAN, epoch 30",
+          "valueText": "one repeated binary glyph",
+          "state": "have",
+          "answers": "What didn't turn out as expected?",
+          "summary": "By epoch 30 the PatchGAN grid is one high-contrast glyph repeated in every cell. Epochs 10 and 20 were also saved and were not scored. On the evidence of the pictures, this partial run collapsed. It is not an improvement on the cGAN.",
+          "hover": "patchgan epoch 30 · no metrics",
+          "frame": "figures/patchgan/epoch_0030.png",
+          "frameCaption": "PatchGAN digits, epoch 30. One repeated glyph."
+        },
+        {
+          "label": "Feature matching",
+          "valueText": "no archive",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The comparison notebook expects experiments/feature-matching-loss. That directory is not on disk. fm_weight 10 is in best_params.json, and the scored cGAN loss equals its BCE term, so feature matching was not the objective that produced the class grid.",
+          "hover": "feature-matching-loss missing"
+        },
+        {
+          "label": "Param file vs scored run",
+          "valueText": "best_params says patchgan, metrics say cgan",
+          "state": "missing",
+          "answers": "Why do you think the results might not be great?",
+          "summary": "best_params.json records variant patchgan. evaluation_test.json records variant cgan. Reading the param file alone would credit PatchGAN for the class grid. The grid belongs to the cGAN archive.",
+          "hover": "best_params variant patchgan ≠ scored variant cgan"
+        },
+        {
+          "label": "Fashion extensions",
+          "valueText": "no cGAN, PatchGAN, or feature-matching run",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "Every extension archive is digits only. Fashion still has only the collapsed vanilla GAN, so the label fix is untested on garments.",
+          "hover": "No Fashion extension archive"
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "Conditioning on the class label is the change that shows up in both the number and the picture. Spread matches real data, mode_collapse is false, and each row of the class grid is a different digit.",
+    "unexpected": "Those digits are speckled and sharper than real ink. The partial PatchGAN run goes the other way: from soft blobs at epoch 4 to one binary glyph at epoch 30. Feature matching and Fashion were not run. The param file names a different variant than the scored metrics.",
+    "why": "A class target stops the generator from parking every noise vector on one image. It does not force the pixels to look like a pen. PatchGAN judges local patches, and the epoch-30 grid is what a generator looks like when high-frequency dots satisfy those patches and then one glyph wins. The two archives also use different slice sizes, so the spread chart is a comparison of finished runs, not a controlled ablation.",
+    "improve": "Finish PatchGAN and feature matching on both datasets with the comparison script, and keep generator BCE beside the feature-matching term so the losses stay comparable. Judge the result on the class grid and on sharpness against real sharpness, not on whether the generator loss went down. Correct best_params.json so the variant name matches the archive that was scored."
+  },
+  "live": {
+    "src": "figures/cgan/classes.png",
+    "alt": "cGAN class grid with one digit class per row, speckled but separated.",
+    "caption": "Hovered frame. Starts as the cGAN class grid."
+  },
+  "figures": [
+    {
+      "src": "figures/cgan/final.png",
+      "alt": "cGAN final sample grid on digits.",
+      "caption": "cGAN final grid, lined up with test labels."
+    },
+    {
+      "src": "figures/cgan/real_test.png",
+      "alt": "Real MNIST test digits for the cGAN split.",
+      "caption": "Real test digits for this split. Real sharpness 0.256 against sample sharpness 0.641."
+    },
+    {
+      "src": "figures/patchgan/epoch_0004.png",
+      "alt": "PatchGAN epoch 4, soft varied blobs.",
+      "caption": "PatchGAN epoch 4. No metrics were written for this run."
+    },
+    {
+      "src": "figures/patchgan/epoch_0030.png",
+      "alt": "PatchGAN epoch 30, one repeated binary glyph.",
+      "caption": "PatchGAN epoch 30. The saved grids end on one glyph."
+    }
+  ],
+  "sources": [
+    "reports/mnist_gan_extensions/experiments/cgan/digits/evaluation_test.json",
+    "reports/mnist_gan_extensions/experiments/cgan/digits/history.json",
+    "reports/mnist_gan_extensions/best_params.json",
+    "reports/mnist_gan_extensions/experiments/patchgan/digits/"
+  ]
+}

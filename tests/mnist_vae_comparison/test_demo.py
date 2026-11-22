@@ -12,10 +12,11 @@ import pandas as pd
 import pandera.errors
 import pytest
 
-from mnist_vae_comparison.config import DATA_CONTRACT_PATH, MODELING_CONTRACT_PATH, project_root
 from input_contracts.data_contract import DataContract
-from mnist_vae_comparison.model import VAE
 from input_contracts.model_contract import ModelingContract
+from mnist_vae_comparison.config import DATA_CONTRACT_PATH, MODELING_CONTRACT_PATH, project_root
+from mnist_vae_comparison.kid import domain_kid
+from mnist_vae_comparison.model import VAE
 
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "src" / "mnist_vae_comparison" / "queries" / "images.sql"
@@ -164,6 +165,14 @@ def test_vae_builds_loaders(tmp_path: Path):
     assert np.allclose(test_y.numpy(), test_x.numpy())
 
 
+def test_domain_kid_is_finite():
+    images = np.linspace(-1, 1, 8 * 28 * 28, dtype=np.float64).reshape(8, 1, 28, 28)
+    shifted = np.roll(images, 1, axis=0)
+    score = domain_kid(images, shifted)
+    assert score == domain_kid(images, shifted)
+    assert np.isfinite(score)
+
+
 def test_holdout_roundtrip(tmp_path: Path):
     raw_path, images_path = _write_raw(tmp_path, _sample())
     data_path = tmp_path / "images.parquet"
@@ -287,7 +296,11 @@ def test_holdout_roundtrip(tmp_path: Path):
         "dataset",
         "n_train",
         "n_test",
+        "kid",
     }
+    assert np.isfinite(saved["kid"])
+    train_saved = json.loads((tmp_path / "evaluation_train.json").read_text(encoding="utf-8"))
+    assert "kid" not in train_saved
 
 
 def test_mock_sql_and_local_dvc():

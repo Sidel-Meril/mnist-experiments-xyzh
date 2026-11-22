@@ -1,0 +1,16 @@
+{
+  "discriminator_loss": 0.7177482166290283,
+  "generator_loss": 1.248138650894165,
+  "generator_bce": 1.248138650894165,
+  "sample_std": 0.6010802900390484,
+  "real_std": 0.6074089735402447,
+  "mode_collapse": false,
+  "noise_dim": 64,
+  "n_train": 2500,
+  "n_test": 500,
+  "variant": "patchgan",
+  "diversity": 0.6071076149472736,
+  "class_separation": 0.6408927979504803,
+  "sharpness": 0.33283908615557406,
+  "real_sharpness": 0.2561086474636954
+}

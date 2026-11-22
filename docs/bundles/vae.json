@@ -1,0 +1,87 @@
+{
+  "id": "vae",
+  "nav": "VAE",
+  "lede": "The same VAE draws readable clothes and blurrier digits; Fashion’s domain KID is much lower.",
+  "accent": "#1e3a5f",
+  "points": "VAE · 10pt",
+  "title": "Digits against Fashion-MNIST",
+  "question": "With the same VAE, how do reconstruction, likelihood, and prior samples differ on the two datasets?",
+  "process": "Each cache under reference/ is one VAE. Optuna picked the latent size by validation ELBO loss. Both runs kept latent 8, hidden 256, dropout 0.1, and lr 0.001. The slice is 1,000 train and 200 test images per class (10,000 / 2,000). The search is 4 trials and 4 epochs. Reconstruction grids decode the posterior mean. Sample grids decode 64 draws from N(0, I). MSE is per pixel on [−1, 1]. ELBO is the negative of the per-image sum of squares plus KL, so a higher ELBO is a better bound. Domain KID is stored as kid in evaluation_test.json. It is the unbiased degree-3 polynomial MMD between the test images and the same number of draws from N(0, I). A lower score means the prior samples sit closer to that test set. The comparison notebook writes that field when it runs, and the eval script writes it for a new run.",
+  "opening": {
+    "answers": "What worked well?",
+    "summary": "Both priors produce many classes, not one average image. Fashion garments stay readable. Digits stay recognizable and lose the thin strokes first. Fashion’s test ELBO is higher and its domain KID is much lower.",
+    "hover": "Hover either dataset."
+  },
+  "charts": [
+    {
+      "type": "panels",
+      "title": "Test scores, same model recipe",
+      "xKey": "dataset",
+      "panels": [
+        {"yKey": "mse", "label": "test MSE"},
+        {"yKey": "elbo", "label": "test ELBO"},
+        {"yKey": "kl", "label": "test KL"},
+        {"yKey": "kid", "label": "domain KID"}
+      ],
+      "marks": [
+        {
+          "dataset": "digits",
+          "mse": 0.0852,
+          "elbo": -82.21,
+          "kl": 15.41,
+          "kid": 3.1052,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Digits test MSE is 0.0852, KL is 15.41, ELBO is −82.21. Domain KID is 3.1052. Prior samples still look like digits, but thin strokes are the first thing a blurry decoder drops, and the spatial KID says those samples sit farther from the test set than the Fashion samples do.",
+          "hover": "digits · MSE 0.0852 · ELBO −82.21 · KL 15.41 · KID 3.1052",
+          "frame": "figures/vae/digits/generated_samples.png",
+          "frameCaption": "Digits prior samples, N(0, I), latent 8."
+        },
+        {
+          "dataset": "fashion",
+          "mse": 0.0749,
+          "elbo": -71.09,
+          "kl": 12.34,
+          "kid": 0.2043,
+          "answers": "What worked well?",
+          "summary": "Fashion test MSE is 0.0749, KL is 12.34, ELBO is −71.09. Domain KID is 0.2043. Shirts, shoes, trousers, and bags still read as those objects when the decoder is soft, because the silhouette is wide. The same blur hurts a one-pixel stroke much more.",
+          "hover": "fashion · MSE 0.0749 · ELBO −71.09 · KL 12.34 · KID 0.2043",
+          "frame": "figures/vae/fashion/generated_samples.png",
+          "frameCaption": "Fashion prior samples, N(0, I), latent 8."
+        }
+      ]
+    }
+  ],
+  "reflection": {
+    "worked": "Both sample grids cover many classes. Fashion is the clearer generator on every score that was computed: lower MSE, lower KL, higher ELBO, and a domain KID of 0.204 against 3.105 on digits.",
+    "unexpected": "The digit samples look subjectively fine and still lose the KID comparison by a wide margin. MSE only moves from 0.085 to 0.075, so pixel error understates the gap the kernel sees.",
+    "why": "A blurry decoder erases a thin stroke and leaves a shirt. KID compares block means, so Fashion’s broad shapes match its test set more easily. These are also short slice runs, 4 epochs on 1,000 images per class, which caps how sharp either posterior can get. The live reports/mnist_vae_comparison tree is the Fashion cache; the digits numbers live in reference/mnist_digits.",
+    "improve": "Retrain both on the full split for more epochs before calling the gap a property of the data. A wider latent helps digits more than coats. The f-VAE digits run below uses the full 60,000 images and latent 32, so it is a sharper digit model and not a paired comparison with these two caches."
+  },
+  "live": {
+    "src": "figures/vae/digits/generated_samples.png",
+    "alt": "Blurry but recognizable MNIST digits sampled from a standard normal latent.",
+    "caption": "Prior samples. Hover Fashion to swap in the garment grid."
+  },
+  "figures": [
+    {
+      "src": "figures/vae/digits/reconstructions_test.png",
+      "alt": "MNIST test digits above their VAE reconstructions.",
+      "caption": "Digits test reconstructions from the posterior mean."
+    },
+    {
+      "src": "figures/vae/fashion/reconstructions_test.png",
+      "alt": "Fashion-MNIST test images above their VAE reconstructions.",
+      "caption": "Fashion test reconstructions from the posterior mean."
+    },
+    {
+      "src": "figures/vae/fashion/generated_samples.png",
+      "alt": "Soft but recognizable clothing sampled from the Fashion VAE.",
+      "caption": "Fashion prior samples, the same 64-draw protocol as the digits grid."
+    }
+  ],
+  "sources": [
+    "reference/mnist_digits/reports/evaluation_test.json",
+    "reference/fashion_mnist/reports/evaluation_test.json",
+    "notebooks/mnist_vae_comparison/comparison.ipynb"
+  ]
+}
