@@ -1,6 +1,11 @@
 # MNIST experiments
 
-Nine `mnist-*-xyzh` checkouts in one tree and one environment. Python 3.13 and [uv](https://docs.astral.sh/uv/).
+[![GitHub Pages](https://img.shields.io/badge/report-GitHub%20Pages-2ea44f)](https://sidel-meril.github.io/mnist-experiments-xyzh/)
+[![GitHub](https://img.shields.io/badge/GitHub-Sidel--Meril%2Fmnist--experiments--xyzh-181717?logo=github)](https://github.com/Sidel-Meril/mnist-experiments-xyzh)
+[![Python](https://img.shields.io/badge/python-3.13%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![uv](https://img.shields.io/badge/uv-docs.astral.sh-DE5FE9)](https://docs.astral.sh/uv/)
+
+Nine `mnist-*-xyzh` checkouts in one tree and one environment. Python 3.13 and [uv](https://docs.astral.sh/uv/). The written report is on [GitHub Pages](https://sidel-meril.github.io/mnist-experiments-xyzh/).
 
 ```text
 uv sync
