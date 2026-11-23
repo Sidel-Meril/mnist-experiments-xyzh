@@ -1,0 +1,117 @@
+{
+  "display_size": 32,
+  "frames": [
+    {
+      "epoch": 1,
+      "stage": 0,
+      "resolution": 4,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0001_res04_stable.png"
+    },
+    {
+      "epoch": 2,
+      "stage": 0,
+      "resolution": 4,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0002_res04_stable.png"
+    },
+    {
+      "epoch": 3,
+      "stage": 1,
+      "resolution": 8,
+      "phase": "fade",
+      "alpha": 0.5,
+      "file": "epoch_0003_res08_fade.png"
+    },
+    {
+      "epoch": 4,
+      "stage": 1,
+      "resolution": 8,
+      "phase": "fade",
+      "alpha": 1.0,
+      "file": "epoch_0004_res08_fade.png"
+    },
+    {
+      "epoch": 5,
+      "stage": 1,
+      "resolution": 8,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0005_res08_stable.png"
+    },
+    {
+      "epoch": 6,
+      "stage": 1,
+      "resolution": 8,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0006_res08_stable.png"
+    },
+    {
+      "epoch": 7,
+      "stage": 2,
+      "resolution": 16,
+      "phase": "fade",
+      "alpha": 0.5,
+      "file": "epoch_0007_res16_fade.png"
+    },
+    {
+      "epoch": 8,
+      "stage": 2,
+      "resolution": 16,
+      "phase": "fade",
+      "alpha": 1.0,
+      "file": "epoch_0008_res16_fade.png"
+    },
+    {
+      "epoch": 9,
+      "stage": 2,
+      "resolution": 16,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0009_res16_stable.png"
+    },
+    {
+      "epoch": 10,
+      "stage": 2,
+      "resolution": 16,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0010_res16_stable.png"
+    },
+    {
+      "epoch": 11,
+      "stage": 3,
+      "resolution": 32,
+      "phase": "fade",
+      "alpha": 0.5,
+      "file": "epoch_0011_res32_fade.png"
+    },
+    {
+      "epoch": 12,
+      "stage": 3,
+      "resolution": 32,
+      "phase": "fade",
+      "alpha": 1.0,
+      "file": "epoch_0012_res32_fade.png"
+    },
+    {
+      "epoch": 13,
+      "stage": 3,
+      "resolution": 32,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0013_res32_stable.png"
+    },
+    {
+      "epoch": 14,
+      "stage": 3,
+      "resolution": 32,
+      "phase": "stable",
+      "alpha": 1.0,
+      "file": "epoch_0014_res32_stable.png"
+    }
+  ]
+}

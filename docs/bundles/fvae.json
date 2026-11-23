@@ -1,12 +1,12 @@
 {
   "id": "fvae",
   "nav": "f-VAE",
-  "lede": "A RealNVP posterior on full MNIST digits reconstructs softly and samples every class. Train and test match.",
+  "lede": "A RealNVP posterior on full MNIST digits reconstructs softly and samples every class. The same fit on Fashion-MNIST keeps the garment and drops the print.",
   "accent": "#3d6b4f",
   "points": "VAE · normalizing flow in the latent space",
   "title": "f-VAE",
   "question": "Does a RealNVP inside the VAE latent space improve reconstruction and likelihood on digits?",
-  "process": "The encoder proposes a Gaussian, four coupling layers warp it, and the decoder reads the flowed code. KL is a Monte Carlo estimate of that RealNVP posterior against N(0, I). ELBO is the negative of the training objective. Bits per dimension use the Gaussian decoder that matches the squared error. Reconstruction grids decode the flowed posterior mean. The sample grid decodes draws from N(0, I), not an inverse through the flow: the flow is inside the posterior. The run is digits only, latent 32, hidden 256, 4 flows, full split of 60,000 / 10,000. There is no Fashion f-VAE and no Optuna plot.",
+  "process": "The encoder proposes a Gaussian, four coupling layers warp it, and the decoder reads the flowed code. KL is a Monte Carlo estimate of that RealNVP posterior against N(0, I). ELBO is the negative of the training objective. Bits per dimension use the Gaussian decoder that matches the squared error. Reconstruction grids decode the flowed posterior mean. The sample grid decodes draws from N(0, I), not an inverse through the flow: the flow is inside the posterior. Both runs use latent 32, hidden 256, 4 flows, and the official 60,000 / 10,000 split. Fashion uses the digits hyperparameters for 20 epochs. There is no second Optuna search and no Optuna plot.",
   "opening": {
     "answers": "What worked well?",
     "summary": "Test MSE is 0.0554 and test ELBO is −69.35, essentially the same as train. Prior samples are soft digits from many classes. The flow’s test log-det is −12.87, so it is changing volume rather than sitting at the identity.",
@@ -15,7 +15,7 @@
   "charts": [
     {
       "type": "rows",
-      "title": "Digits test record",
+      "title": "Test record",
       "marks": [
         {
           "label": "Reconstruction",
@@ -53,25 +53,27 @@
         },
         {
           "label": "Fashion-MNIST",
-          "valueText": "no f-VAE run",
-          "state": "missing",
-          "answers": "What didn't turn out as expected?",
-          "summary": "The flow-in-latent model was only trained on digits. There is no paired Fashion f-VAE to set next to the slice VAE comparison.",
-          "hover": "Fashion f-VAE missing"
+          "valueText": "test ELBO −65.00 · MSE 0.0621",
+          "state": "have",
+          "answers": "What worked well?",
+          "summary": "Same hyperparameters, 20 epochs, full 60,000 / 10,000 split. Test ELBO is −65.00 and BPD is 0.945, against train ELBO −64.33 and BPD 0.944. Test MSE is 0.0621 and MAE is 0.1328; train is 0.0612 and 0.1315. KL is 12.95 and log-det is −9.07, so the couplings still change volume. Prior samples read as shirts, trousers, dresses, shoes, and bags. The shirt logo and the thin sandal do not survive.",
+          "hover": "test ELBO −65.00\ntest MSE 0.0621\nlog-det −9.07",
+          "frame": "figures/fvae/fashion/generated_samples.png",
+          "frameCaption": "f-VAE prior samples on Fashion-MNIST. N(0, I) through the decoder."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Reconstruction and the ELBO agree between train and test on the full digits split. Samples from the prior look like digits across classes, and a log-det near −13 shows the couplings are doing work.",
-    "unexpected": "The pictures stay soft, and a few samples are blobs. Putting RealNVP in the latent space did not produce the crisp inverse-flow samples the pure flow was missing, because these samples never go through that inverse.",
-    "why": "Squared error trains the decoder to average every stroke that could explain a code. The flow can make the posterior a better match to the prior and still leave that average in pixel space. Comparing ELBO with the latent-8 slice VAE would mix latent size, dataset size, and the flow term.",
-    "improve": "Train the same f-VAE on Fashion and quote BPD beside the sample grid. If the goal is sharp digits, change the decoder likelihood or add the class-conditional GAN lesson below. More coupling layers will not sharpen a Gaussian decoder by themselves."
+    "worked": "Reconstruction and the ELBO agree between train and test on both full splits. Digit samples cover many classes. Fashion samples cover shirts, trousers, dresses, shoes, and bags. Fashion’s test ELBO is −65.00 against −69.35 on digits, and its log-det of −9.07 shows the couplings are still doing work.",
+    "unexpected": "Fashion’s better ELBO comes with a worse pixel error: test MSE 0.0621 and MAE 0.1328, against 0.0554 and 0.0920 on digits. The shirt print is wiped out, and the loss curve is still falling at epoch 20.",
+    "why": "Squared error trains the decoder to average every stroke or weave that could explain a code. A wide silhouette survives that average; a logo and a sandal strap do not. Fashion’s KL is 12.95 against 19.51 on digits, so the higher ELBO is mostly a closer posterior, not a sharper picture. These samples never pass through the inverse flow.",
+    "improve": "The loss is still descending at epoch 20, so a longer Fashion run is the next measurement, not a new latent size. If the goal is the shirt print, change the decoder likelihood. More coupling layers will not sharpen a Gaussian decoder by themselves."
   },
   "live": {
     "src": "figures/fvae/generated_samples.png",
     "alt": "Soft multi-class MNIST digits sampled from the f-VAE prior.",
-    "caption": "Prior samples. The flow acts in the posterior; this grid is N(0, I) through the decoder."
+    "caption": "Prior samples on digits. Hover Fashion-MNIST to swap in the garment grid."
   },
   "figures": [
     {
@@ -80,14 +82,26 @@
       "caption": "Test reconstructions from the flowed posterior mean."
     },
     {
+      "src": "figures/fvae/fashion/reconstructions_test.png",
+      "alt": "Fashion-MNIST test images above f-VAE reconstructions. A shirt logo is lost.",
+      "caption": "Fashion test reconstructions. The silhouette stays; the shirt print does not."
+    },
+    {
+      "src": "figures/fvae/fashion/loss.png",
+      "alt": "Fashion f-VAE training loss still falling at epoch 20.",
+      "caption": "Fashion training loss. Train ends near 72.7 and test near 65.0, and the curve has not flattened."
+    },
+    {
       "src": "figures/fvae/loss.png",
-      "alt": "f-VAE training loss curve.",
-      "caption": "Training loss. Train and test metrics end within a few thousandths on MSE and BPD."
+      "alt": "f-VAE training loss curve on digits.",
+      "caption": "Digits training loss. Train and test metrics end within a few thousandths on MSE and BPD."
     }
   ],
   "sources": [
     "reports/mnist_f_vae/evaluation_test.json",
     "reports/mnist_f_vae/evaluation_train.json",
+    "reports/mnist_f_vae/evaluation_test_fashion.json",
+    "reports/mnist_f_vae/evaluation_train_fashion.json",
     "reports/mnist_f_vae/best_params.json",
     "src/mnist_f_vae/06_eval.py"
   ]

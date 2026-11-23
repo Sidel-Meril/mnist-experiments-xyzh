@@ -186,3 +186,108 @@ stages:
       hash: md5
       md5: 3d04be0f112e75bda9bd252dd451eb90
       size: 478919
+  mnist_f_vae_train_fashion:
+    cmd: "uv run python src/mnist_f_vae/05_train.py --data data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy --split data/mnist_f_vae/fashion/split.json
+      --params reports/mnist_f_vae/best_params.json --model models/mnist_f_vae/mnist_f_vae_fashion.pt
+      --plot reports/mnist_f_vae/plots/loss_fashion.png --epochs 20\n"
+    deps:
+    - path: data/mnist_f_vae/fashion/images.parquet
+      hash: md5
+      md5: 22c14fd8381d2ba3c50d9fdd5b87832a
+      size: 856382
+    - path: data/mnist_f_vae/fashion/pixels.npy
+      hash: md5
+      md5: 816c3ee817c452351a2b8dcb73c215a3
+      size: 219520128
+    - path: data/mnist_f_vae/fashion/split.json
+      hash: md5
+      md5: 3d04be0f112e75bda9bd252dd451eb90
+      size: 478919
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    - path: src/mnist_f_vae/05_train.py
+      hash: md5
+      md5: df025deb6248271886e90b9adbb06606
+      size: 3279
+    - path: src/mnist_f_vae/model.py
+      hash: md5
+      md5: 91125c9c9f78354362f4a314358f426e
+      size: 28458
+    - path: src/mnist_f_vae/model_contract.yaml
+      hash: md5
+      md5: 539dba7f8212990c945a7ca78f3c6b3c
+      size: 1408
+    outs:
+    - path: models/mnist_f_vae/mnist_f_vae_fashion.pt
+      hash: md5
+      md5: 4e34aabf5700c6a2b08bc340bd32d380
+      size: 3948439
+    - path: reports/mnist_f_vae/plots/loss_fashion.png
+      hash: md5
+      md5: cb3faed756ed098b3aa4ae4eff4f1a33
+      size: 27635
+  mnist_f_vae_eval_fashion:
+    cmd: "uv run python src/mnist_f_vae/06_eval.py --data data/mnist_f_vae/fashion/images.parquet
+      --pixels data/mnist_f_vae/fashion/pixels.npy --split data/mnist_f_vae/fashion/split.json
+      --model models/mnist_f_vae/mnist_f_vae_fashion.pt --train-metrics reports/mnist_f_vae/evaluation_train_fashion.json
+      --test-metrics reports/mnist_f_vae/evaluation_test_fashion.json --reconstructions-train
+      reports/mnist_f_vae/plots/reconstructions_train_fashion.png --reconstructions-test
+      reports/mnist_f_vae/plots/reconstructions_test_fashion.png --generated-samples
+      reports/mnist_f_vae/plots/generated_samples_fashion.png\n"
+    deps:
+    - path: data/mnist_f_vae/fashion/images.parquet
+      hash: md5
+      md5: 22c14fd8381d2ba3c50d9fdd5b87832a
+      size: 856382
+    - path: data/mnist_f_vae/fashion/pixels.npy
+      hash: md5
+      md5: 816c3ee817c452351a2b8dcb73c215a3
+      size: 219520128
+    - path: data/mnist_f_vae/fashion/split.json
+      hash: md5
+      md5: 3d04be0f112e75bda9bd252dd451eb90
+      size: 478919
+    - path: models/mnist_f_vae/mnist_f_vae_fashion.pt
+      hash: md5
+      md5: 4e34aabf5700c6a2b08bc340bd32d380
+      size: 3948439
+    - path: src/input_contracts/model_contract.py
+      hash: md5
+      md5: 2ecdb0d4b2accf29d4b360d5e1d6cd9a
+      size: 10637
+    - path: src/mnist_f_vae/06_eval.py
+      hash: md5
+      md5: cc053ec28ffbab8e7d4a2311cd0783cd
+      size: 8841
+    - path: src/mnist_f_vae/model.py
+      hash: md5
+      md5: 91125c9c9f78354362f4a314358f426e
+      size: 28458
+    - path: src/mnist_f_vae/model_contract.yaml
+      hash: md5
+      md5: 539dba7f8212990c945a7ca78f3c6b3c
+      size: 1408
+    outs:
+    - path: reports/mnist_f_vae/evaluation_test_fashion.json
+      hash: md5
+      md5: 8ca22c28e31ff7e43bc42adbbae05166
+      size: 315
+    - path: reports/mnist_f_vae/evaluation_train_fashion.json
+      hash: md5
+      md5: 1557a49211ce3ec0067d5a8a5ea956fe
+      size: 314
+    - path: reports/mnist_f_vae/plots/generated_samples_fashion.png
+      hash: md5
+      md5: 5f1c1b2b46c5d40f303e41492868790d
+      size: 197794
+    - path: reports/mnist_f_vae/plots/reconstructions_test_fashion.png
+      hash: md5
+      md5: 02c7429b9be1d1a3395c0c6f47eac4bf
+      size: 27058
+    - path: reports/mnist_f_vae/plots/reconstructions_train_fashion.png
+      hash: md5
+      md5: 94fc8703bb4595fac77f1e47cf32dd63
+      size: 30903

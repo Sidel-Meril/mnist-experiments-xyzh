@@ -1,0 +1,11 @@
+{
+  "discriminator_loss": 1.5175019931793212,
+  "generator_loss": 0.7026821947097779,
+  "sample_std": 0.1040427321490629,
+  "real_std": 0.4928926052197795,
+  "mode_collapse": false,
+  "noise_dim": 64,
+  "image_size": 32,
+  "n_train": 2000,
+  "n_test": 400
+}
