@@ -8,9 +8,11 @@ The MLP discriminator concatenates an embedding of that same label.
 
 ``variant`` selects the discriminator experiment. ``cgan`` keeps the tutorial
 MLP and binary cross-entropy. ``patchgan`` replaces that MLP with a
-convolutional PatchGAN whose output is a spatial map of real/fake decisions.
+convolutional PatchGAN. The label is a spatial one-hot stack plus a projection
+onto the patch features, so a patch score cannot ignore the class.
 ``feature_matching`` keeps the MLP and adds an L1 match of discriminator
-features to the generator loss.
+features to the generator loss. Generator BCE is always logged beside that
+objective.
 
 ``ConditionalGAN.load`` uses a local checkpoint when one is already on disk.
 Otherwise the latest fit is read from the DVC remote in ``.dvc/config`` with
@@ -146,30 +148,31 @@ class ConditionalDiscriminator(nn.Module):
 
 
 class PatchDiscriminator(nn.Module):
-    """PatchGAN on 28x28 images. The label is a stack of spatial one-hot maps.
+    """PatchGAN on 28x28 images.
 
     Four stride-2 layers would shrink 28x28 to a single cell. Two stride-2
-    layers leave a 5x5 map, so each output is a patch decision rather than
-    one score for the whole image. Channel width stays at 32 so a CPU run of
-    the shared training loop finishes with the MLP variants.
+    layers leave a spatial map, so each output is a patch decision.     The label enters twice: as one-hot maps on the image, and as an embedding
+    whose cosine with the patch features is added to a squashed image logit
+    (Miyato and Koyama). The image logit is passed through tanh first. Without
+    that, the convolution grows to about 4 while the class term stays near 0.3,
+    and the class grid collapses to one glyph. Channel width stays at 32.
     """
 
     def __init__(self, n_classes: int, _hidden_dim: int) -> None:
         super().__init__()
         self.n_classes = int(n_classes)
         width = 32
+        channels = width * 4
         self.features = nn.Sequential(
             nn.Conv2d(1 + self.n_classes, width, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(0.2),
             nn.Conv2d(width, width * 2, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(width * 2, width * 4, kernel_size=4, stride=1, padding=1),
+            nn.Conv2d(width * 2, channels, kernel_size=4, stride=1, padding=1),
             nn.LeakyReLU(0.2),
         )
-        self.head = nn.Sequential(
-            nn.Conv2d(width * 4, 1, kernel_size=4, stride=1, padding=1),
-            nn.Sigmoid(),
-        )
+        self.embed = nn.Embedding(self.n_classes, channels)
+        self.head = nn.Conv2d(channels, 1, kernel_size=4, stride=1, padding=1)
 
     def forward(
         self, data: torch.Tensor, labels: torch.Tensor
@@ -180,7 +183,13 @@ class PatchDiscriminator(nn.Module):
         one_hot = F.one_hot(labels.long(), self.n_classes).to(dtype=images.dtype)
         maps = one_hot[:, :, None, None].expand(-1, -1, images.shape[2], images.shape[3])
         hidden = self.features(torch.cat([images, maps], dim=1))
-        return self.head(hidden), hidden
+        logits = self.head(hidden)
+        feat = F.normalize(hidden, dim=1, eps=1e-6)
+        code = F.normalize(self.embed(labels.long()), dim=1, eps=1e-6)
+        cosine = torch.einsum("nchw,nc->nhw", feat, code)
+        pooled = F.adaptive_avg_pool2d(cosine.unsqueeze(1), logits.shape[-2:])
+        # Equal room for the image and the class. 4 keeps sigmoid in a useful range.
+        return torch.sigmoid(4.0 * (torch.tanh(logits) + pooled)), hidden
 
 
 class ConditionalGAN(nn.Module):
@@ -256,9 +265,9 @@ class ConditionalGAN(nn.Module):
         if self.variant != "patchgan":
             return
         for module in self.discriminator.modules():
-            if isinstance(module, nn.Conv2d):
+            if isinstance(module, (nn.Conv2d, nn.Embedding)):
                 nn.init.normal_(module.weight, 0.0, 0.02)
-                if module.bias is not None:
+                if getattr(module, "bias", None) is not None:
                     nn.init.zeros_(module.bias)
 
     @staticmethod
@@ -324,6 +333,7 @@ class ConditionalGAN(nn.Module):
         self.fixed_labels.copy_(torch.arange(self.fixed_labels.shape[0]) % self.n_classes)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.to(device)
+        print(f"training variant={self.variant} on {device}")
         criterion = nn.BCELoss()
         generator_opt = torch.optim.Adam(
             self.generator.parameters(),
@@ -363,7 +373,8 @@ class ConditionalGAN(nn.Module):
             history["sample_std"].append(sample_std)
             print(
                 f"epoch {epoch + 1}/{epochs} variant={self.variant} "
-                f"d={train_d:.4f} g={train_g:.4f} sample_std={sample_std:.4f}"
+                f"d={train_d:.4f} g={train_g:.4f} bce={train_bce:.4f} "
+                f"sample_std={sample_std:.4f}"
             )
         self.eval()
         self.cpu()

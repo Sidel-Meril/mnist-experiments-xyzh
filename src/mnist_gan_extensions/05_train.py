@@ -31,12 +31,19 @@ from input_contracts.model_contract import ModelingContract
 
 
 def _save_loss(history: dict[str, list[float]], plot_path: Path) -> None:
+    """Discriminator loss, the generator objective, and generator BCE.
+
+    Feature matching adds an L1 term to the generator objective. BCE stays on
+    the same axes so that run can be compared with cGAN and PatchGAN.
+    """
     plt.switch_backend("Agg")
     fig, ax = plt.subplots()
     ax.plot(history["train_discriminator"], label="train discriminator")
     ax.plot(history["train_generator"], label="train generator")
+    ax.plot(history["train_generator_bce"], label="train generator BCE")
     ax.plot(history["eval_discriminator"], label="eval discriminator")
     ax.plot(history["eval_generator"], label="eval generator")
+    ax.plot(history["eval_generator_bce"], label="eval generator BCE")
     ax.set_xlabel("epoch")
     ax.set_ylabel("loss")
     ax.legend()

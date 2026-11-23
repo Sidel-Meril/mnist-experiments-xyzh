@@ -133,7 +133,7 @@ h3 { font-size: 1.05rem; margin: 0; }
   padding: 0.8rem 0.8rem 0.4rem;
 }
 
-.chart-head, .switcher { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; }
+.chart-head, .switcher { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
 .switcher { justify-content: flex-end; }
 

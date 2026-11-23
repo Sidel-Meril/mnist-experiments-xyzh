@@ -1,16 +1,16 @@
 {
-  "discriminator_loss": 0.33667262363433836,
-  "generator_loss": 1.7106982316970825,
-  "generator_bce": 1.7106982316970825,
-  "sample_std": 0.653343714298079,
+  "discriminator_loss": 0.2155420367717743,
+  "generator_loss": 2.0738949756622316,
+  "generator_bce": 2.0738949756622316,
+  "sample_std": 0.636227515799791,
   "real_std": 0.6074089735402447,
   "mode_collapse": false,
   "noise_dim": 64,
   "n_train": 2500,
   "n_test": 500,
   "variant": "cgan",
-  "diversity": 0.6468300587770005,
-  "class_separation": 0.6509226052527484,
-  "sharpness": 0.640983665872253,
+  "diversity": 0.6294538250988108,
+  "class_separation": 0.6364447634679383,
+  "sharpness": 0.6279140891424961,
   "real_sharpness": 0.2561086474636954
 }

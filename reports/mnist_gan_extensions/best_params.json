@@ -9,6 +9,6 @@
     "beta1": 0.5,
     "batch_size": 128,
     "fm_weight": 10.0,
-    "variant": "patchgan"
+    "variant": "cgan"
   }
 }

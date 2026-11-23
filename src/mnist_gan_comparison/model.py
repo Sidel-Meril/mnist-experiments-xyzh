@@ -4,9 +4,13 @@ The generator and discriminator follow ``GAN_Tutorial.ipynb``: three hidden
 linear layers, ReLU in the generator, LeakyReLU(0.2) in the discriminator,
 and a sigmoid probability. The tutorial has no output activation because its
 data are 2D coordinates. This generator ends in ``Tanh`` so samples match
-pixels stored in [-1, 1]. The loss is ``BCELoss``. Each step updates the
-discriminator on real labels of 1 and detached fakes labeled 0, then the
-generator on labels of 1. Both optimizers are Adam with ``beta1`` 0.5.
+pixels stored in [-1, 1]. The loss is ``BCELoss``. Each batch updates the
+discriminator once on real labels of 1 and detached fakes labeled 0, then the
+generator twice on labels of 1. That second generator update is the smaller
+discriminator step: equal steps let the discriminator loss sit near zero and
+the generator collapse onto one image. Both optimizers are Adam with
+``beta1`` 0.5. The comparison fit sets the discriminator learning rate to a
+quarter of the generator's.
 
 ``VanillaGAN.load`` uses a local checkpoint when one is already on disk.
 Otherwise the latest fit is read from the DVC remote in ``.dvc/config`` with
@@ -179,10 +183,13 @@ class VanillaGAN(nn.Module):
         generations_dir: Path | None = None,
         snapshot_every: int = 1,
     ) -> dict[str, list[float]]:
-        """One discriminator step, then one generator step, per training batch.
+        """One discriminator step, then two generator steps, per training batch.
 
-        Eval losses are recorded and do not pick weights. A fixed noise batch
-        is drawn once so epoch grids show whether samples collapse.
+        The discriminator update is the smaller one. Eval losses are recorded
+        and do not pick weights. A fixed noise batch is drawn once so epoch
+        grids show whether samples collapse. Logged ``sample_std`` is the mean
+        per-pixel deviation of that batch, the same statistic the score file
+        compares with real images.
         """
         if epochs < 1:
             raise ValueError("epochs must be at least 1")
@@ -195,6 +202,7 @@ class VanillaGAN(nn.Module):
         self._reset()
         self.fixed_noise.copy_(torch.randn(self.fixed_noise.shape))
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"device {device}")
         self.to(device)
         criterion = nn.BCELoss()
         generator_opt = torch.optim.Adam(
@@ -214,6 +222,15 @@ class VanillaGAN(nn.Module):
             "eval_generator": [],
             "sample_std": [],
         }
+        generator_steps = int(hparams.get("generator_steps", 1))
+        real_label = float(hparams.get("real_label", 1.0))
+        disc_noise = float(hparams.get("disc_noise", 0.0))
+        if generator_steps < 1:
+            raise ValueError("generator_steps must be at least 1")
+        if not 0.0 < real_label <= 1.0:
+            raise ValueError("real_label must be in (0, 1]")
+        if disc_noise < 0.0:
+            raise ValueError("disc_noise must be non-negative")
         for epoch in range(epochs):
             train_d, train_g = self._epoch(
                 train_loader,
@@ -221,6 +238,9 @@ class VanillaGAN(nn.Module):
                 criterion,
                 discriminator_opt,
                 generator_opt,
+                generator_steps=generator_steps,
+                real_label=real_label,
+                disc_noise=disc_noise,
             )
             eval_d, eval_g = self._score_loader(eval_loader, device, criterion)
             sample_std = self._snapshot(device, generations_dir, epoch, snapshot_every)
@@ -244,6 +264,10 @@ class VanillaGAN(nn.Module):
         criterion: nn.BCELoss,
         discriminator_opt: torch.optim.Optimizer,
         generator_opt: torch.optim.Optimizer,
+        *,
+        generator_steps: int,
+        real_label: float,
+        disc_noise: float,
     ) -> tuple[float, float]:
         self.train()
         d_total = 0.0
@@ -253,9 +277,20 @@ class VanillaGAN(nn.Module):
             real = real.to(device)
             batch_size = real.shape[0]
             d_loss = self._discriminator_step(
-                real, batch_size, device, criterion, discriminator_opt
+                real,
+                batch_size,
+                device,
+                criterion,
+                discriminator_opt,
+                real_label=real_label,
+                disc_noise=disc_noise,
             )
-            g_loss = self._generator_step(batch_size, device, criterion, generator_opt)
+            g_loss = real.new_zeros(())
+            for _ in range(generator_steps):
+                g_loss = g_loss + self._generator_step(
+                    batch_size, device, criterion, generator_opt
+                )
+            g_loss = g_loss / generator_steps
             d_total += float(d_loss.detach().cpu()) * batch_size
             g_total += float(g_loss.detach().cpu()) * batch_size
             seen += batch_size
@@ -268,17 +303,28 @@ class VanillaGAN(nn.Module):
         device: torch.device,
         criterion: nn.BCELoss,
         optimizer: torch.optim.Optimizer,
+        *,
+        real_label: float,
+        disc_noise: float,
     ) -> torch.Tensor:
         optimizer.zero_grad(set_to_none=True)
-        real_labels = torch.ones(batch_size, 1, device=device)
+        real_labels = torch.full((batch_size, 1), real_label, device=device)
         fake_labels = torch.zeros(batch_size, 1, device=device)
-        real_loss = criterion(self.discriminator(real), real_labels)
+        scored_real = self._jitter(real, disc_noise)
+        real_loss = criterion(self.discriminator(scored_real), real_labels)
         noise = torch.randn(batch_size, self.noise_dim, device=device)
-        fake_loss = criterion(self.discriminator(self.generator(noise).detach()), fake_labels)
+        fake = self.generator(noise).detach()
+        fake_loss = criterion(self.discriminator(self._jitter(fake, disc_noise)), fake_labels)
         loss = real_loss + fake_loss
         loss.backward()
         optimizer.step()
         return loss
+
+    @staticmethod
+    def _jitter(images: torch.Tensor, disc_noise: float) -> torch.Tensor:
+        if disc_noise == 0.0:
+            return images
+        return images + torch.randn_like(images) * disc_noise
 
     def _generator_step(
         self,

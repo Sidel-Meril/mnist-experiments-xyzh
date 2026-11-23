@@ -4,7 +4,7 @@
     "hidden_dim": 256,
     "in_features": 784,
     "lr_g": 0.0002,
-    "lr_d": 0.0002,
+    "lr_d": 5e-05,
     "beta1": 0.5,
     "batch_size": 128
   }

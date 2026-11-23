@@ -245,7 +245,9 @@ function seriesStop(chart, dataset, row) {
     summary: summary + note,
     hover: [
       `${dataset} · epoch ${row.epoch}`,
-      `eval D ${fmt(row.eval_d)} · eval G ${fmt(row.eval_g)}`,
+      row.eval_g_bce == null
+        ? `eval D ${fmt(row.eval_d)} · eval G ${fmt(row.eval_g)}`
+        : `eval D ${fmt(row.eval_d)} · eval G ${fmt(row.eval_g)} · eval G BCE ${fmt(row.eval_g_bce)}`,
       `train D ${fmt(row.train_d)} · train G ${fmt(row.train_g)}`,
       `logged sample std ${fmt(row.sample_std)}`,
     ].join("\n"),
@@ -270,7 +272,7 @@ function drawSeries(host, chart, history, article) {
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
     const x = d3.scaleLinear().domain([1, rows.length]).range([0, innerW]);
-    const yMax = d3.max(rows, (d) => Math.max(d.eval_d, d.eval_g));
+    const yMax = d3.max(rows, (d) => Math.max(d.eval_d, d.eval_g, d.eval_g_bce == null ? 0 : d.eval_g_bce));
     const y = d3.scaleLinear().domain([0, yMax * 1.08]).range([innerH, 0]);
     const svg = plot.append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("role", "img");
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -279,6 +281,9 @@ function drawSeries(host, chart, history, article) {
       { key: "eval_d", color: "#1c1915", label: "eval D" },
       { key: "eval_g", color: "var(--accent)", label: "eval G" },
     ];
+    if (rows.some((row) => row.eval_g_bce != null)) {
+      keys.push({ key: "eval_g_bce", color: "#8a5a2a", label: "eval G BCE" });
+    }
     keys.forEach((series) => {
       g.append("path")
         .datum(rows)
@@ -289,10 +294,10 @@ function drawSeries(host, chart, history, article) {
     });
     g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")));
     g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4));
-    const legend = g.append("g").attr("transform", `translate(${innerW - 150},0)`);
+    const legend = g.append("g").attr("transform", `translate(${Math.max(0, innerW - keys.length * 88)},0)`);
     keys.forEach((series, index) => {
-      legend.append("rect").attr("x", index * 74).attr("y", 0).attr("width", 12).attr("height", 4).attr("fill", series.color);
-      legend.append("text").attr("class", "row-label").attr("x", index * 74 + 16).attr("y", 6).text(series.label);
+      legend.append("rect").attr("x", index * 88).attr("y", 0).attr("width", 12).attr("height", 4).attr("fill", series.color);
+      legend.append("text").attr("class", "row-label").attr("x", index * 88 + 16).attr("y", 6).text(series.label);
     });
     const hits = g.selectAll("circle").data(rows).join("circle")
       .attr("class", "mark")

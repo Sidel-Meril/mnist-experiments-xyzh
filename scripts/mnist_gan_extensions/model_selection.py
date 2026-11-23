@@ -3,7 +3,8 @@
 The dataset swap is ``load_data`` (via ``pull_sample_data``). Engineer, split,
 train, and eval are the same calls for MNIST and Fashion-MNIST, and for the
 cGAN, PatchGAN, and feature-matching runs. Only ``params["variant"]`` and the
-archive directory change between variants.
+archive directory change between variants. ``best_params.json`` is rewritten
+only for the digits cGAN, the archive copied onto the DVC eval paths.
 
 Usage::
 
@@ -75,15 +76,18 @@ def run(
             folder = EXPERIMENT_DIRS[variant]
             archive = ROOT / "reports" / "mnist_gan_extensions" / "experiments" / folder / dataset
             archive.mkdir(parents=True, exist_ok=True)
+            for stale in archive.glob("epoch_*.png"):
+                stale.unlink()
             checkpoint = archive / "model.pt"
             params = dict(SHARED_PARAMS)
             params["variant"] = variant
-            params_path.write_text(json.dumps({"params": params}, indent=2), encoding="utf-8")
+            run_params = archive / "params.json"
+            run_params.write_text(json.dumps({"params": params}, indent=2), encoding="utf-8")
             train.run(
                 table,
                 pixels,
                 split_path,
-                params_path,
+                run_params,
                 checkpoint,
                 epochs=epochs,
                 plot_path=archive / "loss.png",
@@ -119,6 +123,10 @@ def run(
             if variant == "cgan" and dataset == "digits":
                 default_model.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(checkpoint, default_model)
+                params_path.write_text(
+                    json.dumps({"params": params}, indent=2),
+                    encoding="utf-8",
+                )
                 _mirror_reports(archive)
             print(f"archived {folder}/{dataset} -> {archive}")
 

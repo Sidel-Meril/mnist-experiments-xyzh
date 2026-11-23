@@ -27,7 +27,9 @@ SHARED_PARAMS: dict[str, float | int] = {
     "hidden_dim": 256,
     "in_features": 784,
     "lr_g": 2e-4,
-    "lr_d": 2e-4,
+    # Quarter of the generator step. Equal rates let the discriminator win
+    # and the fixed-noise grid collapse to one image.
+    "lr_d": 5e-5,
     "beta1": 0.5,
     "batch_size": 128,
 }

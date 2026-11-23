@@ -1,7 +1,7 @@
 {
-  "discriminator_loss": 0.061551372945308686,
-  "generator_loss": 2.857984375,
-  "sample_std": 0.041125831731275625,
+  "discriminator_loss": 1.4009837913513183,
+  "generator_loss": 0.6827980074882507,
+  "sample_std": 0.01372125085245348,
   "real_std": 0.3721263081103373,
   "mode_collapse": true,
   "noise_dim": 64,

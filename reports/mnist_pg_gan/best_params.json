@@ -1,0 +1,12 @@
+{
+  "params": {
+    "noise_dim": 64,
+    "width": 64,
+    "image_size": 32,
+    "channels": 3,
+    "lr_g": 0.0002,
+    "lr_d": 0.0002,
+    "beta1": 0.5,
+    "batch_size": 32
+  }
+}

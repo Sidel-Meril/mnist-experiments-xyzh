@@ -34,6 +34,37 @@ SHARED_PARAMS: dict[str, float | int] = {
 }
 
 
+def _allow_tensordict_on_torch_215() -> None:
+    """Torch 2.15 leaves ``functorch`` without the names TensorDict 0.15 registers at import."""
+    import functorch
+    import functorch.dim as ftdim
+
+    if not hasattr(ftdim, "Tensor"):
+
+        class Tensor:
+            pass
+
+        ftdim.Tensor = Tensor
+    if not hasattr(ftdim, "Dim"):
+
+        class Dim:
+            pass
+
+        ftdim.Dim = Dim
+    if not hasattr(functorch, "FunctionalModule"):
+
+        class FunctionalModule:
+            pass
+
+        functorch.FunctionalModule = FunctionalModule
+    if not hasattr(functorch, "FunctionalModuleWithBuffers"):
+
+        class FunctionalModuleWithBuffers:
+            pass
+
+        functorch.FunctionalModuleWithBuffers = FunctionalModuleWithBuffers
+
+
 def run(
     *,
     train_per_class: int = 200,
@@ -41,6 +72,7 @@ def run(
     epochs: int = 2,
     snapshot_every: int = 1,
 ) -> None:
+    _allow_tensordict_on_torch_215()
     pull = importlib.import_module("pull_sample_data")
     engineer = importlib.import_module("mnist_pg_gan.02_engineer")
     split = importlib.import_module("mnist_pg_gan.03_split")
