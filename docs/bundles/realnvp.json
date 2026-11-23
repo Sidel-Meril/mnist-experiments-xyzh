@@ -6,10 +6,24 @@
   "points": "Norm Flow · 5pt",
   "title": "Multi-scale RealNVP",
   "question": "Does the coupling flow assign high likelihood to grayscale MNIST and invert into recognizable samples?",
-  "process": "Grayscale pixels in \\([0,1]\\) are uniformly dequantized and passed through a logit. `CouplingLayer` in `src/mnist_realnvp/model.py` holds the masked coordinates fixed and updates the rest, \\( y = m \\odot x + (1-m) \\odot (x e^{s} + t) \\), with \\( s = \\mathrm{scale}\\cdot\\tanh(\\cdot) \\). The log-determinant adds \\( s \\) only on the changed coordinates. `MultiScaleFlow` squeezes space into channels, couples, and factors half the channels out at \\(14\\times 14\\) and again at \\(7\\times 7\\); the base density on those three latent pieces is a standard normal, and samples invert that map. Optuna ran two 1-epoch trials on digits. The wider one (64 channels, 4 layers, scale 2, learning rate \\(10^{-3}\\), no weight decay, batch 128) reached validation NLL 860.1 and BPD 1.583. The narrow one (32 channels, scale 1, learning rate \\(10^{-4}\\), weight decay \\(10^{-6}\\), batch 64) reached NLL 1050.1, which is BPD 1.932 under the same conversion. Fashion trained 20 epochs from the wider setting, with no search of its own. `evaluation_test_fashion.json` records test BPD 3.263. The digits eval stage never wrote a test file.",
+  "process": [
+    "CouplingLayer splits the channels with a mask. Where the mask is 1 the value is kept. Where it is 0, ScaleTranslate reads only the kept part and predicts a scale and a shift.",
+    "\\[ s = \\mathrm{scale}\\cdot\\tanh(s_{\\mathrm{raw}}), \\qquad t = \\mathrm{shift} \\]",
+    "forward then applies that affine map, which is the line in CouplingLayer.forward:",
+    "\\[ y = m \\odot x + (1-m)\\odot\\bigl(x \\odot e^{s} + t\\bigr) \\]",
+    "The Jacobian of a coupling is triangular, so its log-determinant is the sum of s on the changed coordinates only. That is the next line:",
+    "\\[ \\log|\\det J| = \\sum (1-m)\\odot s \\]",
+    "inverse recomputes s and t from the kept part of y and undoes the affine map:",
+    "\\[ x = m \\odot y + (1-m)\\odot(y-t)\\odot e^{-s} \\]",
+    "MultiScaleFlow stacks these layers. It squeezes 28×28 into 14×14, couples, and factors half the channels out as z1. It squeezes again to 7×7, couples, and factors z2. The last block emits z3. Each piece is scored under a standard normal.",
+    "log_prob is the change-of-variables density. Pixels are dequantized and logit-mapped first, and that Jacobian is added too:",
+    "\\[ \\log p(x) = \\log p(z_1)+\\log p(z_2)+\\log p(z_3) + \\log|\\det J_{\\mathrm{flow}}| + \\log|\\det J_{\\mathrm{logit}}| \\]",
+    "Training minimises the batch mean of −log p(x). Samples draw the three normals and run flow.inverse, then the inverse logit.",
+    "On our runs the wider one-epoch search reached validation NLL 860.1 (1.583 bits per dimension). Fashion, trained 20 epochs from that setting, has test BPD 3.263 in evaluation_test_fashion.json. The digits eval file was never written."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Fashion test BPD moves from 3.582 on the first point of `bpd_fashion.png` to 3.263 at epoch 20. That last point is bold: it is the checkpoint the training loop kept, and it matches the test file. A uniform 8-bit image would cost 8 bits per pixel, so 3.263 is a real density. The inverse samples are still soft.",
+    "summary": "Epoch 20 is bold: it is the Fashion checkpoint that was scored. Hover it for the test BPD, then the Optuna bar for the two trials.",
     "hover": "Start on the bold epoch."
   },
   "charts": [
@@ -113,10 +127,10 @@
     }
   ],
   "reflection": {
-    "worked": "The masked coupling and the two squeeze scales are in `CouplingLayer` and `MultiScaleFlow`. Fashion test BPD falls from 3.582 to 3.263, and epoch 20 matches `evaluation_test_fashion.json`. Encode-and-invert returns sharp clothes, so the inverse runs. The wider Optuna trial beat the narrow one, 860.1 against 1050.1.",
-    "unexpected": "Inverse samples stay broken on both sets: stroke fragments on digits, soft gray blobs on Fashion. The VAE sample grids are the readable ones. The digits test JSON is absent.",
-    "why": "The search is two trials and one epoch, and Fashion inherited the digits hyperparameters. Dequantization plus the logit lets BPD fall by explaining background and a rough silhouette. 3.263 bits per dimension is better than 8 and far from a tight flow near 1. The sharp reconstructions show the blur sits in the prior.",
-    "improve": "Run mnist_realnvp_eval on the digits checkpoint so that run has a held-out NLL. Give Fashion its own search, train longer, and keep the reconstruction grid beside the prior samples. If BPD keeps falling while prior samples stay soft, add capacity in the coupling networks."
+    "worked": "Measured: Fashion test BPD is 3.263 at epoch 20, the same number as evaluation_test_fashion.json, and encode-and-invert keeps real clothes. The wider Optuna trial beat the narrow one, 860.1 against 1050.1.",
+    "unexpected": "Measured: inverse samples are stroke fragments on digits and soft blobs on Fashion. The digits test file was never written.",
+    "why": "Measured: the search is two one-epoch trials, and Fashion reused those digits settings. Guess, not a measurement: bits per dimension can fall by explaining the background while the prior still misses the glyph. A published tight flow sits nearer 1 bit, so 3.263 is only a partial density.",
+    "improve": "Run the digits eval on the saved checkpoint. Give Fashion its own search and a longer train. If BPD keeps falling and prior samples stay soft, add capacity in the coupling networks."
   },
   "live": {
     "src": "figures/realnvp/samples_fashion.png",
@@ -153,6 +167,11 @@
       "src": "figures/realnvp/reconstructions_fashion.png",
       "alt": "Eight Fashion-MNIST test images and their RealNVP reconstructions. Boots, a shirt, trousers, and a plaid shirt stay sharp.",
       "caption": "Fashion reconstructions. The inverse keeps real clothes; it does not invent them from the prior."
+    },
+    {
+      "src": "figures/realnvp/samples.png",
+      "alt": "RealNVP digit samples, mostly stroke fragments.",
+      "caption": "Digits inverse samples. Stroke fragments. This run has no test JSON."
     }
   ],
   "sources": [

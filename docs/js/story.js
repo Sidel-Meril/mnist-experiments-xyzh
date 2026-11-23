@@ -442,7 +442,9 @@ function renderChapter(bundle, history) {
   const play = el("button", "play", "Play the chart");
   play.type = "button";
   head.append(titles, play);
-  article.append(head, el("p", "process", bundle.process));
+  article.append(head);
+  const prose = Array.isArray(bundle.process) ? bundle.process : [bundle.process];
+  prose.forEach((block) => article.append(el("p", "process", block)));
 
   const stage = el("div", "stage");
   const charts = el("div", "charts");

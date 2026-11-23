@@ -6,10 +6,15 @@
   "points": "GAN · conditional, PatchGAN, feature matching",
   "title": "Conditional GAN and the other two variants",
   "question": "Does a class label, a PatchGAN discriminator, or feature matching change quality and diversity?",
-  "process": "`ConditionalGenerator` concatenates noise with a class embedding. The MLP discriminator concatenates the same embedding. `PatchDiscriminator` concatenates a one-hot spatial map and scores overlapping patches. Feature matching, in `_generator_terms`, adds \\( 10\\,\\lVert \\mathbb{E}[f(G(z))] - \\mathbb{E}[f(x)] \\rVert_1 \\) to the generator’s binary cross-entropy. `DATASET` in `src/mnist_gan_extensions/01_get_data.py` is the manual dataset swap. `scripts/mnist_gan_extensions/model_selection.py` calls `load_data` for digits and for Fashion, then the same engineer, split, train, and eval functions. Only `variant` and the archive folder change. cgan, patchgan, and feature-matching-loss are each saved for both datasets under `reports/mnist_gan_extensions/experiments/`, with history, scores, class grids, and `model.pt`. `notebooks/mnist_gan_extensions/comparison.ipynb` compares them. Each archive is 40 epochs, 250 train and 50 test images per class, noise 64. The bar is scored sample std divided by real std. The collapse flag is true only under 0.2.",
+  "process": [
+    "ConditionalGenerator concatenates the noise with an embedding of the class label before the MLP. The MLP discriminator concatenates the same embedding with the image. PatchDiscriminator concatenates a one-hot map to the image and scores patches. The generator and discriminator losses stay the binary cross-entropy above, now conditioned on the label.",
+    "Feature matching adds one term inside _generator_terms. It is an L1 distance between the mean discriminator feature of the fake batch and the mean feature of the real batch, with weight 10:",
+    "\\[ \\mathcal{L}_G = \\mathrm{BCE}\\bigl(D(G(z), y), 1\\bigr) + 10\\,\\|\\mathbb{E} f(G(z), y) - \\mathbb{E} f(x, y)\\|_1 \\]",
+    "DATASET in 01_get_data.py swaps digits and Fashion. model_selection.py then calls the same train and eval functions. Only the variant name and the output folder change. The six runs, 250 images per class, all have spread ratios between 0.88 and 1.12. PatchGAN digits still repeats one glyph."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "None of the six scored runs trip the collapse flag. The vanilla GANs sit near 0.09 and 0.08. The extensions sit between 0.88 and 1.12. The class grids are the part the ratio does not show.",
+    "summary": "The bar is sample std divided by real std. Vanilla sits near 0.04 and 0.08. The six conditional runs sit between 0.88 and 1.12. The class grid is the part the ratio hides.",
     "hover": "Hover a bar to open that class grid."
   },
   "charts": [
@@ -97,10 +102,10 @@
     }
   ],
   "reflection": {
-    "worked": "All six archives finished 40 epochs and wrote history, test scores, class grids, and a model file. The dataset swap is load_data, so digits and Fashion share the training loop. Class conditioning stops the vanilla collapse on both datasets. PatchGAN is the clearer Fashion generator: the rows are different clothes. Feature matching on digits keeps the classes and pulls sharpness toward real ink (0.471 versus the cGAN’s 0.628). The comparison notebook reads these six folders.",
-    "unexpected": "A healthy spread ratio is not a class grid. PatchGAN digits scores 0.88 and mode_collapse false, and every row is the same glyph. Feature matching on Fashion has the highest diversity and the noisiest rows. best_params.json says variant cgan, and the mirrored evaluation_test.json says cgan. Each archive's source.json is the record of what was trained.",
-    "why": "The collapse flag only fires under a ratio of 0.2. A repeated high-contrast digit still moves enough pixels to clear that bar. PatchGAN judges local patches, which on a thin digit collapses to one stroke and on a wide garment preserves the silhouette. Feature matching changes the generator loss scale, so a larger G number is the extra term, not evidence the generator got worse at BCE.",
-    "improve": "Read the class grid next to the ratio. For digits, keep the cGAN or feature matching and do not take PatchGAN's spread as class control. For Fashion, PatchGAN is the variant to train longer. Compare generator BCE across variants, and leave the feature-matching loss on its own axis."
+    "worked": "Measured: six archives finished 40 epochs with history, scores, class grids, and a model. Digits and Fashion share the training loop; only load_data and the variant folder change. Class labels stop the vanilla collapse. PatchGAN Fashion rows are different clothes. Feature matching on digits moves sharpness from the cGAN’s 0.628 toward real ink, to 0.471.",
+    "unexpected": "Measured: PatchGAN digits has spread ratio 0.88 and mode_collapse false, and every class row is the same glyph. Feature matching on Fashion has high diversity and speckled rows. The mirrored best_params.json records only the cGAN variant.",
+    "why": "Measured: the collapse flag fires only under a ratio of 0.2. Guess: a PatchGAN on a thin stroke collapses to one glyph that is still high-contrast, while the same discriminator keeps a wide garment silhouette.",
+    "improve": "Read the class grid next to the ratio. On digits, keep the cGAN or feature matching. On Fashion, train PatchGAN longer. Compare generator BCE across variants, and leave the feature-matching term on its own axis."
   },
   "live": {
     "src": "figures/cgan/classes.png",
@@ -127,6 +132,16 @@
       "src": "figures/ext/cgan_fashion_classes.png",
       "alt": "cGAN Fashion class grid. Rows are speckled garments.",
       "caption": "cGAN Fashion. Spread ratio 0.95, sharpness 0.698 against real 0.301."
+    },
+    {
+      "src": "figures/cgan/digits/loss.png",
+      "alt": "cGAN discriminator and generator loss on digits.",
+      "caption": "cGAN digits loss over 40 epochs."
+    },
+    {
+      "src": "figures/cgan/fashion/loss.png",
+      "alt": "cGAN discriminator and generator loss on Fashion.",
+      "caption": "cGAN Fashion loss over 40 epochs."
     }
   ],
   "sources": [

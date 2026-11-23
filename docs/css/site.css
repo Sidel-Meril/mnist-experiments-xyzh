@@ -115,7 +115,8 @@ h3 { font-size: 1.05rem; margin: 0; }
 
 .question { font-family: var(--serif); font-size: 1.2rem; margin: 0.45rem 0 0; max-width: 40rem; }
 
-.process { max-width: 44rem; color: var(--ink); }
+.process { max-width: 44rem; color: var(--ink); margin: 0.35rem 0; }
+.process mjx-container[display="true"] { margin: 0.15rem 0; }
 
 .stage {
   display: grid;
@@ -261,6 +262,13 @@ figcaption { color: var(--muted); font-size: 0.86rem; margin-top: 0.35rem; }
   font-size: 0.84em;
 }
 
+.report { max-width: 46rem; }
+.report h2 { font-size: 1.35rem; margin: 1.15rem 0 0.35rem; }
+.report p { margin: 0.4rem 0; }
+.report table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.4rem 0 0.6rem; }
+.report th, .report td { text-align: right; padding: 0.2rem 0.4rem; border-bottom: 1px solid var(--rule); }
+.report th:first-child, .report td:first-child { text-align: left; }
+.report ul { margin: 0.3rem 0 0.5rem; padding-left: 1.15rem; }
 .colophon { margin-top: 3rem; color: var(--muted); max-width: 46rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
 
 .tip {

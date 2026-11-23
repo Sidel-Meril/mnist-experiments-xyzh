@@ -6,10 +6,17 @@
   "points": "VAE · autoencoder compression",
   "title": "Autoencoder compression",
   "question": "How does latent size change reconstruction error on MNIST digits?",
-  "process": "`Autoencoder` in `src/mnist_ae_compression/model.py` encodes a 784-pixel image and decodes it, and the training loss is \\( \\mathcal{L} = \\lVert x - g(f(x)) \\rVert_2^2 \\). The compression ratio is \\( 784/k \\). Pixels lie in \\([-1,1]\\). `loss.png` is that reconstruction loss on the latent-128 checkpoint, falling as the copy gets closer. The D3 chart is validation MSE against latent size, the same curve as `reconstruction_error_vs_latent.png`: 2, 4, 8, 16, 32, 64, 128. `mnist_ae.db` has no completed trial, so hidden width, dropout, and learning rate were not scored. The kept checkpoint is latent 128 on 60,000 train and 10,000 test images: test MSE 0.0414, MAE 0.0771, compression 6.125.",
+  "process": [
+    "Autoencoder.forward is a deterministic code. encode compresses the 784 pixels, decode maps the code back, and the two are composed:",
+    "\\[ \\hat x = \\mathrm{decode}(\\mathrm{encode}(x)) \\]",
+    "The training step is mean squared error, the line loss = mse(self(batch_x), batch_y):",
+    "\\[ \\mathcal{L} = \\frac{1}{B}\\sum_i \\frac{1}{784}\\sum_p \\bigl(x_{ip}-\\hat x_{ip}\\bigr)^2 \\]",
+    "There is no latent distribution and no KL. The compression ratio is 784 divided by the length of the code.",
+    "The saved validation curve falls from about 0.187 at latent 2 to 0.096 at latent 128. The scored checkpoint is latent 128: test MSE 0.0414, MAE 0.0771. mnist_ae.db has no completed trial."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Error is highest at latent 2 and falls as the code gets longer. Latent 128 is bold: it is the lowest validation MSE on the curve, 0.0964, and it is the checkpoint that was scored.",
+    "summary": "Latent 128 is bold: lowest validation MSE on the saved curve, and the checkpoint that was scored. The Optuna database itself never finished.",
     "hover": "Hover a latent size. The bold point is latent 128."
   },
   "charts": [
@@ -83,10 +90,10 @@
     }
   ],
   "reflection": {
-    "worked": "The loss in `loss.png` falls, and the latent curve falls with it: longer codes reconstruct better. Latent 128, the bold point, keeps the digit. Test MSE 0.0414 on 10,000 images is a slightly soft copy.",
-    "unexpected": "Almost all of the validation-MSE drop happens by latent 16. From 64 to 128 the curve moves from 0.0975 to 0.0964. The Optuna database has no finished trial, so the other hyperparameters have no score.",
-    "why": "A digit is a low-dimensional stroke. Once thickness and slant fit, further coordinates have little left to store. Latent 2 is a 392× compression and keeps a blurry class average. The search curve and the checkpoint test MSE come from different stages: the curve compares bottlenecks, and 0.0414 is the model that was kept.",
-    "improve": "For compression, stop near latent 16–32. For a sharper copy, change the decoder or the loss. Finish the Optuna study so hidden size, dropout, and learning rate get a validation MSE beside the latent sweep."
+    "worked": "Measured: the training loss falls, and the latent-128 checkpoint copies the test digit at MSE 0.0414.",
+    "unexpected": "Measured: validation MSE only moves from 0.0975 at latent 64 to 0.0964 at 128. The Optuna database has no finished trial, so hidden size, dropout, and learning rate have no score.",
+    "why": "Measured: almost all of the drop on the saved curve is over by latent 16. Guess: a digit stroke fits in that many coordinates, so further ones have little left to store. The curve and the 0.0414 test score come from different stages.",
+    "improve": "For compression, stop near latent 16–32. Finish the study before treating any other hyperparameter as tested. A sharper copy needs a different loss, not a longer code."
   },
   "figures": [
     {

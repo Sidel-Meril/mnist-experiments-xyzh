@@ -26,20 +26,19 @@
   <div class="shell">
     <nav class="nav" aria-label="Sections">
       <a class="brand" href="#top">MNIST report</a>
-      <p class="nav-note">Hover a mark. A bold mark is the chosen epoch or trial. Formulas are set with MathJax.</p>
+      <p class="nav-note">Hover a mark. A bold mark is the chosen epoch or trial. Formulas are MathJax.</p>
       <ol id="toc"></ol>
     </nav>
     <main id="top">
       <header class="hero">
         <p class="eyebrow">Homework report · digits, Fashion-MNIST, CIFAR-10</p>
         <h1>Generative models on MNIST</h1>
-        <p class="lede">The autoencoder and the variational models reconstruct. Fashion is the easier sample domain, because a soft decoder still reads as clothing. The RealNVP digits run lowers bits per dimension and then flattens, and its inverse samples are still stroke fragments. Fashion RealNVP was trained for 20 epochs on grayscale images: test bits per dimension fall to 3.263, prior samples stay soft garment blobs, and reconstructions of real clothes stay sharp. Both vanilla GANs collapse to one shape. Conditioning on the class label brings sample spread in line with real images on digits and on Fashion. PatchGAN separates garments and still repeats one digit glyph. Feature matching keeps the class rows, and its generator loss sits above BCE because of the feature term. The progressive GAN grows from 4×4 to 32×32, and the last grid is one gray field.</p>
+        <p class="lede">Likelihood and reconstruction moved. Unconditional samples stayed soft or collapsed, until a class label or a decoder trained on the prior gave the generator a mode to hit. Numbers are the JSON scores and the Optuna trials. Curves that were never exported stay the PNGs.</p>
         <ul class="jump" id="jump"></ul>
       </header>
       <div id="chapters"></div>
       <footer class="colophon">
-        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the executed notebooks. The JSON files in <code>docs/bundles/</code> are the hover copy for each chart. Curves that were never written as a series are shown as the original PNG instead of a redrawn D3 line. Inline formulas are MathJax.</p>
-        <p>GitHub Pages: Settings → Pages → Deploy from a branch → folder <code>/docs</code>. The site root is this folder, so <code>bundles/</code> and <code>figures/</code> resolve as they do here. Open it with a local server (<code>python -m http.server -d docs</code>). A <code>file://</code> tab cannot fetch the bundles.</p>
+        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the Optuna studies. Chapter text is <code>docs/bundles/</code>. Hover copy is the same files. A <code>file://</code> tab cannot load them. Serve this folder: <code>python -m http.server -d docs</code>.</p>
       </footer>
     </main>
   </div>

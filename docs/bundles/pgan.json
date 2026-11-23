@@ -6,10 +6,14 @@
   "points": "GAN · bonus progressive growing",
   "title": "Progressive GAN on CIFAR-10",
   "question": "Does growing the resolution from 4×4 to 32×32 stabilize CIFAR-10 samples?",
-  "process": "`GrowingGenerator` and `GrowingDiscriminator` in `src/mnist_pg_gan/model.py` add resolution on the schedule from `_phases`: stable \\(4\\times 4\\), then a fade and a stable phase at 8, 16, and 32. During a fade, `_blend` sets \\( \\alpha = (\\mathrm{epoch\\ in\\ phase}+1)/\\mathrm{epochs} \\). The run is CIFAR-10, 200 train and 40 test images per class, two epochs per phase, 14 epochs. `growth.json` and `growth_timeline.png` record every phase. The chart is logged sample std of the fixed noise batch. `mode_collapse` is sample std under 0.2 times real std.",
+  "process": [
+    "The generator and discriminator losses are the same pair as the vanilla GAN. What changes is the resolution. _phases schedules a stable block at 4×4, then a fade and a stable block at 8, 16, and 32. During a fade, _blend mixes the new block in with a weight that moves from 0 to 1 across that phase:",
+    "\\[ \\alpha = \\frac{\\text{epoch in phase}+1}{\\text{epochs in phase}} \\]",
+    "A new sample is the old resolution blended with the new one by α. The inverse blend is in the discriminator. The CIFAR run uses 200 images per class and two epochs per phase, 14 epochs in total. Epoch 6 is the last varied 8×8 batch. The scored 32×32 grid is one gray field, sample std 0.104 against real std 0.493."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "The growth archive is on disk: growth.json, the timeline, and a frame for every epoch. Color blocks at 4×4 become finer noise, then a shared gray field at 32×32. Logged sample std falls from 0.581 to 0.104 along that path.",
+    "summary": "Epoch 6 is bold: the last 8×8 batch that still looks varied. Epoch 14 is the scored 32×32 field.",
     "hover": "Hover an epoch."
   },
   "charts": [
@@ -133,10 +137,10 @@
     }
   ],
   "reflection": {
-    "worked": "The schedule ran all seven phases and wrote the timeline the notebook reads. Epoch 6, the bold point, is the last resolution where the fixed-noise batch is still a set of different color fields. Discriminator and generator losses stay in a band around 1 through the early phases.",
-    "unexpected": "Resolution growth and sample variety move in opposite directions. By 32×32 every cell is the same gray field. The collapse flag stays false because 0.104 / 0.493 = 0.211, just above the 0.2 cutoff.",
-    "why": "Each new resolution gets two epochs on 2,000 images. That is enough for the generator to find one average color that survives the discriminator, and not enough to fit airplanes and trucks. The fade spends one of those two epochs at a half-blended block. A short stay at 32×32 favors the mean image.",
-    "improve": "Give the 16×16 and 32×32 stable phases more epochs before judging CIFAR, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag. The timeline is already the right picture to watch while that longer run goes."
+    "worked": "Measured: all seven phases ran, and epoch 6, the last stable 8×8, still shows different colour fields. Early discriminator and generator losses stay near 1.",
+    "unexpected": "Measured: by the scored 32×32 grid every cell is one gray field, sample std 0.104 against real std 0.493. The collapse flag stays false because the ratio is 0.211, just above 0.2.",
+    "why": "Measured: each new resolution gets two epochs on 2,000 images, and one of those epochs is a half-blended fade. Guess: that is long enough to find one average colour and too short to fit airplanes and trucks.",
+    "improve": "Give the 16×16 and 32×32 stable phases more epochs before judging CIFAR, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag."
   },
   "live": {
     "src": "figures/pgan/growth_timeline.png",

@@ -6,10 +6,19 @@
   "points": "VAE · normalizing flow in the latent space",
   "title": "f-VAE",
   "question": "Does a RealNVP inside the VAE latent space improve reconstruction and likelihood on digits?",
-  "process": "`FVAE.forward` in `src/mnist_f_vae/model.py` draws \\( z_0 \\) from the encoder Gaussian, pushes it through `LatentFlow` (four affine couplings, \\( y = m \\odot x + (1-m) \\odot (x e^{s} + t) \\)), and decodes \\( z_K \\). `_fvae_loss` adds \\( \\beta \\) times the Monte Carlo KL \\( \\log q_0(z_0|x) - \\log\\mathcal{N}(z_K;0,I) - \\log|\\det| \\). Samples decode \\( \\mathcal{N}(0,I) \\) and do not invert the flow. The flow sits in the posterior. Both datasets use latent 32, hidden 256, 4 flows, \\( \\beta = 1 \\), and the full 60,000 / 10,000 split for 20 epochs. Digits test MSE is 0.0554, ELBO \\( -69.35 \\), BPD 0.953, log-det \\( -12.87 \\). Fashion test MSE is 0.0621, ELBO \\( -65.00 \\), BPD 0.945, log-det \\( -9.07 \\). Per-epoch curves are `loss.png` and `loss_fashion.png`. The reported BPD is the Gaussian-decoder ELBO, a different number from the RealNVP change-of-variables BPD.",
+  "process": [
+    "FVAE.forward is the VAE sample with a RealNVP inserted before the decoder. The same CouplingLayer as the image flow acts on the latent vector: mask 1 is kept, mask 0 is scaled and shifted, and the log-determinant sums s only on the changed coordinates.",
+    "\\[ z_0 = \\mu + \\varepsilon \\odot \\exp(\\tfrac{1}{2}\\log\\sigma^2) \\]",
+    "\\[ z_K, \\log|\\det| = \\mathrm{flow}(z_0), \\qquad \\hat x = \\mathrm{decode}(z_K) \\]",
+    "_flow_kl is the change-of-variables KL of that pushforward against the unit normal. It is one Monte Carlo term per image:",
+    "\\[ \\mathrm{KL} = \\log q(z_0\\mid x) - \\log \\mathcal{N}(z_K; 0, I) - \\log|\\det \\tfrac{\\partial z_K}{\\partial z_0}| \\]",
+    "_fvae_loss has the same shape as _vae_loss. The squared error is summed over pixels. β multiplies the flowed KL. Both are batch means.",
+    "Gallery samples do not call inverse. They draw z from N(0, I) and decode it. The flow is inside the posterior, not on the way out of the prior.",
+    "Both full-split runs use latent 32 and four couplings. Digits test MSE 0.0554, ELBO −69.35, log-det −12.87. Fashion test MSE 0.0621, ELBO −65.00, log-det −9.07."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Train and test agree on both full splits. Digit samples cover many classes and are cleaner than the RealNVP inverse grid. They are the same soft family as the vanilla VAE. The flow’s test log-det is −12.87, so the couplings change volume.",
+    "summary": "Train and test agree on both full splits. Hover a row for the reconstruction, the ELBO, and the comparison with RealNVP and the vanilla VAE.",
     "hover": "Hover a row for the number behind that sentence."
   },
   "charts": [
@@ -65,10 +74,10 @@
     }
   ],
   "reflection": {
-    "worked": "Reconstruction and the ELBO agree between train and test on both full splits. Digit and Fashion samples cover many classes, and both grids are clearer than the RealNVP inverse samples. Fashion’s test ELBO is −65.00 against −69.35 on digits. Log-det −9.07 on Fashion and −12.87 on digits shows the couplings change volume.",
-    "unexpected": "Fashion’s higher ELBO comes with a higher pixel error: test MSE 0.0621 against 0.0554 on digits. The shirt print is wiped out. The loss curve is still falling at epoch 20. Against the vanilla VAE the pictures stay in the same soft family, so the flow is not a clear visual upgrade.",
-    "why": "Squared error trains the decoder to average every stroke or weave that could explain a code. A wide silhouette survives that average. A logo and a sandal strap do not. The f-VAE BPD near 0.95 and the RealNVP Fashion BPD of 3.263 are different likelihoods, so the smaller number is not a better density on the same scale. These samples never pass through the inverse flow.",
-    "improve": "The Fashion loss is still descending at epoch 20, so a longer run is the next measurement. A paired comparison with the vanilla VAE needs the same split and the same latent size. Sharper prints need a different decoder likelihood. More coupling layers will not sharpen a Gaussian decoder by themselves."
+    "worked": "Measured: train and test agree on both full splits, log-det is −12.87 on digits and −9.07 on Fashion, and the sample grids cover many classes. Those grids are clearer than the RealNVP inverses.",
+    "unexpected": "Measured: Fashion’s better ELBO (−65.00 against −69.35) comes with a worse pixel error (MSE 0.0621 against 0.0554). The shirt print is gone, and the Fashion loss is still falling at epoch 20. The pictures stay in the same soft family as the vanilla VAE.",
+    "why": "Measured: samples decode N(0, I) and do not invert the flow. The BPD near 0.95 is the Gaussian-decoder ELBO, a different number from the RealNVP BPD of 3.263. Guess: squared error averages away a logo and a sandal strap because many weaves share one code.",
+    "improve": "Train Fashion past epoch 20. Match the vanilla VAE’s split and latent size before calling this a win. A sharper print needs a different decoder likelihood. More couplings will not sharpen a Gaussian decoder by themselves."
   },
   "live": {
     "src": "figures/fvae/generated_samples.png",

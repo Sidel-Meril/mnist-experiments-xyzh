@@ -6,10 +6,16 @@
   "points": "VAE · bonus β-VAE",
   "title": "β-VAE on digits",
   "question": "What does the KL weight do to reconstruction, active latent axes, and sample diversity?",
-  "process": "`_vae_loss` in `src/mnist_betta_vae/model.py` is the same sum of squares plus \\( \\beta\\,\\mathrm{KL} \\), and \\( \\beta \\) is the weight on that KL. Latent width is fixed at 8. Optuna scored \\( \\beta \\in \\{0.1, 1, 4, 10\\} \\) with every other hyperparameter fixed and picked 0.1, validation loss 100.37, against 117.77, 151.98, and 189.53. A separate 10-epoch sweep from one initialization, on 1,000 training images per class, records test MSE, active axes (posterior-mean variance above 0.01), and diversity (mean pairwise squared distance of 64 prior samples). `07_explore.py` walks one coordinate of the zero code from \\( -3 \\) to \\( 3 \\). Small \\( \\beta \\) reconstructs. Diversity peaks at \\( \\beta = 1 \\). Large \\( \\beta \\) turns axes off.",
+  "process": [
+    "This is the same _vae_loss as the comparison VAE. β is the only new coefficient, and it multiplies the KL, not the pixels:",
+    "\\[ \\mathcal{L} = \\mathrm{mean}_i\\|x_i-\\hat x_i\\|^2 + \\beta\\,\\mathrm{mean}_i\\,\\mathrm{KL}_i \\]",
+    "\\[ \\mathrm{KL} = -\\frac{1}{2}\\sum_j \\bigl(1 + \\log\\sigma_j^2 - \\mu_j^2 - \\sigma_j^2\\bigr) \\]",
+    "A traversal does not retrain. It starts at the zero code and moves one coordinate from −3 to 3 while decode draws the image. An active axis is one whose posterior mean still varies across the test set, variance above 0.01.",
+    "Optuna, with every other setting fixed, scored β = 0.1, 1, 4, 10 at validation losses 100.4, 117.8, 152.0, and 189.5. The 10-epoch sweep puts the diversity peak at β = 1 (0.226) and the sharpest test MSE at β = 0.1 (0.091)."
+  ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Two charts, two objectives. The Optuna bars pick β = 0.1 because that minimizes the weighted loss. The panels pick β = 1 for diversity. Hover a β to swap the traversal, which is one latent axis at a time.",
+    "summary": "Two bold points, two objectives. Optuna picks β = 0.1. The panels pick β = 1 for diversity. Hover a β to swap the traversal.",
     "hover": "Hover a β."
   },
   "charts": [
@@ -131,10 +137,10 @@
     }
   ],
   "reflection": {
-    "worked": "\\( \\beta \\) is one multiplier on the KL, and the two charts separate what it does. Optuna’s bold point, \\( \\beta = 0.1 \\), has the lowest weighted loss and the sharpest sweep reconstructions, MSE 0.0907, with all 8 axes active. The panels’ bold point, \\( \\beta = 1 \\), has the highest diversity, 0.226. The traversal pictures show which latent row moves.",
-    "unexpected": "The search picks the reconstruction weight, not the diverse one. High β does not reveal a single factor such as slant. The dead rows at β = 10 are unused capacity.",
-    "why": "β multiplies the KL, so a large weight is cheaper to satisfy by pinning posterior means than by preserving stroke detail. Diversity falls at both ends: β = 0.1 concentrates the prior samples, and β = 10 has directions that no longer change the image. The active-unit count is a variance threshold of 0.01, not a labeled-factor score.",
-    "improve": "Report reconstruction and diversity beside the Optuna objective, or the search will keep preferring a small β. For a disentanglement check, use a dataset with known factors. On MNIST, keep β near 1 when the goal is the sample grid, and use the traversal to see which axes went quiet."
+    "worked": "Measured: Optuna’s lowest weighted loss is β = 0.1 at 100.37, and that sweep point has test MSE 0.0907 with all 8 axes active. Diversity peaks at β = 1, at 0.226. The traversal shows which row moves.",
+    "unexpected": "Measured: the search picks the reconstruction weight, not the diverse one. At β = 10, three traversal rows freeze and only six axes stay active.",
+    "why": "Measured: β is the multiplier on the KL, and the active-unit count is a variance threshold of 0.01. Guess, and not a disentanglement result: MNIST has no labeled factor such as slant, so a frozen row is unused capacity rather than a discovered factor.",
+    "improve": "Put diversity next to the Optuna loss, or the search will keep choosing a small β. Keep β near 1 when the goal is the sample grid. Use a dataset with known factors if the claim is disentanglement."
   },
   "live": {
     "src": "figures/beta/traversal_beta_1.png",
