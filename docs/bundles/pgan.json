@@ -1,67 +1,75 @@
 {
   "id": "pgan",
   "nav": "Progressive GAN",
-  "lede": "The growth schedule is in the code. No CIFAR-10 archive was written, so there is no timeline to show.",
+  "lede": "The CIFAR run grows from 4×4 to 32×32. Logged sample std falls from 0.58 to 0.10, and the last grid is one gray field.",
   "accent": "#4a5560",
   "points": "GAN · bonus progressive growing",
   "title": "Progressive GAN on CIFAR-10",
   "question": "Does growing the resolution from 4×4 to 32×32 stabilize CIFAR-10 samples?",
-  "process": "The model grows through 4×4, 8×8, 16×16, and 32×32 on CIFAR-10, classes airplane through truck. The growth notebook reads reports/mnist_pg_gan/generations/cifar/growth.json, history.json, and growth_timeline.png, and would print one row per phase with epoch, resolution, phase, and alpha. Those files are absent. The notebook’s own empty branch says there is no archive yet. The DVC train stage is a short 1-epoch pipeline and is separate from scripts/mnist_pg_gan/train_progan.py. models/mnist_pg_gan contains only a placeholder.",
+  "process": "The script pulled 200 training images and 40 test images per class (2,000 / 400), then grew 4×4, 8×8, 16×16, and 32×32. Each resolution gets a fade phase and a stable phase, two epochs each, except 4×4 which is stable only. That is 14 epochs. The chart is the logged sample std of the fixed noise batch. The collapse flag is sample std under 0.2 times real std. Hover an epoch to see where the resolution changed.",
   "opening": {
-    "answers": "What didn't turn out as expected?",
-    "summary": "There is no loss curve and no image timeline. Hovering a resolution only confirms that the phase file is missing. This bonus cannot be scored from the tree as it stands.",
-    "hover": "Hover a resolution."
+    "answers": "What worked well?",
+    "summary": "The growth archive is on disk: growth.json, the timeline, and a frame for every epoch. Color blocks at 4×4 become finer noise, then a shared gray field at 32×32. Logged sample std falls from 0.581 to 0.104 along that path.",
+    "hover": "Hover an epoch."
   },
   "charts": [
     {
-      "type": "rows",
-      "title": "Growth phases with no archive",
+      "type": "line",
+      "title": "Logged sample std while resolution grows",
+      "xKey": "epoch",
+      "yKey": "sample_std",
+      "xLabel": "epoch",
+      "yLabel": "logged sample std",
       "marks": [
-        {
-          "label": "4×4",
-          "valueText": "growth.json row missing",
-          "state": "missing",
-          "answers": "What didn't turn out as expected?",
-          "summary": "The first phase would be a 4×4 generator, with an alpha blend into the next resolution. No image and no loss were saved for it.",
-          "hover": "4×4 · no phase row"
-        },
-        {
-          "label": "8×8",
-          "valueText": "growth.json row missing",
-          "state": "missing",
-          "answers": "What didn't turn out as expected?",
-          "summary": "8×8 is the second growth step. The notebook would show the batch at this resolution beside the phase index. The file is not there.",
-          "hover": "8×8 · no phase row"
-        },
-        {
-          "label": "16×16",
-          "valueText": "growth.json row missing",
-          "state": "missing",
-          "answers": "Why do you think the results might not be great?",
-          "summary": "Without the 16×16 frame there is no way to see whether stability improved as the canvas grew. The bonus is specifically about that visual.",
-          "hover": "16×16 · no phase row"
-        },
-        {
-          "label": "32×32",
-          "valueText": "eval JSON missing",
-          "state": "missing",
-          "answers": "How could the results be improved?",
-          "summary": "The eval stage would score discriminator and generator BCE plus sample std and mode collapse at 32×32. None of those numbers exist. Run scripts/mnist_pg_gan/train_progan.py and this chart can be replaced with the phase rows.",
-          "hover": "32×32 · no evaluation"
-        }
+        {"epoch": 1, "sample_std": 0.5809, "answers": "What worked well?", "summary": "Epoch 1 is 4×4 stable, alpha 1. Logged sample std is 0.581. Eval D 1.458, eval G 0.774. The frames are large color blocks, and they are not copies of each other.", "hover": "epoch 1 · 4×4 stable · sample std 0.581", "frame": "figures/pgan/epoch_0001_res04_stable.png", "frameCaption": "4×4 stable, epoch 1."},
+        {"epoch": 2, "sample_std": 0.6119, "answers": "What worked well?", "summary": "Epoch 2 stays at 4×4. Logged sample std is 0.612, the high point of the run. Eval D 1.403, eval G 0.857.", "hover": "epoch 2 · 4×4 stable · sample std 0.612"},
+        {"epoch": 3, "sample_std": 0.4146, "answers": "Why do you think the results might not be great?", "summary": "Epoch 3 fades in 8×8 at alpha 0.5. Logged sample std drops to 0.415. Eval D 1.367, eval G 0.759. The new block is only half blended.", "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415"},
+        {"epoch": 4, "sample_std": 0.4054, "answers": "Why do you think the results might not be great?", "summary": "Epoch 4 finishes the 8×8 fade at alpha 1. Logged sample std is 0.405. Eval D 1.132, eval G 1.071.", "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405"},
+        {"epoch": 5, "sample_std": 0.5039, "answers": "What worked well?", "summary": "Epoch 5 is the first 8×8 stable epoch. Logged sample std bounces back to 0.504. Eval D 0.945, eval G 1.092. The grid is still colorful and varied.", "hover": "epoch 5 · 8×8 stable · sample std 0.504"},
+        {"epoch": 6, "sample_std": 0.4142, "answers": "What worked well?", "summary": "Epoch 6 is 8×8 stable. Logged sample std is 0.414. Eval D 0.734, eval G 1.786. This is the last resolution where the batch still looks like different color fields.", "hover": "epoch 6 · 8×8 stable · sample std 0.414", "frame": "figures/pgan/epoch_0006_res08_stable.png", "frameCaption": "8×8 stable, epoch 6."},
+        {"epoch": 7, "sample_std": 0.2735, "answers": "What didn't turn out as expected?", "summary": "Epoch 7 fades in 16×16 at alpha 0.5 and logged sample std falls to 0.274. Eval D 1.329, eval G 0.713. Growing the canvas coincides with the samples getting more alike.", "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274"},
+        {"epoch": 8, "sample_std": 0.4495, "answers": "Why do you think the results might not be great?", "summary": "Epoch 8 completes the 16×16 fade at alpha 1. Logged sample std rebounds to 0.450. Eval D 1.102, eval G 0.890. Two epochs is a short stay at the new resolution.", "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450"},
+        {"epoch": 9, "sample_std": 0.4057, "answers": "Why do you think the results might not be great?", "summary": "Epoch 9 is 16×16 stable. Logged sample std is 0.406. Eval D 1.043, eval G 1.190.", "hover": "epoch 9 · 16×16 stable · sample std 0.406"},
+        {"epoch": 10, "sample_std": 0.3316, "answers": "What didn't turn out as expected?", "summary": "Epoch 10 is the second 16×16 stable epoch. Logged sample std is 0.332. Eval D 1.094, eval G 1.216. The frames are mottled and closer to each other than the 8×8 row.", "hover": "epoch 10 · 16×16 stable · sample std 0.332", "frame": "figures/pgan/epoch_0010_res16_stable.png", "frameCaption": "16×16 stable, epoch 10."},
+        {"epoch": 11, "sample_std": 0.2165, "answers": "What didn't turn out as expected?", "summary": "Epoch 11 fades in 32×32 at alpha 0.5. Logged sample std is 0.217. Eval D 1.098, eval G 0.760. The batch is tightening as the full CIFAR resolution appears.", "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217"},
+        {"epoch": 12, "sample_std": 0.2047, "answers": "What didn't turn out as expected?", "summary": "Epoch 12 finishes the 32×32 fade at alpha 1. Logged sample std is 0.205. Eval D 1.170, eval G 0.748.", "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205"},
+        {"epoch": 13, "sample_std": 0.1307, "answers": "What didn't turn out as expected?", "summary": "Epoch 13 is the first 32×32 stable epoch. Logged sample std drops to 0.131. Eval D 0.634, eval G 1.403. The frames are pale and nearly the same.", "hover": "epoch 13 · 32×32 stable · sample std 0.131"},
+        {"epoch": 14, "sample_std": 0.1041, "answers": "What didn't turn out as expected?", "summary": "Epoch 14 is 32×32 stable. Logged sample std is 0.104. The scored grid has sample std 0.1040 against real std 0.493, a ratio of 0.211. mode_collapse stays false because the cutoff is 0.20. The picture is one gray-purple field repeated across the batch. Eval D on the log is 1.520 and eval G is 0.700. Two epochs at 32×32 was enough for the samples to agree with each other and not enough to grow an object.", "hover": "epoch 14 · 32×32 stable · scored ratio 0.211 · flag false", "frame": "figures/pgan/final.png", "frameCaption": "32×32 eval grid. One gray field."}
       ]
     }
   ],
   "reflection": {
-    "worked": "The growth schedule and the notebook that would read it are in the repo. The empty state is explicit: the notebook already branches to “no archive yet,” and this page repeats that instead of inventing a CIFAR timeline.",
-    "unexpected": "The bonus asked for the evolution of the images as the model grows. The generations directory has no CIFAR run, so there is nothing to watch.",
-    "why": "The DVC stage is a one-epoch pipeline, and the longer growth script was not the run that landed in reports/. Progressive training is the part that takes time. A placeholder checkpoint cannot show resolution fade-in.",
-    "improve": "Run the growth script, keep one grid per phase, and log epoch, resolution, and alpha into growth.json. Then a D3 line of generator and discriminator loss can be colored by resolution. Until those files exist, this section has no visual result."
+    "worked": "The schedule ran all seven phases and wrote the timeline the notebook reads. At 4×4 and 8×8 the fixed-noise batch is still a set of different color blocks, and discriminator and generator losses stay in a band around 1 instead of one of them running away.",
+    "unexpected": "Resolution growth and sample variety move in opposite directions. By 32×32 every cell is the same gray field. The collapse flag stays false because 0.104 / 0.493 = 0.211, just above the 0.2 cutoff.",
+    "why": "Each new resolution gets two epochs on 2,000 images. That is enough for the generator to find one average color that survives the discriminator, and not enough to fit airplanes and trucks. The fade spends one of those two epochs at a half-blended block. A short stay at 32×32 favors the mean image.",
+    "improve": "Give the 16×16 and 32×32 stable phases more epochs before judging CIFAR, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag. The timeline is already the right picture to watch while that longer run goes."
   },
-  "figures": [],
+  "live": {
+    "src": "figures/pgan/growth_timeline.png",
+    "alt": "Progressive GAN timeline from 4 by 4 color blocks to a repeated gray 32 by 32 field.",
+    "caption": "Growth timeline. Hover an epoch to swap in that phase, or the final 32×32 grid."
+  },
+  "figures": [
+    {
+      "src": "figures/pgan/final.png",
+      "alt": "Thirty-two pixel progressive GAN samples. Every cell is a similar gray square.",
+      "caption": "Eval grid at 32×32. Sample std 0.104, real std 0.493, mode_collapse false."
+    },
+    {
+      "src": "figures/pgan/real_test.png",
+      "alt": "Real CIFAR-10 test images at 32 by 32.",
+      "caption": "Real CIFAR-10 test images from the same slice."
+    },
+    {
+      "src": "figures/pgan/epoch_0001_res04_stable.png",
+      "alt": "4 by 4 stable samples, varied color blocks.",
+      "caption": "Epoch 1, 4×4 stable. Logged sample std 0.581."
+    }
+  ],
   "sources": [
-    "notebooks/mnist_pg_gan/growth.ipynb",
-    "src/mnist_pg_gan/",
-    "dvc.yaml mnist_pg_gan"
+    "reports/mnist_pg_gan/generations/cifar/growth.json",
+    "reports/mnist_pg_gan/generations/cifar/history.json",
+    "reports/mnist_pg_gan/generations/cifar/evaluation_test.json",
+    "scripts/mnist_pg_gan/train_progan.py"
   ]
 }

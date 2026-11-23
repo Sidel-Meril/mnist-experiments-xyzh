@@ -1,16 +1,16 @@
 {
   "id": "cgan",
   "nav": "cGAN and variants",
-  "lede": "Class labels bring spread near the real images. PatchGAN’s digits grid is still two glyphs. Feature matching keeps a loss above BCE.",
+  "lede": "All six extensions are scored. Class labels hold on Fashion. PatchGAN digits is one glyph with a high pixel std.",
   "accent": "#1f4d3a",
   "points": "GAN · conditional, PatchGAN, feature matching",
-  "title": "Conditional GAN, PatchGAN, and feature matching",
+  "title": "Conditional GAN and the other two variants",
   "question": "Does a class label, a PatchGAN discriminator, or feature matching change quality and diversity?",
-  "process": "Six runs share one recipe: 250 train and 50 test images per class, 40 epochs, 10 classes, noise 64, hidden 256, Adam with lr 0.0002 and β1 0.5. The variants are cGAN, PatchGAN, and feature matching, each on digits and on Fashion. Feature matching adds fm_weight 10 times an L1 feature term to generator BCE. On the other two variants, generator loss equals generator BCE. The spread ratio is scored sample std divided by real std. Vanilla ratios use the previous chapter’s test files. reports/mnist_gan_extensions/evaluation_test.json and best_params.json are the cGAN digits mirror. The six comparison numbers come from experiments/<variant>/<dataset>/evaluation_test.json.",
+    "process": "Each archive is 40 epochs on CUDA, 250 train and 50 test images per class, noise 64. The six runs are cGAN, PatchGAN, and feature matching, on digits and on Fashion. The bar is scored sample std divided by real std. The collapse flag is true only when that ratio is under 0.2. Feature matching adds a term with weight 10, so its generator loss is not the same number as its BCE. Hover a bar to swap the class grid: one row is one label.",
   "opening": {
     "answers": "What worked well?",
-    "summary": "Vanilla digits and Fashion sit near 0.09 and 0.08, and both collapse. All six extension runs land between 0.93 and 1.12, and every score file sets mode_collapse to false. The class grids are the part that still fails.",
-    "hover": "Hover a spread bar, then a variant row."
+    "summary": "None of the six scored runs trip the collapse flag. The vanilla GANs sit near 0.09 and 0.08. The extensions sit between 0.88 and 1.12. The class grids are the part the ratio does not show.",
+    "hover": "Hover a bar to open that class grid."
   },
   "charts": [
     {
@@ -22,236 +22,116 @@
           "label": "vanilla digits",
           "value": 0.0946,
           "answers": "What didn't turn out as expected?",
-          "summary": "Vanilla digits: sample std 0.0358 / real std 0.378 = 0.095. mode_collapse is true. The grid is one stroke. This is the before picture, on a larger slice (400 per class) than the extensions.",
-          "hover": "0.0358 / 0.378 = 0.095\nmode_collapse true",
+          "summary": "Vanilla digits, from the earlier run: sample std 0.0358 / real std 0.378 = 0.095. mode_collapse is true. One repeated stroke.",
+          "hover": "0.0358 / 0.378 = 0.095",
           "frame": "figures/gan/digits/final.png",
-          "frameCaption": "Vanilla digits eval grid, one repeated stroke."
+          "frameCaption": "Vanilla digits. One repeated stroke."
         },
         {
           "label": "vanilla fashion",
           "value": 0.0778,
           "answers": "What didn't turn out as expected?",
-          "summary": "Vanilla Fashion: sample std 0.0413 / real std 0.531 = 0.078. mode_collapse is true. The grid is one shirt. Same failure mode, different silhouette.",
-          "hover": "0.0413 / 0.531 = 0.078\nmode_collapse true",
+          "summary": "Vanilla Fashion: 0.0413 / 0.531 = 0.078. mode_collapse is true. One shirt.",
+          "hover": "0.0413 / 0.531 = 0.078",
           "frame": "figures/gan/fashion/final.png",
-          "frameCaption": "Vanilla Fashion eval grid, one repeated shirt."
+          "frameCaption": "Vanilla Fashion. One repeated shirt."
         },
         {
           "label": "cGAN digits",
-          "value": 1.047,
+          "value": 1.0474,
           "answers": "What worked well?",
-          "summary": "cGAN digits: sample std 0.636 / real std 0.607 = 1.047. mode_collapse is false. Diversity is 0.629 and class separation is 0.636. Most rows of the class grid are a different digit. Sharpness is 0.628 against real sharpness 0.256, so the samples are speckled rather than pen ink.",
-          "hover": "0.636 / 0.607 = 1.047\ndiversity 0.629 · class separation 0.636",
+          "summary": "cGAN digits: sample std 0.6362 / real std 0.6074 = 1.05. mode_collapse is false. Diversity 0.630, class separation 0.636. Each row is a different digit. Sharpness is 0.628 against real 0.256, so the ink is speckled. Generator loss equals BCE at 2.074, so this run has no feature-matching term. Eval D is 0.216.",
+          "hover": "1.05 · diversity 0.630 · sharpness 0.628 vs 0.256",
           "frame": "figures/cgan/classes.png",
-          "frameCaption": "cGAN digits. Each row is one class, and most rows differ."
-        },
-        {
-          "label": "PatchGAN digits",
-          "value": 1.049,
-          "answers": "What didn't turn out as expected?",
-          "summary": "PatchGAN digits: sample std 0.637 / real std 0.607 = 1.049. mode_collapse is false, and sharpness 0.387 is the closest of the digits runs to real sharpness 0.256. The class grid does not use that budget. It is two glyphs, a hook and a 7, repeated down the rows.",
-          "hover": "0.637 / 0.607 = 1.049\nsharpness 0.387 · real 0.256",
-          "frame": "figures/patchgan/classes.png",
-          "frameCaption": "PatchGAN digits. Two glyphs, not ten classes."
-        },
-        {
-          "label": "FM digits",
-          "value": 0.926,
-          "answers": "What worked well?",
-          "summary": "Feature matching on digits: sample std 0.562 / real std 0.607 = 0.926. mode_collapse is false. Diversity is 0.554 and class separation is 0.560. Generator loss is 6.54 against generator BCE 2.98, so the feature term is in the objective. The grid is noisier than PatchGAN and shows more digit shapes, including 0, 1, 3, and 9.",
-          "hover": "0.562 / 0.607 = 0.926\ngenerator loss 6.54 · BCE 2.98",
-          "frame": "figures/fm/classes.png",
-          "frameCaption": "Feature matching on digits. Noisy, with more than two shapes."
+          "frameCaption": "cGAN digits. One class per row."
         },
         {
           "label": "cGAN fashion",
-          "value": 0.949,
+          "value": 0.9493,
           "answers": "What worked well?",
-          "summary": "cGAN Fashion: sample std 0.614 / real std 0.647 = 0.949. mode_collapse is false. Diversity is 0.560 and class separation is 0.600. Some rows are garments and some rows are noise. Sharpness is 0.698 against real sharpness 0.301.",
-          "hover": "0.614 / 0.647 = 0.949\ndiversity 0.560 · class separation 0.600",
-          "frame": "figures/cgan/fashion/classes.png",
-          "frameCaption": "cGAN Fashion. Some garment rows, some noise."
+          "summary": "cGAN Fashion: 0.6140 / 0.6468 = 0.95. mode_collapse is false. Diversity 0.560, class separation 0.600. Rows separate into shirts, trousers, shoes, and bags, and they are speckled. Sharpness 0.698 against real 0.301. Eval D 0.665, generator loss 3.257, equal to BCE.",
+          "hover": "0.95 · diversity 0.560 · sharpness 0.698 vs 0.301",
+          "frame": "figures/ext/cgan_fashion_classes.png",
+          "frameCaption": "cGAN Fashion. Rows follow garment classes."
+        },
+        {
+          "label": "PatchGAN digits",
+          "value": 0.8832,
+          "answers": "What didn't turn out as expected?",
+          "summary": "PatchGAN digits: 0.5365 / 0.6074 = 0.88, so mode_collapse is false and the ratio looks healthy. The class grid is still one binary glyph on every row. Pixel std stays high because that glyph is high-contrast and jitters. The label did not change the picture. Diversity 0.537, class separation 0.537, sharpness 0.393 against real 0.256. Eval D 0.611, generator loss 2.814, equal to BCE.",
+          "hover": "ratio 0.88, and every class row is the same glyph",
+          "frame": "figures/ext/patchgan_digits_classes.png",
+          "frameCaption": "PatchGAN digits. One glyph in every class row."
         },
         {
           "label": "PatchGAN fashion",
-          "value": 1.085,
-          "answers": "Why do you think the results might not be great?",
-          "summary": "PatchGAN Fashion: sample std 0.701 / real std 0.647 = 1.085. mode_collapse is false. Sharpness 0.419 is close to real sharpness 0.301. Inside a row the silhouette repeats, the same way the digits PatchGAN repeated two glyphs.",
-          "hover": "0.701 / 0.647 = 1.085\nsharpness 0.419 · real 0.301",
-          "frame": "figures/patchgan/fashion/classes.png",
-          "frameCaption": "PatchGAN Fashion. Sharper edges, one silhouette per row."
+          "value": 1.1011,
+          "answers": "What worked well?",
+          "summary": "PatchGAN Fashion: 0.7122 / 0.6468 = 1.10. mode_collapse is false. The class grid does change with the label: shirts, trousers, coats, sandals, bags, and shoes are different rows, and they read as garments more clearly than the speckled cGAN. Diversity 0.675, class separation 0.637, sharpness 0.427 against real 0.301. Eval D 1.075, generator loss 1.030.",
+          "hover": "1.10 · class rows are different garments",
+          "frame": "figures/ext/patchgan_fashion_classes.png",
+          "frameCaption": "PatchGAN Fashion. Class rows are different clothes."
+        },
+        {
+          "label": "FM digits",
+          "value": 0.9259,
+          "answers": "What worked well?",
+          "summary": "Feature matching on digits: 0.5624 / 0.6074 = 0.93. mode_collapse is false. The class rows are different digits, still speckled. Diversity 0.554, class separation 0.561, sharpness 0.471 against real 0.256, closer to real ink than the cGAN's 0.628. Generator loss is 6.539 and BCE is 2.976, so the feature-matching term is in the objective. Eval D is 0.449.",
+          "hover": "0.93 · G 6.539 vs BCE 2.976",
+          "frame": "figures/ext/fm_digits_classes.png",
+          "frameCaption": "Feature matching, digits. Class rows differ."
         },
         {
           "label": "FM fashion",
-          "value": 1.123,
-          "answers": "What worked well?",
-          "summary": "Feature matching on Fashion: sample std 0.727 / real std 0.647 = 1.123. mode_collapse is false. Diversity is 0.656 and class separation is 0.693, the highest separation of the six. Generator loss is 7.41 against generator BCE 2.71. Several rows are speckled clothes and a few rows fall apart.",
-          "hover": "0.727 / 0.647 = 1.123\ngenerator loss 7.41 · BCE 2.71",
-          "frame": "figures/fm/fashion/classes.png",
-          "frameCaption": "Feature matching on Fashion. Speckled clothes, a few broken rows."
-        }
-      ]
-    },
-    {
-      "type": "series",
-      "title": "cGAN eval loss",
-      "datasets": [
-        {"id": "cgan", "label": "cGAN digits"},
-        {"id": "cgan-fashion", "label": "cGAN fashion"}
-      ],
-      "fallbackAnswers": "What worked well?",
-      "fallback": "Epoch {epoch}: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. Discriminator loss stays away from zero, unlike the vanilla run.",
-      "frames": {
-        "cgan": {
-          "10": "figures/cgan/epoch_0010.png",
-          "20": "figures/cgan/epoch_0020.png",
-          "40": "figures/cgan/epoch_0040.png"
-        },
-        "cgan-fashion": {
-          "10": "figures/cgan/fashion/epoch_0010.png",
-          "20": "figures/cgan/fashion/epoch_0020.png",
-          "40": "figures/cgan/fashion/epoch_0040.png"
-        }
-      },
-      "beats": [
-        {
-          "dataset": "cgan",
-          "epoch": 10,
-          "answers": "How could the results be improved?",
-          "summary": "Epoch 10 of the cGAN on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. Class rows are only starting to separate."
-        },
-        {
-          "dataset": "cgan",
-          "epoch": 40,
-          "answers": "What worked well?",
-          "summary": "Epoch 40 on digits: eval D is {eval_d} and eval G is {eval_g}. Logged sample std {sample_std} sits next to the scored sample std 0.636. The discriminator does not fall to the vanilla digits value (eval D 0.061). generator_loss equals generator_bce, so feature matching is not in this curve."
-        },
-        {
-          "dataset": "cgan-fashion",
-          "epoch": 10,
-          "answers": "How could the results be improved?",
-          "summary": "Epoch 10 on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The garment rows are not stable yet."
-        },
-        {
-          "dataset": "cgan-fashion",
-          "epoch": 40,
-          "answers": "What worked well?",
-          "summary": "Epoch 40 on Fashion: eval D is {eval_d} and eval G is {eval_g}. Logged sample std is {sample_std}. The scored grid has sample std 0.614 against real std 0.647. generator_loss equals generator_bce on this run as well."
-        }
-      ]
-    },
-    {
-      "type": "rows",
-      "title": "What the class grids add",
-      "marks": [
-        {
-          "label": "PatchGAN digits",
-          "valueText": "spread 1.049, two glyphs, no collapse flag",
-          "state": "have",
-          "answers": "What didn't turn out as expected?",
-          "summary": "The score file looks healthy: sample std 0.637, real std 0.607, mode_collapse false, sharpness 0.387 against 0.256. The class grid is two high-contrast glyphs. A large standard deviation does not mean ten digits.",
-          "hover": "PatchGAN digits · 0.637 / 0.607 = 1.049",
-          "frame": "figures/patchgan/classes.png",
-          "frameCaption": "PatchGAN digits class grid. Two repeated glyphs."
-        },
-        {
-          "label": "Feature matching, digits",
-          "valueText": "generator loss 6.54, BCE 2.98",
-          "state": "have",
-          "answers": "What worked well?",
-          "summary": "Feature matching on digits is scored. Generator loss 6.54 is not the BCE term 2.98, so fm_weight 10 is in the objective that produced this grid. Spread is 0.562 / 0.607 = 0.926. The samples are grainy and cover more shapes than the PatchGAN grid.",
-          "hover": "feature matching digits · loss 6.54 · BCE 2.98",
-          "frame": "figures/fm/classes.png",
-          "frameCaption": "Feature matching on digits."
-        },
-        {
-          "label": "cGAN Fashion",
-          "valueText": "spread 0.949, some rows still noise",
-          "state": "have",
-          "answers": "What didn't turn out as expected?",
-          "summary": "Fashion now has a cGAN archive: 250 per class, 40 epochs, sample std 0.614, real std 0.647, mode_collapse false. Trousers and coats show up. Sandals and a few other rows are still specks. Sharpness 0.698 against real 0.301.",
-          "hover": "cGAN Fashion · 0.614 / 0.647 = 0.949",
-          "frame": "figures/cgan/fashion/classes.png",
-          "frameCaption": "cGAN Fashion class grid."
-        },
-        {
-          "label": "PatchGAN Fashion",
-          "valueText": "spread 1.085, sharpness 0.419 vs 0.301",
-          "state": "have",
+          "value": 1.1235,
           "answers": "Why do you think the results might not be great?",
-          "summary": "PatchGAN Fashion is scored. Sample std 0.701 / real std 0.647 = 1.085, mode_collapse false. Edges are closer to real clothing than the cGAN’s speckle. Each row still repeats one silhouette.",
-          "hover": "PatchGAN Fashion · sharpness 0.419 · real 0.301",
-          "frame": "figures/patchgan/fashion/classes.png",
-          "frameCaption": "PatchGAN Fashion class grid."
-        },
-        {
-          "label": "Feature matching, Fashion",
-          "valueText": "generator loss 7.41, BCE 2.71",
-          "state": "have",
-          "answers": "What worked well?",
-          "summary": "Feature matching on Fashion is scored. Generator loss 7.41 against BCE 2.71. Spread is 0.727 / 0.647 = 1.123, diversity 0.656, class separation 0.693. The grid has speckled garments and a few rows that do not hold a shape. best_params.json and the mirrored evaluation_test.json still name the cGAN digits run, which is the archive the DVC paths point at.",
-          "hover": "feature matching Fashion · loss 7.41 · BCE 2.71",
-          "frame": "figures/fm/fashion/classes.png",
-          "frameCaption": "Feature matching on Fashion."
+          "summary": "Feature matching on Fashion: 0.7266 / 0.6468 = 1.12. mode_collapse is false and diversity is 0.656, the high end of this table. The class grid is less readable than PatchGAN Fashion: several rows are speckled blobs, and a few still suggest a shirt, a sandal, or a bag. Sharpness 0.672 against real 0.301. Generator loss 7.411 against BCE 2.706. The extra term is active, and it did not buy a cleaner garment.",
+          "hover": "1.12 · G 7.411 vs BCE 2.706",
+          "frame": "figures/ext/fm_fashion_classes.png",
+          "frameCaption": "Feature matching, Fashion. High spread, speckled rows."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Conditioning on the class label is the change that shows up in the spread number on both datasets. All six runs sit between 0.93 and 1.12 and set mode_collapse to false. cGAN digits reaches 1.047, and most rows of its class grid are a different digit. Feature matching is visible in the loss: generator loss stays well above BCE on digits (6.54 vs 2.98) and on Fashion (7.41 vs 2.71).",
-    "unexpected": "PatchGAN digits scores 1.049 and then draws two glyphs. The collapse flag misses that, because two crisp shapes still have a large pixel standard deviation. Sharpness tells a different story: PatchGAN is closest to real ink (0.387 vs 0.256 on digits, 0.419 vs 0.301 on Fashion), while cGAN stays speckled (0.628 and 0.698). Fashion rows are not uniformly clothes. Several are noise.",
-    "why": "A class target stops the generator from parking every noise vector on one image. It does not force ten classes, and it does not force pen ink. PatchGAN can satisfy a local patch with a sharp edge, then repeat that edge. Feature matching adds a second generator term, which is why its loss is not comparable to the BCE-only curves. The extension slice is 250 images per class and the vanilla slice is 400, so the spread chart compares finished runs, not a matched ablation.",
-    "improve": "Judge a run on the class grid and on sharpness against real sharpness, not on spread alone and not on whether generator loss went down. PatchGAN’s cleaner edges are the sharpness win, and its digits grid is the failure. Feature matching already logs BCE beside the full generator loss. The open gap is the Fashion rows that are still noise, and cGAN sharpness of 0.628 against real digits at 0.256."
+    "worked": "All six archives finished 40 epochs and wrote history, test scores, and class grids. Class conditioning stops the vanilla collapse on both datasets. PatchGAN is the clearer Fashion generator: the rows are different clothes. Feature matching on digits keeps the classes and pulls sharpness toward real ink (0.471 versus the cGAN's 0.628).",
+    "unexpected": "A healthy spread ratio is not a class grid. PatchGAN digits scores 0.88 and mode_collapse false, and every row is the same glyph. Feature matching on Fashion has the highest diversity and the noisiest rows. best_params.json says variant cgan, and the mirrored evaluation_test.json says cgan. Each archive's source.json is the record of what was trained.",
+    "why": "The collapse flag only fires under a ratio of 0.2. A repeated high-contrast digit still moves enough pixels to clear that bar. PatchGAN judges local patches, which on a thin digit collapses to one stroke and on a wide garment preserves the silhouette. Feature matching changes the generator loss scale, so a larger G number is the extra term, not evidence the generator got worse at BCE.",
+    "improve": "Read the class grid next to the ratio. For digits, keep the cGAN or feature matching and do not take PatchGAN's spread as class control. For Fashion, PatchGAN is the variant to train longer. Compare generator BCE across variants, and leave the feature-matching loss on its own axis."
   },
   "live": {
     "src": "figures/cgan/classes.png",
-    "alt": "cGAN class grid on digits, one class per row, speckled but mostly separated.",
-    "caption": "Hovered frame. Starts as the cGAN digits class grid."
+    "alt": "cGAN class grid on digits, one digit class per row.",
+    "caption": "Class grid for the hovered run. Starts as cGAN digits."
   },
   "figures": [
     {
-      "src": "figures/cgan/classes.png",
-      "alt": "cGAN digits class grid with a different speckled digit on most rows.",
-      "caption": "cGAN digits. Spread 1.047. Sharpness 0.628 against real 0.256."
+      "src": "figures/ext/patchgan_digits_classes.png",
+      "alt": "PatchGAN digits class grid. Every row is the same binary glyph.",
+      "caption": "PatchGAN digits. The spread ratio is 0.88 and the rows do not change."
     },
     {
-      "src": "figures/cgan/real_test.png",
-      "alt": "Real MNIST test digits for the cGAN split.",
-      "caption": "Real digits for this split. Real sharpness 0.256."
+      "src": "figures/ext/patchgan_fashion_classes.png",
+      "alt": "PatchGAN Fashion class grid with different garments on different rows.",
+      "caption": "PatchGAN Fashion. Class rows are different clothes."
     },
     {
-      "src": "figures/patchgan/classes.png",
-      "alt": "PatchGAN digits class grid reduced to two repeated glyphs.",
-      "caption": "PatchGAN digits. Spread 1.049, and the picture is two glyphs."
+      "src": "figures/ext/fm_digits_classes.png",
+      "alt": "Feature-matching class grid on digits with a different digit on each row.",
+      "caption": "Feature matching, digits. Generator loss 6.539, BCE 2.976."
     },
     {
-      "src": "figures/fm/classes.png",
-      "alt": "Feature matching digits class grid, noisy, with several digit shapes.",
-      "caption": "Feature matching on digits. Generator loss 6.54, BCE 2.98."
-    },
-    {
-      "src": "figures/cgan/fashion/classes.png",
-      "alt": "cGAN Fashion class grid with some garment rows and some noise.",
-      "caption": "cGAN Fashion. Spread 0.949. Some rows are still noise."
-    },
-    {
-      "src": "figures/patchgan/fashion/classes.png",
-      "alt": "PatchGAN Fashion class grid with sharper repeated silhouettes.",
-      "caption": "PatchGAN Fashion. Sharpness 0.419 against real 0.301."
-    },
-    {
-      "src": "figures/fm/fashion/classes.png",
-      "alt": "Feature matching Fashion class grid, speckled garments with a few broken rows.",
-      "caption": "Feature matching on Fashion. Generator loss 7.41, BCE 2.71."
+      "src": "figures/ext/cgan_fashion_classes.png",
+      "alt": "cGAN Fashion class grid. Rows are speckled garments.",
+      "caption": "cGAN Fashion. Spread ratio 0.95, sharpness 0.698 against real 0.301."
     }
   ],
   "sources": [
     "reports/mnist_gan_extensions/experiments/cgan/digits/evaluation_test.json",
-    "reports/mnist_gan_extensions/experiments/patchgan/digits/evaluation_test.json",
-    "reports/mnist_gan_extensions/experiments/feature-matching-loss/digits/evaluation_test.json",
     "reports/mnist_gan_extensions/experiments/cgan/fashion/evaluation_test.json",
+    "reports/mnist_gan_extensions/experiments/patchgan/digits/evaluation_test.json",
     "reports/mnist_gan_extensions/experiments/patchgan/fashion/evaluation_test.json",
-    "reports/mnist_gan_extensions/experiments/feature-matching-loss/fashion/evaluation_test.json",
-    "reports/mnist_gan_extensions/best_params.json"
+    "reports/mnist_gan_extensions/experiments/feature-matching-loss/digits/evaluation_test.json",
+    "reports/mnist_gan_extensions/experiments/feature-matching-loss/fashion/evaluation_test.json"
   ]
 }

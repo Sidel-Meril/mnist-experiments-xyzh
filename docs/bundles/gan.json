@@ -70,7 +70,7 @@
     "worked": "Both runs finished 40 epochs with a full loss history and a grid at every epoch. The collapse flag matches the pictures: one shape, sample std about a tenth of the real image std.",
     "unexpected": "The logged sample-std series does not announce the collapse. Digits ends at 0.505 and Fashion at 0.641, while the scored grids are 0.036 and 0.041. Watching the wrong std would say the generator is still varied.",
     "why": "Once the discriminator is sure, its loss sits near zero (0.061 on digits, 0.204 on Fashion) and the generator is pushed toward the single image that still fools it. The slice is small, 400 images per class, and vanilla BCE gives the generator no reason to cover the other nine classes. A repeated high-contrast shape can still have a large per-pixel std in the training log.",
-    "improve": "Plot the eval sample std next to real std, and look at the grid, not only the two loss lines. The class-conditional run below is the control: labels give the generator a class to hit, and that digits run does not collapse. A smaller discriminator step would be the other lever. The next chapter scores PatchGAN and feature matching on both datasets. A spread ratio near 1 can still hide a class grid of two glyphs."
+    "improve": "Plot the eval sample std next to real std, and look at the grid, not only the two loss lines. The class-conditional run below is the control: labels give the generator a class to hit, and that digits run does not collapse. A smaller discriminator step would be the other lever. The next chapter scores PatchGAN and feature matching on both datasets. A spread ratio near 1 can still hide a PatchGAN digits grid of one repeated glyph."
   },
   "live": {
     "src": "figures/gan/digits/final.png",
