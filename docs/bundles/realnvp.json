@@ -29,7 +29,7 @@
   "charts": [
     {
       "type": "line",
-      "title": "Fashion test bits per dimension",
+      "title": "Fashion test bits per dimension, all 20 epochs",
       "xKey": "epoch",
       "yKey": "bpd",
       "xLabel": "epoch",
@@ -40,8 +40,170 @@
           "epoch": 1,
           "bpd": 3.582,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 1 is the first test point on bpd_fashion.png, BPD 3.582. The train curve on that figure starts near 4.11. Most of the drop happens in these early epochs. Intermediate epochs were drawn to the PNG and were not written as a series.",
+          "summary": "Epoch 1 is the first test point on the Fashion curve, BPD 3.582. The later points are read from that same line. Most of the drop happens in these early epochs.",
           "hover": "epoch 1 · test BPD 3.582",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 2,
+          "bpd": 3.477,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 2 on the Fashion test curve, read from bpd_fashion.png: BPD 3.477. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 2 · test BPD 3.477",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 3,
+          "bpd": 3.42,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 3 on the Fashion test curve, read from bpd_fashion.png: BPD 3.420. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 3 · test BPD 3.420",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 4,
+          "bpd": 3.384,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 4 on the Fashion test curve, read from bpd_fashion.png: BPD 3.384. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 4 · test BPD 3.384",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 5,
+          "bpd": 3.333,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 5 on the Fashion test curve, read from bpd_fashion.png: BPD 3.333. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 5 · test BPD 3.333",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 6,
+          "bpd": 3.365,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 6 on the Fashion test curve, read from bpd_fashion.png: BPD 3.365. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 6 · test BPD 3.365",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 7,
+          "bpd": 3.333,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 7 on the Fashion test curve, read from bpd_fashion.png: BPD 3.333. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 7 · test BPD 3.333",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 8,
+          "bpd": 3.304,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 8 on the Fashion test curve, read from bpd_fashion.png: BPD 3.304. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 8 · test BPD 3.304",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 9,
+          "bpd": 3.276,
+          "answers": "What worked well?",
+          "summary": "Epoch 9 on the Fashion test curve, read from bpd_fashion.png: BPD 3.276. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 9 · test BPD 3.276",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 10,
+          "bpd": 3.306,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 10 on the Fashion test curve, read from bpd_fashion.png: BPD 3.306. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 10 · test BPD 3.306",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 11,
+          "bpd": 3.281,
+          "answers": "What worked well?",
+          "summary": "Epoch 11 on the Fashion test curve, read from bpd_fashion.png: BPD 3.281. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 11 · test BPD 3.281",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 12,
+          "bpd": 3.258,
+          "answers": "What worked well?",
+          "summary": "Epoch 12 on the Fashion test curve, read from bpd_fashion.png: BPD 3.258. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 12 · test BPD 3.258",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 13,
+          "bpd": 3.24,
+          "answers": "What worked well?",
+          "summary": "Epoch 13 on the Fashion test curve, read from bpd_fashion.png: BPD 3.240. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 13 · test BPD 3.240",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 14,
+          "bpd": 3.262,
+          "answers": "What worked well?",
+          "summary": "Epoch 14 on the Fashion test curve, read from bpd_fashion.png: BPD 3.262. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 14 · test BPD 3.262",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 15,
+          "bpd": 3.263,
+          "answers": "What worked well?",
+          "summary": "Epoch 15 on the Fashion test curve, read from bpd_fashion.png: BPD 3.263. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 15 · test BPD 3.263",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 16,
+          "bpd": 3.247,
+          "answers": "What worked well?",
+          "summary": "Epoch 16 on the Fashion test curve, read from bpd_fashion.png: BPD 3.247. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 16 · test BPD 3.247",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 17,
+          "bpd": 3.264,
+          "answers": "What worked well?",
+          "summary": "Epoch 17 on the Fashion test curve, read from bpd_fashion.png: BPD 3.264. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 17 · test BPD 3.264",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 18,
+          "bpd": 3.266,
+          "answers": "What worked well?",
+          "summary": "Epoch 18 on the Fashion test curve, read from bpd_fashion.png: BPD 3.266. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 18 · test BPD 3.266",
+          "frame": "figures/realnvp/bpd_fashion.png",
+          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+        },
+        {
+          "epoch": 19,
+          "bpd": 3.264,
+          "answers": "What worked well?",
+          "summary": "Epoch 19 on the Fashion test curve, read from bpd_fashion.png: BPD 3.264. The last point is the scored 3.263, not this one.",
+          "hover": "epoch 19 · test BPD 3.264",
           "frame": "figures/realnvp/bpd_fashion.png",
           "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
         },
@@ -51,7 +213,7 @@
           "selected": true,
           "bestLabel": "epoch 20",
           "answers": "What worked well?",
-          "summary": "Epoch 20 is bold because it is the scored checkpoint. evaluation_test_fashion.json records test NLL 1773.2 and BPD 3.263 on 10,000 images, the same BPD as the last point of bpd_fashion.png. Train on that split is NLL 1763.6 and BPD 3.245. The loop keeps the last weights, and the curve is flat here rather than rising, so this is the best likelihood the run left on disk. It is a partial success: 3.263 beats an 8-bit uniform code, and the inverse samples are still garment blobs. A tight grayscale flow sits nearer 1 bit per dimension. The digits search, after one epoch, was already at validation BPD 1.583.",
+          "summary": "Epoch 20 is bold because it is the scored checkpoint. evaluation_test_fashion.json records test NLL 1773.2 and BPD 3.263 on 10,000 images. The curve is flat here. Digits, kept in their own folder, score a tighter test BPD of 1.210.",
           "hover": "epoch 20 · test BPD 3.263 · test NLL 1773.2",
           "frame": "figures/realnvp/samples_fashion.png",
           "frameCaption": "Fashion inverse samples from the epoch-20 checkpoint. A few clothes, mostly torn shapes."

@@ -1,4 +1,5 @@
 {
+  "play": false,
   "id": "pgan",
   "nav": "Progressive GAN",
   "lede": "The CIFAR run grows from 4×4 to 32×32. Logged sample std falls from 0.58 to 0.10, and the last grid is one gray field.",
@@ -32,35 +33,43 @@
           "summary": "Epoch 1 is 4×4 stable, alpha 1. Logged sample std is 0.581. Eval D 1.458, eval G 0.774. The frames are large color blocks, and they are not copies of each other.",
           "hover": "epoch 1 · 4×4 stable · sample std 0.581",
           "frame": "figures/pgan/epoch_0001_res04_stable.png",
-          "frameCaption": "4×4 stable, epoch 1. The blocks differ."
+          "frameCaption": "Epoch 1, 4×4 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 2,
           "sample_std": 0.6119,
           "answers": "What worked well?",
           "summary": "Epoch 2 stays at 4×4. Logged sample std is 0.612, the high point of the run. Eval D 1.403, eval G 0.857.",
-          "hover": "epoch 2 · 4×4 stable · sample std 0.612"
+          "hover": "epoch 2 · 4×4 stable · sample std 0.612",
+          "frame": "figures/pgan/epoch_0002_res04_stable.png",
+          "frameCaption": "Epoch 2, 4×4 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 3,
           "sample_std": 0.4146,
           "answers": "Why do you think the results might not be great?",
           "summary": "Epoch 3 fades in 8×8 at alpha 0.5. Logged sample std drops to 0.415. Eval D 1.367, eval G 0.759. The new block is only half blended.",
-          "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415"
+          "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415",
+          "frame": "figures/pgan/epoch_0003_res08_fade.png",
+          "frameCaption": "Epoch 3, 8×8 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 4,
           "sample_std": 0.4054,
           "answers": "Why do you think the results might not be great?",
           "summary": "Epoch 4 finishes the 8×8 fade at alpha 1. Logged sample std is 0.405. Eval D 1.132, eval G 1.071.",
-          "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405"
+          "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405",
+          "frame": "figures/pgan/epoch_0004_res08_fade.png",
+          "frameCaption": "Epoch 4, 8×8 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 5,
           "sample_std": 0.5039,
           "answers": "What worked well?",
           "summary": "Epoch 5 is the first 8×8 stable epoch. Logged sample std bounces back to 0.504. Eval D 0.945, eval G 1.092. The grid is still colorful and varied.",
-          "hover": "epoch 5 · 8×8 stable · sample std 0.504"
+          "hover": "epoch 5 · 8×8 stable · sample std 0.504",
+          "frame": "figures/pgan/epoch_0005_res08_stable.png",
+          "frameCaption": "Epoch 5, 8×8 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 6,
@@ -69,7 +78,7 @@
           "summary": "Epoch 6 is bold because it is the last 8×8 stable epoch where the fixed-noise batch still looks like different color fields. Logged sample std is 0.414. Eval D is 0.734 and eval G is 1.786. Later growth makes the batch more alike. Epoch 14 is the scored 32×32 checkpoint, and that grid is one gray field.",
           "hover": "epoch 6 · 8×8 stable · sample std 0.414",
           "frame": "figures/pgan/epoch_0006_res08_stable.png",
-          "frameCaption": "8×8 stable, epoch 6. Still varied color.",
+          "frameCaption": "Epoch 6, 8×8 stable. One frame of the 14-epoch growth.",
           "selected": true,
           "bestLabel": "varied"
         },
@@ -78,21 +87,27 @@
           "sample_std": 0.2735,
           "answers": "What didn't turn out as expected?",
           "summary": "Epoch 7 fades in 16×16 at alpha 0.5 and logged sample std falls to 0.274. Eval D 1.329, eval G 0.713. Growing the canvas coincides with the samples getting more alike.",
-          "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274"
+          "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274",
+          "frame": "figures/pgan/epoch_0007_res16_fade.png",
+          "frameCaption": "Epoch 7, 16×16 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 8,
           "sample_std": 0.4495,
           "answers": "Why do you think the results might not be great?",
           "summary": "Epoch 8 completes the 16×16 fade at alpha 1. Logged sample std rebounds to 0.450. Eval D 1.102, eval G 0.890. Two epochs is a short stay at the new resolution.",
-          "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450"
+          "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450",
+          "frame": "figures/pgan/epoch_0008_res16_fade.png",
+          "frameCaption": "Epoch 8, 16×16 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 9,
           "sample_std": 0.4057,
           "answers": "Why do you think the results might not be great?",
           "summary": "Epoch 9 is 16×16 stable. Logged sample std is 0.406. Eval D 1.043, eval G 1.190.",
-          "hover": "epoch 9 · 16×16 stable · sample std 0.406"
+          "hover": "epoch 9 · 16×16 stable · sample std 0.406",
+          "frame": "figures/pgan/epoch_0009_res16_stable.png",
+          "frameCaption": "Epoch 9, 16×16 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 10,
@@ -101,28 +116,34 @@
           "summary": "Epoch 10 is the second 16×16 stable epoch. Logged sample std is 0.332. Eval D 1.094, eval G 1.216. The frames are mottled and closer to each other than the 8×8 row.",
           "hover": "epoch 10 · 16×16 stable · sample std 0.332",
           "frame": "figures/pgan/epoch_0010_res16_stable.png",
-          "frameCaption": "16×16 stable, epoch 10. The batch is tightening."
+          "frameCaption": "Epoch 10, 16×16 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 11,
           "sample_std": 0.2165,
           "answers": "What didn't turn out as expected?",
           "summary": "Epoch 11 fades in 32×32 at alpha 0.5. Logged sample std is 0.217. Eval D 1.098, eval G 0.760. The batch is tightening as the full CIFAR resolution appears.",
-          "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217"
+          "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217",
+          "frame": "figures/pgan/epoch_0011_res32_fade.png",
+          "frameCaption": "Epoch 11, 32×32 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 12,
           "sample_std": 0.2047,
           "answers": "What didn't turn out as expected?",
           "summary": "Epoch 12 finishes the 32×32 fade at alpha 1. Logged sample std is 0.205. Eval D 1.170, eval G 0.748.",
-          "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205"
+          "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205",
+          "frame": "figures/pgan/epoch_0012_res32_fade.png",
+          "frameCaption": "Epoch 12, 32×32 fade. One frame of the 14-epoch growth."
         },
         {
           "epoch": 13,
           "sample_std": 0.1307,
           "answers": "What didn't turn out as expected?",
           "summary": "Epoch 13 is the first 32×32 stable epoch. Logged sample std drops to 0.131. Eval D 0.634, eval G 1.403. The frames are pale and nearly the same.",
-          "hover": "epoch 13 · 32×32 stable · sample std 0.131"
+          "hover": "epoch 13 · 32×32 stable · sample std 0.131",
+          "frame": "figures/pgan/epoch_0013_res32_stable.png",
+          "frameCaption": "Epoch 13, 32×32 stable. One frame of the 14-epoch growth."
         },
         {
           "epoch": 14,
@@ -130,8 +151,8 @@
           "answers": "What didn't turn out as expected?",
           "summary": "Epoch 14 is 32×32 stable. Logged sample std is 0.104. The scored grid has sample std 0.1040 against real std 0.493, a ratio of 0.211. mode_collapse stays false because the cutoff is 0.20. The picture is one gray-purple field repeated across the batch. Eval D on the log is 1.520 and eval G is 0.700. Two epochs at 32×32 was enough for the samples to agree with each other and not enough to grow an object.",
           "hover": "epoch 14 · 32×32 stable · scored ratio 0.211 · flag false",
-          "frame": "figures/pgan/final.png",
-          "frameCaption": "32×32 eval grid. One gray-purple field."
+          "frame": "figures/pgan/epoch_0014_res32_stable.png",
+          "frameCaption": "Epoch 14, 32×32 stable. One frame of the 14-epoch growth."
         }
       ]
     }
@@ -145,7 +166,65 @@
   "live": {
     "src": "figures/pgan/growth_timeline.png",
     "alt": "Progressive GAN timeline from varied 4 by 4 blocks to a repeated 32 by 32 field.",
-    "caption": "The growth timeline. Hover an epoch to replace it with that phase."
+    "caption": "Growth from 4×4 to 32×32. Play epochs to step through all 14 saved grids. The line chart stays still.",
+    "sequence": [
+      {
+        "src": "figures/pgan/epoch_0001_res04_stable.png",
+        "caption": "Epoch 1, 4×4 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0002_res04_stable.png",
+        "caption": "Epoch 2, 4×4 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0003_res08_fade.png",
+        "caption": "Epoch 3, 8×8 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0004_res08_fade.png",
+        "caption": "Epoch 4, 8×8 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0005_res08_stable.png",
+        "caption": "Epoch 5, 8×8 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0006_res08_stable.png",
+        "caption": "Epoch 6, 8×8 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0007_res16_fade.png",
+        "caption": "Epoch 7, 16×16 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0008_res16_fade.png",
+        "caption": "Epoch 8, 16×16 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0009_res16_stable.png",
+        "caption": "Epoch 9, 16×16 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0010_res16_stable.png",
+        "caption": "Epoch 10, 16×16 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0011_res32_fade.png",
+        "caption": "Epoch 11, 32×32 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0012_res32_fade.png",
+        "caption": "Epoch 12, 32×32 fade. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0013_res32_stable.png",
+        "caption": "Epoch 13, 32×32 stable. One frame of the 14-epoch growth."
+      },
+      {
+        "src": "figures/pgan/epoch_0014_res32_stable.png",
+        "caption": "Epoch 14, 32×32 stable. One frame of the 14-epoch growth."
+      }
+    ]
   },
   "figures": [
     {

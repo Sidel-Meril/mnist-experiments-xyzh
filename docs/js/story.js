@@ -41,7 +41,10 @@ function activate(article, stop, event) {
   if (stop.frame) {
     const img = article.querySelector(".live img");
     const cap = article.querySelector(".live figcaption");
-    if (img) img.src = stop.frame;
+    if (img) {
+      img.src = stop.frame;
+      if (stop.frameCaption) img.alt = stop.frameCaption;
+    }
     if (cap && stop.frameCaption) cap.textContent = stop.frameCaption;
   }
   article.querySelectorAll(".reflection li").forEach((item) => {
@@ -312,7 +315,9 @@ function seriesStop(chart, dataset, row) {
       `logged sample std ${fmt(row.sample_std)}`,
     ].join("\n"),
     frame: frame && frame.src,
-    frameCaption: frame ? `${dataset}, epoch ${frame.epoch} grid` : "",
+    frameCaption: frame
+      ? `${dataset}, epoch ${row.epoch}. Eval D ${fmt(row.eval_d)}, eval G ${fmt(row.eval_g)}.${frame.epoch === row.epoch ? "" : ` Nearest saved grid is epoch ${frame.epoch}.`}`
+      : "",
   };
 }
 
@@ -417,20 +422,86 @@ function drawChart(host, chart, history, article) {
   else if (chart.type === "series") drawSeries(host, chart, history, article);
 }
 
+function setPlaying(button, playing) {
+  if (!button) return;
+  button.textContent = playing ? "Pause" : "Play";
+  button.classList.toggle("is-on", playing);
+  button.setAttribute("aria-pressed", playing ? "true" : "false");
+  button.setAttribute("aria-label", playing ? "Pause this chart" : "Play this chart");
+}
+
+function showStop(host, article, stop) {
+  if (stop.apply) stop.apply();
+  activate(article, stop);
+  host.querySelectorAll(".mark").forEach((node) => {
+    const data = node.__data__;
+    const on = data === stop || (data && stop.epoch != null && data.epoch === stop.epoch);
+    node.classList.toggle("is-on", on);
+    node.classList.toggle("dim", !on);
+  });
+}
+
+function playChart(host, article) {
+  const stops = host._stops || [];
+  const button = host.querySelector(":scope > .play");
+  if (!stops.length) return;
+  if (host._timer) {
+    window.clearInterval(host._timer);
+    host._timer = 0;
+    setPlaying(button, false);
+    return;
+  }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    showStop(host, article, stops[0]);
+    return;
+  }
+  let index = host._index || 0;
+  if (index >= stops.length) index = 0;
+  const step = () => {
+    showStop(host, article, stops[index]);
+    index += 1;
+    host._index = index;
+    if (index >= stops.length) {
+      window.clearInterval(host._timer);
+      host._timer = 0;
+      setPlaying(button, false);
+    }
+  };
+  step();
+  if (index < stops.length) {
+    setPlaying(button, true);
+    host._timer = window.setInterval(step, 1400);
+  }
+}
+
 function drawCharts(article, bundle, history) {
-  article._stops = [];
   article.querySelectorAll(".chart").forEach((host, index) => {
+    window.clearInterval(host._timer);
+    host._timer = 0;
+    host._index = 0;
+    host._stops = [];
+    // Drawers append to article._stops. Point that list at this chart.
+    article._stops = host._stops;
     const chart = bundle.charts[index];
+    const play = host.querySelector(":scope > .play");
+    if (play) {
+      play.remove();
+      setPlaying(play, false);
+    }
     if (chart.type === "series") {
       const current = host.dataset.current;
       host.replaceChildren();
       if (current) host.dataset.current = current;
       drawChart(host, chart, history, article);
-      return;
+    } else {
+      const plot = host.querySelector(":scope > .plot");
+      plot.replaceChildren();
+      drawChart(plot, chart, history, article);
     }
-    const plot = host.querySelector(":scope > .plot");
-    plot.replaceChildren();
-    drawChart(plot, chart, history, article);
+    if (play) {
+      play.hidden = !host._stops.length;
+      host.append(play);
+    }
   });
 }
 
@@ -441,9 +512,7 @@ function renderChapter(bundle, history) {
   const head = el("div", "chapter-head");
   const titles = el("div");
   titles.append(el("p", "points", bundle.points), el("h2", null, bundle.title), el("p", "question", bundle.question));
-  const play = el("button", "play", "Play the chart");
-  play.type = "button";
-  head.append(titles, play);
+  head.append(titles);
   article.append(head);
   const prose = Array.isArray(bundle.process) ? bundle.process : [bundle.process];
   prose.forEach((block) => article.append(el("p", "process", block)));
@@ -456,6 +525,14 @@ function renderChapter(bundle, history) {
       host.append(el("h3", null, chart.title));
       host.append(el("div", "plot"));
     }
+    if (bundle.play !== false) {
+      const play = el("button", "play", "Play");
+      play.type = "button";
+      play.setAttribute("aria-pressed", "false");
+      play.setAttribute("aria-label", "Play this chart");
+      host.append(play);
+      play.addEventListener("click", () => playChart(host, article));
+    }
     charts.append(host);
   });
   const finding = el("aside", "finding");
@@ -463,7 +540,9 @@ function renderChapter(bundle, history) {
   finding.querySelector(".who").dataset.answers = "";
   finding.append(el("p", "summary"));
   finding.querySelector(".summary").dataset.summary = "";
-  finding.append(el("p", "hint", "Hover keeps this sentence. Play walks the marks in order."));
+  finding.append(el("p", "hint", bundle.play === false
+    ? "Hover a mark. This chart does not play."
+    : "Hover keeps this sentence. Play and pause sit under each chart."));
   stage.append(charts, finding);
   article.append(stage);
 
@@ -482,7 +561,28 @@ function renderChapter(bundle, history) {
     const img = el("img");
     img.src = bundle.live.src;
     img.alt = bundle.live.alt;
-    fig.append(img, el("figcaption", null, bundle.live.caption));
+    const cap = el("figcaption", null, bundle.live.caption);
+    fig.append(img, cap);
+    if (bundle.live.sequence && bundle.live.sequence.length) {
+      const reel = el("button", "play", "Play epochs");
+      reel.type = "button";
+      fig.append(reel);
+      reel.addEventListener("click", () => {
+        const frames = bundle.live.sequence;
+        let index = 0;
+        const step = () => {
+          const frame = frames[index];
+          img.src = frame.src;
+          img.alt = frame.caption;
+          cap.textContent = frame.caption;
+          index += 1;
+          if (index >= frames.length) window.clearInterval(article._reel);
+        };
+        window.clearInterval(article._reel);
+        step();
+        article._reel = window.setInterval(step, 700);
+      });
+    }
     figures.append(fig);
   }
   bundle.figures.forEach((figure) => {
@@ -503,36 +603,6 @@ function renderChapter(bundle, history) {
     sources.append(el("code", null, source));
   });
   article.append(sources);
-
-  play.addEventListener("click", () => {
-    const stops = article._stops || [];
-    if (!stops.length) return;
-    window.clearInterval(article._timer);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const stop = stops[0];
-      if (stop.apply) stop.apply();
-      activate(article, stop);
-      return;
-    }
-    let index = 0;
-    const step = () => {
-      const stop = stops[index % stops.length];
-      if (stop.apply) stop.apply();
-      activate(article, stop);
-      article.querySelectorAll(".mark").forEach((node) => {
-        const data = node.__data__;
-        const on = data === stop || (data && stop.epoch != null && data.epoch === stop.epoch);
-        node.classList.toggle("is-on", on);
-        node.classList.toggle("dim", !on);
-      });
-      const target = stop.frame ? article.querySelector(".live") : article.querySelector(".stage");
-      if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
-      index += 1;
-      if (index >= stops.length) window.clearInterval(article._timer);
-    };
-    step();
-    article._timer = window.setInterval(step, 1400);
-  });
 
   document.getElementById("chapters").append(article);
   activate(article, bundle.opening);

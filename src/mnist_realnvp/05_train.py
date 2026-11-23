@@ -63,11 +63,13 @@ def run(
         seed=RANDOM_SEED,
     )
     def _snapshot(epoch: int, _history: dict[str, list[float]]) -> None:
+        epoch_path = samples_path.with_name(f"{samples_path.stem}_epoch_{epoch + 1:04d}{samples_path.suffix}")
+        seed_all(RANDOM_SEED + epoch)
+        save_grid(model.sample(64), epoch_path, f"RealNVP samples ({source}, epoch {epoch + 1})")
+        print(f"samples epoch {epoch + 1} -> {epoch_path}", flush=True)
         if (epoch + 1) % 2 != 0 and epoch + 1 != epochs:
             return
         model.save(model_path, list(contract.features), hparams)
-        seed_all(RANDOM_SEED + epoch)
-        save_grid(model.sample(64), samples_path, f"RealNVP samples ({source}, inverse flow)")
         print(f"checkpoint epoch {epoch + 1} -> {model_path}", flush=True)
 
     history = model.fit_from_dataset(
@@ -82,6 +84,8 @@ def run(
     model.save(model_path, list(contract.features), hparams)
     save_curve(history["train"], history["eval"], plot_path, "negative_log_likelihood")
     save_curve(history["bpd_train"], history["bpd_eval"], bpd_path, "bits_per_dimension")
+    history_path = bpd_path.with_name(f"{bpd_path.stem}_history.json")
+    history_path.write_text(json.dumps(history, indent=2), encoding="utf-8")
     seed_all(RANDOM_SEED)
     drawn = model.sample(64)
     save_grid(drawn, samples_path, f"RealNVP samples ({source}, inverse flow)")

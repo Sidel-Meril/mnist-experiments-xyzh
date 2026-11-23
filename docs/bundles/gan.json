@@ -39,17 +39,87 @@
       "frames": {
         "digits": {
           "1": "figures/gan/digits/epoch_0001.png",
+          "2": "figures/gan/digits/epoch_0002.png",
+          "3": "figures/gan/digits/epoch_0003.png",
+          "4": "figures/gan/digits/epoch_0004.png",
+          "5": "figures/gan/digits/epoch_0005.png",
+          "6": "figures/gan/digits/epoch_0006.png",
+          "7": "figures/gan/digits/epoch_0007.png",
+          "8": "figures/gan/digits/epoch_0008.png",
+          "9": "figures/gan/digits/epoch_0009.png",
           "10": "figures/gan/digits/epoch_0010.png",
+          "11": "figures/gan/digits/epoch_0011.png",
+          "12": "figures/gan/digits/epoch_0012.png",
+          "13": "figures/gan/digits/epoch_0013.png",
+          "14": "figures/gan/digits/epoch_0014.png",
+          "15": "figures/gan/digits/epoch_0015.png",
+          "16": "figures/gan/digits/epoch_0016.png",
+          "17": "figures/gan/digits/epoch_0017.png",
+          "18": "figures/gan/digits/epoch_0018.png",
+          "19": "figures/gan/digits/epoch_0019.png",
           "20": "figures/gan/digits/epoch_0020.png",
+          "21": "figures/gan/digits/epoch_0021.png",
+          "22": "figures/gan/digits/epoch_0022.png",
+          "23": "figures/gan/digits/epoch_0023.png",
+          "24": "figures/gan/digits/epoch_0024.png",
+          "25": "figures/gan/digits/epoch_0025.png",
+          "26": "figures/gan/digits/epoch_0026.png",
+          "27": "figures/gan/digits/epoch_0027.png",
+          "28": "figures/gan/digits/epoch_0028.png",
+          "29": "figures/gan/digits/epoch_0029.png",
           "30": "figures/gan/digits/epoch_0030.png",
-          "40": "figures/gan/digits/final.png"
+          "31": "figures/gan/digits/epoch_0031.png",
+          "32": "figures/gan/digits/epoch_0032.png",
+          "33": "figures/gan/digits/epoch_0033.png",
+          "34": "figures/gan/digits/epoch_0034.png",
+          "35": "figures/gan/digits/epoch_0035.png",
+          "36": "figures/gan/digits/epoch_0036.png",
+          "37": "figures/gan/digits/epoch_0037.png",
+          "38": "figures/gan/digits/epoch_0038.png",
+          "39": "figures/gan/digits/epoch_0039.png",
+          "40": "figures/gan/digits/epoch_0040.png"
         },
         "fashion": {
           "1": "figures/gan/fashion/epoch_0001.png",
+          "2": "figures/gan/fashion/epoch_0002.png",
+          "3": "figures/gan/fashion/epoch_0003.png",
+          "4": "figures/gan/fashion/epoch_0004.png",
+          "5": "figures/gan/fashion/epoch_0005.png",
+          "6": "figures/gan/fashion/epoch_0006.png",
+          "7": "figures/gan/fashion/epoch_0007.png",
+          "8": "figures/gan/fashion/epoch_0008.png",
+          "9": "figures/gan/fashion/epoch_0009.png",
           "10": "figures/gan/fashion/epoch_0010.png",
+          "11": "figures/gan/fashion/epoch_0011.png",
+          "12": "figures/gan/fashion/epoch_0012.png",
+          "13": "figures/gan/fashion/epoch_0013.png",
+          "14": "figures/gan/fashion/epoch_0014.png",
+          "15": "figures/gan/fashion/epoch_0015.png",
+          "16": "figures/gan/fashion/epoch_0016.png",
+          "17": "figures/gan/fashion/epoch_0017.png",
+          "18": "figures/gan/fashion/epoch_0018.png",
+          "19": "figures/gan/fashion/epoch_0019.png",
           "20": "figures/gan/fashion/epoch_0020.png",
+          "21": "figures/gan/fashion/epoch_0021.png",
+          "22": "figures/gan/fashion/epoch_0022.png",
+          "23": "figures/gan/fashion/epoch_0023.png",
+          "24": "figures/gan/fashion/epoch_0024.png",
+          "25": "figures/gan/fashion/epoch_0025.png",
+          "26": "figures/gan/fashion/epoch_0026.png",
+          "27": "figures/gan/fashion/epoch_0027.png",
+          "28": "figures/gan/fashion/epoch_0028.png",
+          "29": "figures/gan/fashion/epoch_0029.png",
           "30": "figures/gan/fashion/epoch_0030.png",
-          "40": "figures/gan/fashion/final.png"
+          "31": "figures/gan/fashion/epoch_0031.png",
+          "32": "figures/gan/fashion/epoch_0032.png",
+          "33": "figures/gan/fashion/epoch_0033.png",
+          "34": "figures/gan/fashion/epoch_0034.png",
+          "35": "figures/gan/fashion/epoch_0035.png",
+          "36": "figures/gan/fashion/epoch_0036.png",
+          "37": "figures/gan/fashion/epoch_0037.png",
+          "38": "figures/gan/fashion/epoch_0038.png",
+          "39": "figures/gan/fashion/epoch_0039.png",
+          "40": "figures/gan/fashion/epoch_0040.png"
         }
       },
       "beats": [
@@ -58,6 +128,24 @@
           "epoch": 1,
           "answers": "What worked well?",
           "summary": "Epoch 1 on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The two losses sit near each other. The spread is already small."
+        },
+        {
+          "dataset": "digits",
+          "epoch": 10,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+        },
+        {
+          "dataset": "digits",
+          "epoch": 20,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+        },
+        {
+          "dataset": "digits",
+          "epoch": 30,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "digits",
@@ -70,6 +158,24 @@
           "epoch": 1,
           "answers": "What worked well?",
           "summary": "Epoch 1 on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The batch still varies."
+        },
+        {
+          "dataset": "fashion",
+          "epoch": 10,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+        },
+        {
+          "dataset": "fashion",
+          "epoch": 20,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+        },
+        {
+          "dataset": "fashion",
+          "epoch": 30,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "fashion",
@@ -89,7 +195,7 @@
   "live": {
     "src": "figures/gan/digits/final.png",
     "alt": "Vanilla GAN digits collapsed to one repeated noisy stroke.",
-    "caption": "Digits at the end of training: one noisy stroke, repeated. Hover an epoch to replace this grid."
+    "caption": "Digits, epoch 40: one noisy stroke repeated. Hover any epoch, on either dataset, to put that epoch's grid here."
   },
   "figures": [
     {

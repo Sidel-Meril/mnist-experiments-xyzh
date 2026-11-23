@@ -148,7 +148,9 @@ h3 { font-size: 1.05rem; margin: 0; }
   color: var(--ink);
 }
 
-.switcher button.is-on, .play:hover { background: var(--ink); color: var(--paper); }
+.switcher button.is-on, .play.is-on, .play:hover { background: var(--ink); color: var(--paper); }
+
+.chart > .play { margin: 0.15rem 0 0.45rem; }
 
 .plot { width: 100%; min-height: 180px; }
 .plot.panels { display: flex; min-height: 0; }
@@ -254,6 +256,7 @@ figure img {
 }
 
 .live img { outline: 2px solid var(--accent); outline-offset: 2px; }
+.live .play { margin-top: 0.45rem; }
 
 figcaption { color: var(--muted); font-size: 0.86rem; margin-top: 0.35rem; }
 
