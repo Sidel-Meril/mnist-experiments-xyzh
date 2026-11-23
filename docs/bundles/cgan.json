@@ -33,7 +33,7 @@
           "summary": "Vanilla digits, from the earlier run: sample std 0.0134 / real std 0.378 = 0.035. mode_collapse is true. One repeated stroke. The class-conditional runs below are the same training code with a label.",
           "hover": "0.0134 / 0.378 = 0.035",
           "frame": "figures/gan/digits/final.png",
-          "frameCaption": "Vanilla digits. One repeated stroke."
+          "frameCaption": "Vanilla digits. One noisy stroke."
         },
         {
           "label": "vanilla fashion",
@@ -42,7 +42,7 @@
           "summary": "Vanilla Fashion: 0.0413 / 0.531 = 0.078. mode_collapse is true. One shirt.",
           "hover": "0.0413 / 0.531 = 0.078",
           "frame": "figures/gan/fashion/final.png",
-          "frameCaption": "Vanilla Fashion. One repeated shirt."
+          "frameCaption": "Vanilla Fashion. One speckled garment."
         },
         {
           "label": "cGAN digits",
@@ -51,7 +51,7 @@
           "summary": "cGAN digits: sample std 0.6362 / real std 0.6074 = 1.05. mode_collapse is false. Diversity 0.630, class separation 0.636. Each row is a different digit. Sharpness is 0.628 against real 0.256, so the ink is speckled. Generator loss equals BCE at 2.074, so this run has no feature-matching term. Eval D is 0.216.",
           "hover": "1.05 · diversity 0.630 · sharpness 0.628 vs 0.256",
           "frame": "figures/cgan/classes.png",
-          "frameCaption": "cGAN digits. One class per row."
+          "frameCaption": "cGAN digits. Early rows hold, lower rows speckle."
         },
         {
           "label": "cGAN fashion",
@@ -60,7 +60,7 @@
           "summary": "cGAN Fashion: 0.6140 / 0.6468 = 0.95. mode_collapse is false. Diversity 0.560, class separation 0.600. Rows separate into shirts, trousers, shoes, and bags, and they are speckled. Sharpness 0.698 against real 0.301. Eval D 0.665, generator loss 3.257, equal to BCE.",
           "hover": "0.95 · diversity 0.560 · sharpness 0.698 vs 0.301",
           "frame": "figures/ext/cgan_fashion_classes.png",
-          "frameCaption": "cGAN Fashion. Rows follow garment classes."
+          "frameCaption": "cGAN Fashion. Shirts and trousers separate. Boots and bags do not."
         },
         {
           "label": "PatchGAN digits",
@@ -69,7 +69,7 @@
           "summary": "PatchGAN digits: 0.5365 / 0.6074 = 0.88, so mode_collapse is false and the ratio looks healthy. The class grid is still one binary glyph on every row. Pixel std stays high because that glyph is high-contrast and jitters. The label did not change the picture. Diversity 0.537, class separation 0.537, sharpness 0.393 against real 0.256. Eval D 0.611, generator loss 2.814, equal to BCE.",
           "hover": "ratio 0.88, and every class row is the same glyph",
           "frame": "figures/ext/patchgan_digits_classes.png",
-          "frameCaption": "PatchGAN digits. One glyph in every class row."
+          "frameCaption": "PatchGAN digits. One glyph in every row."
         },
         {
           "label": "PatchGAN fashion",
@@ -78,7 +78,7 @@
           "summary": "PatchGAN Fashion: 0.7122 / 0.6468 = 1.10. mode_collapse is false. The class grid does change with the label: shirts, trousers, coats, sandals, bags, and shoes are different rows, and they read as garments more clearly than the speckled cGAN. Diversity 0.675, class separation 0.637, sharpness 0.427 against real 0.301. Eval D 1.075, generator loss 1.030.",
           "hover": "1.10 · class rows are different garments",
           "frame": "figures/ext/patchgan_fashion_classes.png",
-          "frameCaption": "PatchGAN Fashion. Class rows are different clothes."
+          "frameCaption": "PatchGAN Fashion. The row is a different garment."
         },
         {
           "label": "FM digits",
@@ -87,7 +87,7 @@
           "summary": "Feature matching on digits: 0.5624 / 0.6074 = 0.93. mode_collapse is false. The class rows are different digits, still speckled. Diversity 0.554, class separation 0.561, sharpness 0.471 against real 0.256, closer to real ink than the cGAN's 0.628. Generator loss is 6.539 and BCE is 2.976, so the feature-matching term is in the objective. Eval D is 0.449.",
           "hover": "0.93 · G 6.539 vs BCE 2.976",
           "frame": "figures/ext/fm_digits_classes.png",
-          "frameCaption": "Feature matching, digits. Class rows differ."
+          "frameCaption": "Feature matching, digits. 0, 1, and 3 hold."
         },
         {
           "label": "FM fashion",
@@ -96,7 +96,7 @@
           "summary": "Feature matching on Fashion: 0.7266 / 0.6468 = 1.12. mode_collapse is false and diversity is 0.656, the high end of this table. The class grid is less readable than PatchGAN Fashion: several rows are speckled blobs, and a few still suggest a shirt, a sandal, or a bag. Sharpness 0.672 against real 0.301. Generator loss 7.411 against BCE 2.706. The extra term is active, and it did not buy a cleaner garment.",
           "hover": "1.12 · G 7.411 vs BCE 2.706",
           "frame": "figures/ext/fm_fashion_classes.png",
-          "frameCaption": "Feature matching, Fashion. High spread, speckled rows."
+          "frameCaption": "Feature matching, Fashion. Speckled columns."
         }
       ]
     }
@@ -109,39 +109,39 @@
   },
   "live": {
     "src": "figures/cgan/classes.png",
-    "alt": "cGAN class grid on digits, one digit class per row.",
-    "caption": "Class grid for the hovered run. Starts as cGAN digits."
+    "alt": "cGAN digits class grid. Early rows are digits, later rows are speckled.",
+    "caption": "cGAN digits. The row is the class, and the lower classes fall apart. Hover a bar to replace this grid."
   },
   "figures": [
     {
       "src": "figures/ext/patchgan_digits_classes.png",
-      "alt": "PatchGAN digits class grid. Every row is the same binary glyph.",
-      "caption": "PatchGAN digits. The spread ratio is 0.88 and the rows do not change."
+      "alt": "PatchGAN digits. The same broken glyph in every class row.",
+      "caption": "PatchGAN digits. The ratio is 0.88 and every row is the same broken glyph. The label did not change the picture."
     },
     {
       "src": "figures/ext/patchgan_fashion_classes.png",
-      "alt": "PatchGAN Fashion class grid with different garments on different rows.",
-      "caption": "PatchGAN Fashion. Class rows are different clothes."
+      "alt": "PatchGAN Fashion class grid. Each row is a different garment.",
+      "caption": "PatchGAN Fashion. The row changes the garment: shirt, trousers, coat, dress, pullover, sandal, bag, sneaker, boot."
     },
     {
       "src": "figures/ext/fm_digits_classes.png",
-      "alt": "Feature-matching class grid on digits with a different digit on each row.",
-      "caption": "Feature matching, digits. Generator loss 6.539, BCE 2.976."
+      "alt": "Feature-matching digits. Some class rows are digits, others are repeated speckle.",
+      "caption": "Feature matching on digits. 0, 1, and 3 are stable. The other rows are one speckled shape each."
     },
     {
       "src": "figures/ext/cgan_fashion_classes.png",
-      "alt": "cGAN Fashion class grid. Rows are speckled garments.",
-      "caption": "cGAN Fashion. Spread ratio 0.95, sharpness 0.698 against real 0.301."
+      "alt": "cGAN Fashion class grid. Some rows are garments, lower rows are static noise.",
+      "caption": "cGAN Fashion. Trousers and shirts are noisy but separate. Bags, sandals, and boots are mostly static."
     },
     {
       "src": "figures/cgan/digits/loss.png",
-      "alt": "cGAN discriminator and generator loss on digits.",
-      "caption": "cGAN digits loss over 40 epochs."
+      "alt": "cGAN digits losses. Generator loss rises while discriminator loss stays lower.",
+      "caption": "cGAN digits. Train generator loss climbs away from the discriminator, which stays near 1 and then falls. Generator BCE is the brown line under the green one."
     },
     {
       "src": "figures/cgan/fashion/loss.png",
-      "alt": "cGAN discriminator and generator loss on Fashion.",
-      "caption": "cGAN Fashion loss over 40 epochs."
+      "alt": "cGAN Fashion losses. Generator loss is high and jagged. Discriminator loss stays low.",
+      "caption": "cGAN Fashion. Generator loss runs up and stays noisy. The discriminator settles low. That is the vanilla Fashion pattern, without the single shirt."
     }
   ],
   "sources": [

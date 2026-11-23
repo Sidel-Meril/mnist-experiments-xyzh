@@ -88,24 +88,24 @@
   },
   "live": {
     "src": "figures/gan/digits/final.png",
-    "alt": "Vanilla GAN digits at the end of training: the same fuzzy vertical stroke repeated.",
-    "caption": "Nearest saved grid for the hovered epoch. This frame starts at the digits eval grid."
+    "alt": "Vanilla GAN digits collapsed to one repeated noisy stroke.",
+    "caption": "Digits at the end of training: one noisy stroke, repeated. Hover an epoch to replace this grid."
   },
   "figures": [
     {
       "src": "figures/gan/digits/real_test.png",
-      "alt": "Real MNIST test digits, varied classes.",
-      "caption": "Real digits test batch. Generator sample std 0.0134 against real std 0.378."
+      "alt": "Real MNIST test digits of many classes.",
+      "caption": "The real test batch the collapse is measured against. These are different digits. Generator sample std is 0.013 against 0.378 here."
     },
     {
       "src": "figures/gan/fashion/final.png",
-      "alt": "Vanilla GAN Fashion samples collapsed to one shirt.",
-      "caption": "Fashion eval grid. One shirt, mode_collapse true."
+      "alt": "Vanilla GAN Fashion collapsed to one repeated speckled shape.",
+      "caption": "Fashion at the end of training. One speckled garment, repeated."
     },
     {
       "src": "figures/gan/fashion/real_test.png",
-      "alt": "Real Fashion-MNIST test images with many garment types.",
-      "caption": "Real Fashion test batch. Generator sample std 0.041 against real std 0.531."
+      "alt": "Real Fashion-MNIST test images of many garment types.",
+      "caption": "The real Fashion batch: dresses, shirts, shoes, bags, trousers. The generator did not cover this."
     }
   ],
   "sources": [

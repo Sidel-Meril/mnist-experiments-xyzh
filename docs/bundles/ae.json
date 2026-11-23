@@ -98,18 +98,18 @@
   "figures": [
     {
       "src": "figures/ae/reconstruction_error_vs_latent.png",
-      "alt": "Original plot of reconstruction error against latent size.",
-      "caption": "The same sweep, as saved by the pipeline. The D3 chart replots the notebook’s averaged validation MSE."
+      "alt": "Validation reconstruction MSE falling then flattening from latent 2 to 128.",
+      "caption": "Validation MSE against latent size. The drop is spent by 16. Latent 128, the scored model, sits on the flat tail."
     },
     {
       "src": "figures/ae/reconstructions_test.png",
-      "alt": "Original MNIST digits above their latent-128 reconstructions. The reconstructions are slightly soft but the same digits.",
-      "caption": "Test reconstructions for the latent-128 checkpoint. Top row original, bottom row reconstruction."
+      "alt": "Eight test digits and softer reconstructions of the same digits.",
+      "caption": "Original row 7, 2, 1, 0, 4, 1, 4, 9. The reconstruction keeps the class and softens the 0 and the 4. That is the latent-128 test MSE of 0.041."
     },
     {
       "src": "figures/ae/loss.png",
-      "alt": "Training loss curve for the autoencoder.",
-      "caption": "Training loss for the checkpoint, separate from the latent-size sweep."
+      "alt": "Autoencoder train and test MSE falling to about 0.065 and 0.041.",
+      "caption": "Reconstruction MSE for that checkpoint. Test ends at 0.041, the scored test error. The axis runs to epoch 7."
     }
   ],
   "sources": [

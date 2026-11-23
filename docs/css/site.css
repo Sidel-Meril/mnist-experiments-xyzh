@@ -165,7 +165,9 @@ h3 { font-size: 1.05rem; margin: 0; }
 
 .grid line { stroke-dasharray: 2 3; }
 
-.mark { cursor: pointer; }
+.mark { cursor: pointer; pointer-events: all; }
+.mark.is-on { stroke: var(--ink); stroke-width: 3px; }
+.row-label, .row-value, .best-tag { pointer-events: none; }
 
 .mark.dim { opacity: 0.35; }
 

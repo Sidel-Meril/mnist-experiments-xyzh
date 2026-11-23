@@ -55,7 +55,7 @@
           "summary": "Digits test MSE is 0.0852, KL is 15.41, ELBO is −82.21. Domain KID is 3.1052. Prior samples still look like digits, but thin strokes are the first thing a blurry decoder drops, and the spatial KID says those samples sit farther from the test set than the Fashion samples do.",
           "hover": "digits · MSE 0.0852 · ELBO −82.21 · KL 15.41 · KID 3.1052",
           "frame": "figures/vae/digits/generated_samples.png",
-          "frameCaption": "Digits prior samples, N(0, I), latent 8."
+          "frameCaption": "Digits prior samples. Thick strokes, many classes."
         },
         {
           "dataset": "fashion",
@@ -67,7 +67,7 @@
           "summary": "Fashion test MSE is 0.0749, KL is 12.34, ELBO is −71.09. Domain KID is 0.2043. Shirts, shoes, trousers, and bags still read as those objects when the decoder is soft, because the silhouette is wide. The same blur hurts a one-pixel stroke much more.",
           "hover": "fashion · MSE 0.0749 · ELBO −71.09 · KL 12.34 · KID 0.2043",
           "frame": "figures/vae/fashion/generated_samples.png",
-          "frameCaption": "Fashion prior samples, N(0, I), latent 8."
+          "frameCaption": "Fashion prior samples. Shirts, trousers, shoes, and bags."
         }
       ]
     },
@@ -122,34 +122,34 @@
   },
   "live": {
     "src": "figures/vae/digits/generated_samples.png",
-    "alt": "Blurry but recognizable MNIST digits sampled from a standard normal latent.",
-    "caption": "Prior samples. Hover Fashion to swap in the garment grid."
+    "alt": "64 blurry but class-recognizable MNIST digits from the VAE prior.",
+    "caption": "Digits from N(0, I). Hover Fashion to put the garment grid in this frame."
   },
   "figures": [
     {
       "src": "figures/vae/digits/reconstructions_test.png",
-      "alt": "MNIST test digits above their VAE reconstructions.",
-      "caption": "Digits test reconstructions from the posterior mean."
+      "alt": "Digits 0 to 9 and their VAE reconstructions. The 8 falls apart.",
+      "caption": "Test digits 0 through 9. The reconstructed 8 breaks. The others stay the right class and go soft."
     },
     {
       "src": "figures/vae/fashion/reconstructions_test.png",
-      "alt": "Fashion-MNIST test images above their VAE reconstructions.",
-      "caption": "Fashion test reconstructions from the posterior mean."
+      "alt": "Ten Fashion test images and reconstructions that keep the silhouette and drop the detail.",
+      "caption": "The garment silhouette returns. The dress print, the sandal, and the lamp do not."
     },
     {
       "src": "figures/vae/fashion/generated_samples.png",
-      "alt": "Soft but recognizable clothing sampled from the Fashion VAE.",
-      "caption": "Fashion prior samples, the same 64-draw protocol as the digits grid."
+      "alt": "64 soft but recognizable Fashion samples from the VAE prior.",
+      "caption": "Fashion draws from the same normal. Shirts, trousers, shoes, and bags are recognizable, which the RealNVP Fashion grid is not."
     },
     {
       "src": "figures/vae/digits/loss.png",
-      "alt": "VAE training loss on the digits slice.",
-      "caption": "Digits per-epoch loss. This curve was a PNG, not a JSON series."
+      "alt": "Digits VAE train and test loss falling over about 20 epochs.",
+      "caption": "Digits VAE loss over the scored run. Test falls from about 137 to about 86 and flattens, under the train line the whole way."
     },
     {
       "src": "figures/vae/fashion/loss.png",
-      "alt": "VAE training loss on the Fashion slice.",
-      "caption": "Fashion per-epoch loss, same recipe as the digits run."
+      "alt": "Fashion VAE train and test loss falling, test ending near 74.",
+      "caption": "Fashion VAE loss. Test ends near 74, under the digits curve, which is the same ordering as the final ELBO."
     }
   ],
   "sources": [

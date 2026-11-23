@@ -58,7 +58,7 @@
           "summary": "The 64 digit samples cover 0–9 and a few ambiguous blobs. They are cleaner than the RealNVP inverse grid, which is stroke fragments. They are softer than a sharp GAN and in the same family as the vanilla VAE samples. The vanilla VAE digits run is a 10,000-image slice at latent 8 with test MSE 0.0852. This run is the full split at latent 32 with test MSE 0.0554, so the lower error is a larger experiment, not a paired win. The gallery decodes N(0, I). The inverse flow is inside the posterior.",
           "hover": "generated_samples.png · N(0, I)",
           "frame": "figures/fvae/generated_samples.png",
-          "frameCaption": "f-VAE prior samples on digits."
+          "frameCaption": "f-VAE digits from N(0, I)."
         },
         {
           "label": "Fashion-MNIST",
@@ -68,7 +68,7 @@
           "summary": "Same hyperparameters, 20 epochs, full split. Test ELBO −65.00 and BPD 0.945, against train ELBO −64.33. Test MSE 0.0621 and MAE 0.1328. KL 12.95 and log-det −9.07. Prior samples read as shirts, trousers, dresses, shoes, and bags, which is clearer than the RealNVP Fashion blobs. The vanilla Fashion VAE (latent 8, slice) has test MSE 0.0749 and ELBO −71.09. The shirt logo and the thin sandal still disappear, the same failure as that VAE.",
           "hover": "test ELBO −65.00\ntest MSE 0.0621\nlog-det −9.07",
           "frame": "figures/fvae/fashion/generated_samples.png",
-          "frameCaption": "f-VAE prior samples on Fashion-MNIST. N(0, I) through the decoder."
+          "frameCaption": "f-VAE Fashion from N(0, I). Garments without print or straps."
         }
       ]
     }
@@ -81,29 +81,29 @@
   },
   "live": {
     "src": "figures/fvae/generated_samples.png",
-    "alt": "Soft multi-class MNIST digits sampled from the f-VAE prior.",
-    "caption": "Prior samples on digits. Hover Fashion-MNIST to swap in the garment grid."
+    "alt": "64 soft multi-class digits sampled from the f-VAE prior.",
+    "caption": "f-VAE digits from the prior. Hover Fashion-MNIST to put that garment grid here."
   },
   "figures": [
     {
       "src": "figures/fvae/reconstructions_test.png",
-      "alt": "Test digits above f-VAE reconstructions from the flowed posterior mean.",
-      "caption": "Test reconstructions from the flowed posterior mean."
+      "alt": "Digits 0 to 9 and softer f-VAE reconstructions.",
+      "caption": "Original 0–9. Reconstructions keep the class. The 5, 6, and 8 lose their thin strokes."
     },
     {
       "src": "figures/fvae/fashion/reconstructions_test.png",
-      "alt": "Fashion-MNIST test images above f-VAE reconstructions. A shirt logo is lost.",
-      "caption": "Fashion test reconstructions. The silhouette stays; the shirt print does not."
+      "alt": "Fashion test images and f-VAE reconstructions that drop print and thin straps.",
+      "caption": "The printed sweatshirt loses its letters. The sandal collapses to a bar. The boot and the trousers remain."
     },
     {
       "src": "figures/fvae/fashion/loss.png",
-      "alt": "Fashion f-VAE training loss still falling at epoch 20.",
-      "caption": "Fashion training loss. Train ends near 72.7 and test near 65.0, and the curve has not flattened."
+      "alt": "Fashion f-VAE loss still descending near epoch 19.",
+      "caption": "Fashion f-VAE loss through the right edge of the plot. Test is still falling there, so this run did not plateau."
     },
     {
       "src": "figures/fvae/loss.png",
-      "alt": "f-VAE training loss curve on digits.",
-      "caption": "Digits training loss. Train and test metrics end within a few thousandths on MSE and BPD."
+      "alt": "Digits f-VAE loss falling through about epoch 14.",
+      "caption": "Digits f-VAE loss. The saved curve ends near epoch 14, with test still near 70 and still descending."
     }
   ],
   "sources": [

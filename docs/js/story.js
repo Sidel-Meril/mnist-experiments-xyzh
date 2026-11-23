@@ -282,7 +282,8 @@ function drawRows(host, chart, article) {
   rows.append("text").attr("class", "row-value").attr("x", 42).attr("y", 36)
     .attr("font-weight", (d) => (d.selected ? 700 : 400))
     .text((d) => d.valueText);
-  bindMark(rows.select("rect"), article, svg, (d) => d);
+  rows.selectAll("text, circle").attr("pointer-events", "none");
+  bindMark(rows, article, svg, (d) => d);
   chart.marks.forEach((mark) => article._stops.push(mark));
 }
 
@@ -396,6 +397,7 @@ function drawSeries(host, chart, history, article) {
     if (!row) return;
     article._stops.push({
       ...seriesStop(chart, beat.dataset, row),
+      epoch: beat.epoch,
       apply() {
         state.dataset = beat.dataset;
         host.dataset.current = beat.dataset;
@@ -517,6 +519,14 @@ function renderChapter(bundle, history) {
       const stop = stops[index % stops.length];
       if (stop.apply) stop.apply();
       activate(article, stop);
+      article.querySelectorAll(".mark").forEach((node) => {
+        const data = node.__data__;
+        const on = data === stop || (data && stop.epoch != null && data.epoch === stop.epoch);
+        node.classList.toggle("is-on", on);
+        node.classList.toggle("dim", !on);
+      });
+      const target = stop.frame ? article.querySelector(".live") : article.querySelector(".stage");
+      if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
       index += 1;
       if (index >= stops.length) window.clearInterval(article._timer);
     };

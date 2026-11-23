@@ -47,7 +47,7 @@
           "summary": "β = 0.1 has the sharpest reconstructions in the sweep (test MSE 0.0907) and all 8 axes stay active. Per-axis KL sits in a narrow band, about 3.1 to 3.8. Every traversal row changes the digit. Diversity is 0.168, tighter than β = 1. Optuna picks this β because it minimizes the weighted loss, which is the best reconstruction here and not the most compact code.",
           "hover": "β 0.1 · MSE 0.0907 · KL 26.94 · active 8 · diversity 0.168",
           "frame": "figures/beta/traversal_beta_0_1.png",
-          "frameCaption": "Latent traversal at β = 0.1. Every row changes the digit."
+          "frameCaption": "β = 0.1. Every row still changes the digit."
         },
         {
           "beta": 1,
@@ -58,7 +58,7 @@
           "summary": "β = 1 is bold on these panels because diversity peaks here at 0.226. Test MSE rises only to 0.0940, all 8 axes stay active, and KL falls to 15.03. The traversal rows still change the glyph. Optuna does not pick this point. It picks β = 0.1, where the weighted validation loss is lower and the samples are tighter.",
           "hover": "β 1 · MSE 0.0940 · KL 15.03 · active 8 · diversity 0.226",
           "frame": "figures/beta/traversal_beta_1.png",
-          "frameCaption": "Latent traversal at β = 1, the diversity peak.",
+          "frameCaption": "β = 1. Every row still moves the glyph.",
           "selected": true,
           "bestLabel": "diverse"
         },
@@ -71,7 +71,7 @@
           "summary": "β = 4 pushes test MSE to 0.1114 and KL down to 8.37. Active units fall to 7. One axis, z4, has KL about 0.007 and a traversal response near zero. Diversity slips to 0.204. The code is getting smaller by switching an axis off, and the digits are blurrier.",
           "hover": "β 4 · MSE 0.1114 · KL 8.37 · active 7 · diversity 0.204",
           "frame": "figures/beta/traversal_beta_4.png",
-          "frameCaption": "Latent traversal at β = 4. One axis has nearly stopped moving."
+          "frameCaption": "β = 4. Rows still move, and the digits are blurrier."
         },
         {
           "beta": 10,
@@ -82,7 +82,7 @@
           "summary": "β = 10 is the blurriest decoder (test MSE 0.1480) and the least diverse prior (0.151). KL is 3.94. z3, z4, and z5 each have KL under 0.02 and their traversal rows barely move: three rows of the grid stay a single glyph. The rows that still move still change which digit you see. That is unused axes turning off, not one axis owning slant. MNIST does not label a continuous factor, so the grid is not a disentanglement claim.",
           "hover": "β 10 · MSE 0.1480 · KL 3.94 · active 6 · diversity 0.151",
           "frame": "figures/beta/traversal_beta_10.png",
-          "frameCaption": "Latent traversal at β = 10. Three rows stay frozen."
+          "frameCaption": "β = 10. Several rows stay one smeared digit."
         }
       ]
     },
@@ -104,7 +104,7 @@
           "summary": "β = 0.1 is bold because Optuna minimizes the β-weighted validation loss and this trial scores 100.37. Hidden size, dropout, learning rate, weight decay, batch size, and latent size were the same on every trial, so the bar isolates β. best_params.json stores this value. It is the best reconstruction weight in the search, and it is the low-diversity end of the sweep.",
           "hover": "β 0.1 · val loss 100.37",
           "frame": "figures/beta/traversal_beta_0_1.png",
-          "frameCaption": "Traversal at the Optuna pick, β = 0.1. Every row moves."
+          "frameCaption": "β = 0.1. Every row still changes the digit."
         },
         {
           "beta": 1,
@@ -113,7 +113,7 @@
           "summary": "β = 1 scores validation loss 117.77. The weighted objective is worse than at 0.1, and the exploration sweep says this is where diversity peaks. The search and the sample grid want different β.",
           "hover": "β 1 · val loss 117.77",
           "frame": "figures/beta/traversal_beta_1.png",
-          "frameCaption": "Traversal at β = 1."
+          "frameCaption": "β = 1. Every row still moves the glyph."
         },
         {
           "beta": 4,
@@ -122,7 +122,7 @@
           "summary": "β = 4 scores validation loss 151.98. In the longer sweep, test MSE is 0.1114, active units fall to 7, and one traversal row goes quiet. The objective and the pictures agree that the code is being squeezed.",
           "hover": "β 4 · val loss 151.98",
           "frame": "figures/beta/traversal_beta_4.png",
-          "frameCaption": "Traversal at β = 4."
+          "frameCaption": "β = 4. Rows still move, and the digits are blurrier."
         },
         {
           "beta": 10,
@@ -131,7 +131,7 @@
           "summary": "β = 10 is the worst Optuna loss, 189.53, and the blurriest sweep point, test MSE 0.1480, diversity 0.151, six active axes. z3, z4, and z5 have KL under 0.02 and their traversal rows barely move. The frozen rows are unused axes. MNIST does not label a continuous factor, so the grid is not a disentanglement claim.",
           "hover": "β 10 · val loss 189.53",
           "frame": "figures/beta/traversal_beta_10.png",
-          "frameCaption": "Traversal at β = 10. Three rows stay frozen."
+          "frameCaption": "β = 10. Several rows stay one smeared digit."
         }
       ]
     }
@@ -144,29 +144,29 @@
   },
   "live": {
     "src": "figures/beta/traversal_beta_1.png",
-    "alt": "Eight latent traversals at beta 1. Each row changes the digit as one coordinate moves.",
-    "caption": "Traversal at the hovered β. This frame starts at β = 1."
+    "alt": "Latent traversal at beta 1. Every row changes the glyph.",
+    "caption": "β = 1, the diversity peak. Hover a β to replace this traversal."
   },
   "figures": [
     {
       "src": "figures/beta/metrics_vs_beta.png",
-      "alt": "Pipeline plot of metrics against beta.",
-      "caption": "The sweep as saved by the pipeline. The D3 panels replot test MSE, active units, and diversity."
+      "alt": "Three plots against beta: reconstruction MSE, active units, and diversity.",
+      "caption": "The three panels of the sweep. MSE rises with β, active units fall from 8 to 6, and diversity peaks at β = 1."
     },
     {
       "src": "figures/beta/reconstructions_test.png",
-      "alt": "Test reconstructions from the beta 0.1 checkpoint.",
-      "caption": "Test reconstructions for the tuned checkpoint, β = 0.1."
+      "alt": "Test digits 0 to 9 reconstructed at beta 0.1. The 8 fails.",
+      "caption": "The β = 0.1 checkpoint on test digits 0–9. The 8 breaks, as it does in the standard VAE."
     },
     {
       "src": "figures/beta/generated_samples.png",
-      "alt": "Prior samples from the beta 0.1 checkpoint.",
-      "caption": "Prior samples from the β = 0.1 checkpoint, the reconstruction pick rather than the diversity peak."
+      "alt": "64 prior samples from the beta 0.1 checkpoint.",
+      "caption": "Prior samples from that β = 0.1 checkpoint. Many classes, thick strokes: the reconstruction end of the sweep, not the diverse one."
     },
     {
       "src": "figures/beta/traversal_beta_10.png",
-      "alt": "Latent traversal at beta 10 with several frozen rows.",
-      "caption": "β = 10 traversal. Frozen rows are z3, z4, and z5."
+      "alt": "Latent traversal at beta 10. Several rows barely change.",
+      "caption": "β = 10. Several rows stay one digit the whole way, and the ones that move are smeared. That is unused axes, not a found factor."
     }
   ],
   "sources": [
