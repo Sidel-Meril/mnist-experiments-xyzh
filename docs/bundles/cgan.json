@@ -6,7 +6,7 @@
   "points": "GAN · conditional, PatchGAN, feature matching",
   "title": "Conditional GAN and the other two variants",
   "question": "Does a class label, a PatchGAN discriminator, or feature matching change quality and diversity?",
-    "process": "Each archive is 40 epochs on CUDA, 250 train and 50 test images per class, noise 64. The six runs are cGAN, PatchGAN, and feature matching, on digits and on Fashion. The bar is scored sample std divided by real std. The collapse flag is true only when that ratio is under 0.2. Feature matching adds a term with weight 10, so its generator loss is not the same number as its BCE. Hover a bar to swap the class grid: one row is one label.",
+  "process": "`ConditionalGenerator` concatenates noise with a class embedding. The MLP discriminator concatenates the same embedding. `PatchDiscriminator` concatenates a one-hot spatial map and scores overlapping patches. Feature matching, in `_generator_terms`, adds \\( 10\\,\\lVert \\mathbb{E}[f(G(z))] - \\mathbb{E}[f(x)] \\rVert_1 \\) to the generator’s binary cross-entropy. `DATASET` in `src/mnist_gan_extensions/01_get_data.py` is the manual dataset swap. `scripts/mnist_gan_extensions/model_selection.py` calls `load_data` for digits and for Fashion, then the same engineer, split, train, and eval functions. Only `variant` and the archive folder change. cgan, patchgan, and feature-matching-loss are each saved for both datasets under `reports/mnist_gan_extensions/experiments/`, with history, scores, class grids, and `model.pt`. `notebooks/mnist_gan_extensions/comparison.ipynb` compares them. Each archive is 40 epochs, 250 train and 50 test images per class, noise 64. The bar is scored sample std divided by real std. The collapse flag is true only under 0.2.",
   "opening": {
     "answers": "What worked well?",
     "summary": "None of the six scored runs trip the collapse flag. The vanilla GANs sit near 0.09 and 0.08. The extensions sit between 0.88 and 1.12. The class grids are the part the ratio does not show.",
@@ -16,14 +16,17 @@
     {
       "type": "hbar",
       "title": "Sample spread ÷ real spread",
-      "guide": {"value": 1, "label": "matches real spread"},
+      "guide": {
+        "value": 1,
+        "label": "matches real spread"
+      },
       "marks": [
         {
           "label": "vanilla digits",
-          "value": 0.0946,
+          "value": 0.03543,
           "answers": "What didn't turn out as expected?",
-          "summary": "Vanilla digits, from the earlier run: sample std 0.0358 / real std 0.378 = 0.095. mode_collapse is true. One repeated stroke.",
-          "hover": "0.0358 / 0.378 = 0.095",
+          "summary": "Vanilla digits, from the earlier run: sample std 0.0134 / real std 0.378 = 0.035. mode_collapse is true. One repeated stroke. The class-conditional runs below are the same training code with a label.",
+          "hover": "0.0134 / 0.378 = 0.035",
           "frame": "figures/gan/digits/final.png",
           "frameCaption": "Vanilla digits. One repeated stroke."
         },
@@ -94,7 +97,7 @@
     }
   ],
   "reflection": {
-    "worked": "All six archives finished 40 epochs and wrote history, test scores, and class grids. Class conditioning stops the vanilla collapse on both datasets. PatchGAN is the clearer Fashion generator: the rows are different clothes. Feature matching on digits keeps the classes and pulls sharpness toward real ink (0.471 versus the cGAN's 0.628).",
+    "worked": "All six archives finished 40 epochs and wrote history, test scores, class grids, and a model file. The dataset swap is load_data, so digits and Fashion share the training loop. Class conditioning stops the vanilla collapse on both datasets. PatchGAN is the clearer Fashion generator: the rows are different clothes. Feature matching on digits keeps the classes and pulls sharpness toward real ink (0.471 versus the cGAN’s 0.628). The comparison notebook reads these six folders.",
     "unexpected": "A healthy spread ratio is not a class grid. PatchGAN digits scores 0.88 and mode_collapse false, and every row is the same glyph. Feature matching on Fashion has the highest diversity and the noisiest rows. best_params.json says variant cgan, and the mirrored evaluation_test.json says cgan. Each archive's source.json is the record of what was trained.",
     "why": "The collapse flag only fires under a ratio of 0.2. A repeated high-contrast digit still moves enough pixels to clear that bar. PatchGAN judges local patches, which on a thin digit collapses to one stroke and on a wide garment preserves the silhouette. Feature matching changes the generator loss scale, so a larger G number is the extra term, not evidence the generator got worse at BCE.",
     "improve": "Read the class grid next to the ratio. For digits, keep the cGAN or feature matching and do not take PatchGAN's spread as class control. For Fashion, PatchGAN is the variant to train longer. Compare generator BCE across variants, and leave the feature-matching loss on its own axis."
@@ -127,6 +130,10 @@
     }
   ],
   "sources": [
+    "src/mnist_gan_extensions/01_get_data.py",
+    "src/mnist_gan_extensions/model.py",
+    "scripts/mnist_gan_extensions/model_selection.py",
+    "notebooks/mnist_gan_extensions/comparison.ipynb",
     "reports/mnist_gan_extensions/experiments/cgan/digits/evaluation_test.json",
     "reports/mnist_gan_extensions/experiments/cgan/fashion/evaluation_test.json",
     "reports/mnist_gan_extensions/experiments/patchgan/digits/evaluation_test.json",

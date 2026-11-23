@@ -1,16 +1,16 @@
 {
   "id": "vae",
   "nav": "VAE",
-  "lede": "The same VAE draws readable clothes and blurrier digits; Fashion’s domain KID is much lower.",
+  "lede": "Latent 8 wins the search. Fashion reconstructs and samples more cleanly than digits, and both are clearer than RealNVP.",
   "accent": "#1e3a5f",
   "points": "VAE · 10pt",
   "title": "Digits against Fashion-MNIST",
   "question": "With the same VAE, how do reconstruction, likelihood, and prior samples differ on the two datasets?",
-  "process": "Each cache under reference/ is one VAE. Optuna picked the latent size by validation ELBO loss. Both runs kept latent 8, hidden 256, dropout 0.1, and lr 0.001. The slice is 1,000 train and 200 test images per class (10,000 / 2,000). The search is 4 trials and 4 epochs. Reconstruction grids decode the posterior mean. Sample grids decode 64 draws from N(0, I). MSE is per pixel on [−1, 1]. ELBO is the negative of the per-image sum of squares plus KL, so a higher ELBO is a better bound. Domain KID is stored as kid in evaluation_test.json. It is the unbiased degree-3 polynomial MMD between the test images and the same number of draws from N(0, I). A lower score means the prior samples sit closer to that test set. The comparison notebook writes that field when it runs, and the eval script writes it for a new run.",
+  "process": "`_vae_loss` in `src/mnist_vae_comparison/model.py` is the per-image sum of squares plus \\( \\beta \\) times the closed-form KL, \\( \\mathrm{KL} = -\\frac{1}{2}\\sum_j (1 + \\log\\sigma_j^2 - \\mu_j^2 - \\sigma_j^2) \\), with \\( \\beta = 1 \\). The decoder is a tanh network and pixels lie in \\([-1,1]\\). Reconstructions decode the posterior mean. Samples decode 64 draws from \\( \\mathcal{N}(0,I) \\). Optuna compared latent sizes 2, 8, 16, and 32 with hidden size 256, dropout 0.1, learning rate \\(10^{-3}\\), weight decay \\(10^{-6}\\), and batch 128. Latent 8 won, validation loss 95.93, against 118.06, 101.37, and 107.42. Both datasets then used that recipe on 1,000 images per class for the scored run. Per-epoch losses were drawn to `loss.png` in each reference cache and were not exported as a series. The panels are the final test scores.",
   "opening": {
     "answers": "What worked well?",
-    "summary": "Both priors produce many classes, not one average image. Fashion garments stay readable. Digits stay recognizable and lose the thin strokes first. Fashion’s test ELBO is higher and its domain KID is much lower.",
-    "hover": "Hover either dataset."
+    "summary": "Both priors produce many classes. Fashion garments stay readable and digits stay recognizable, with thin strokes softening first. Those grids are clearer than the RealNVP inverse samples. Fashion’s test ELBO is higher and its domain KID is lower.",
+    "hover": "Hover a dataset, then the latent-size search."
   },
   "charts": [
     {
@@ -18,10 +18,22 @@
       "title": "Test scores, same model recipe",
       "xKey": "dataset",
       "panels": [
-        {"yKey": "mse", "label": "test MSE"},
-        {"yKey": "elbo", "label": "test ELBO"},
-        {"yKey": "kl", "label": "test KL"},
-        {"yKey": "kid", "label": "domain KID"}
+        {
+          "yKey": "mse",
+          "label": "test MSE"
+        },
+        {
+          "yKey": "elbo",
+          "label": "test ELBO"
+        },
+        {
+          "yKey": "kl",
+          "label": "test KL"
+        },
+        {
+          "yKey": "kid",
+          "label": "domain KID"
+        }
       ],
       "marks": [
         {
@@ -49,13 +61,55 @@
           "frameCaption": "Fashion prior samples, N(0, I), latent 8."
         }
       ]
+    },
+    {
+      "type": "line",
+      "title": "Optuna validation loss against latent size",
+      "xKey": "latent",
+      "yKey": "val_loss",
+      "xLabel": "latent size",
+      "yLabel": "validation loss",
+      "xScale": "log",
+      "yFromZero": false,
+      "marks": [
+        {
+          "latent": 2,
+          "val_loss": 118.064,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Latent 2 is the worst of the four finished trials, validation loss 118.06. Every other hyperparameter was held fixed: hidden 256, dropout 0.1, learning rate 0.001, weight decay 1e-6, batch 128. The code is too small for the ELBO on this slice.",
+          "hover": "latent 2 · val loss 118.06"
+        },
+        {
+          "latent": 8,
+          "val_loss": 95.927,
+          "selected": true,
+          "bestLabel": "picked",
+          "answers": "What worked well?",
+          "summary": "Latent 8 is bold because it is the minimum validation loss, 95.93, and Optuna minimizes that loss. best_params.json records this trial. The digits and Fashion checkpoints both use it. Latent 16 scores 101.37 and latent 32 scores 107.42, so a wider code made this short search worse.",
+          "hover": "latent 8 · val loss 95.93"
+        },
+        {
+          "latent": 16,
+          "val_loss": 101.365,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Latent 16 scores validation loss 101.37, above latent 8. Four epochs on the slice is a short fit, and the extra coordinates are not yet paying for themselves in the ELBO.",
+          "hover": "latent 16 · val loss 101.37"
+        },
+        {
+          "latent": 32,
+          "val_loss": 107.421,
+          "answers": "How could the results be improved?",
+          "summary": "Latent 32 scores 107.42, the second-worst trial. A longer train on the full 60,000 images is the next measurement. The f-VAE run below does use latent 32 on the full split, so it is a different experiment.",
+          "hover": "latent 32 · val loss 107.42"
+        }
+      ]
     }
   ],
   "reflection": {
-    "worked": "Both sample grids cover many classes. Fashion is the clearer generator on every score that was computed: lower MSE, lower KL, higher ELBO, and a domain KID of 0.204 against 3.105 on digits.",
-    "unexpected": "The digit samples look subjectively fine and still lose the KID comparison by a wide margin. MSE only moves from 0.085 to 0.075, so pixel error understates the gap the kernel sees.",
-    "why": "A blurry decoder erases a thin stroke and leaves a shirt. KID compares block means, so Fashion’s broad shapes match its test set more easily. These are also short slice runs, 4 epochs on 1,000 images per class, which caps how sharp either posterior can get. The live reports/mnist_vae_comparison tree is the Fashion cache; the digits numbers live in reference/mnist_digits.",
-    "improve": "Retrain both on the full split for more epochs before calling the gap a property of the data. A wider latent helps digits more than coats. The f-VAE digits run below uses the full 60,000 images and latent 32, so it is a sharper digit model and not a paired comparison with these two caches."
+    "worked": "Latent 8 is the best of the four Optuna trials. Both sample grids cover many classes, and they are clearer than the RealNVP inverse grids. Fashion wins the paired scores: test MSE 0.0749 against 0.0852, ELBO −71.09 against −82.21, KL 12.34 against 15.41, domain KID 0.204 against 3.105.",
+    "unexpected": "The digit samples look readable and still lose the KID comparison by a wide margin. MSE only moves from 0.085 to 0.075, so pixel error understates the gap the kernel sees. A wider latent made the short search worse, from 95.93 at latent 8 up to 107.42 at latent 32.",
+    "why": "A blurry decoder erases a thin stroke and leaves a shirt. These are short slice runs, 4 epochs of search and a scored train on 1,000 images per class. The live reports/mnist_vae_comparison tree is the Fashion cache. The digits numbers live in reference/mnist_digits. Per-epoch curves exist as loss.png and were not written as JSON.",
+    "improve": "Retrain both datasets on the full split for more epochs before treating the gap as a property of the data. Export the per-epoch ELBO beside the final panels. The f-VAE digits run uses the full 60,000 images and latent 32, so it is a sharper setup and a separate comparison."
   },
   "live": {
     "src": "figures/vae/digits/generated_samples.png",
@@ -80,6 +134,8 @@
     }
   ],
   "sources": [
+    "src/mnist_vae_comparison/model.py",
+    "reports/mnist_vae_comparison/best_params.json",
     "reference/mnist_digits/reports/evaluation_test.json",
     "reference/fashion_mnist/reports/evaluation_test.json",
     "notebooks/mnist_vae_comparison/comparison.ipynb"

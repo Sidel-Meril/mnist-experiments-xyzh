@@ -168,6 +168,21 @@ h3 { font-size: 1.05rem; margin: 0; }
 
 .mark.dim { opacity: 0.35; }
 
+.mark.is-best { stroke: var(--ink); }
+
+.best-tag {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+
+mjx-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
 .hit { fill: transparent; }
 
 .finding {

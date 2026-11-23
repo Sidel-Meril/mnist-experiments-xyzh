@@ -6,7 +6,7 @@
   "points": "GAN · bonus progressive growing",
   "title": "Progressive GAN on CIFAR-10",
   "question": "Does growing the resolution from 4×4 to 32×32 stabilize CIFAR-10 samples?",
-  "process": "The script pulled 200 training images and 40 test images per class (2,000 / 400), then grew 4×4, 8×8, 16×16, and 32×32. Each resolution gets a fade phase and a stable phase, two epochs each, except 4×4 which is stable only. That is 14 epochs. The chart is the logged sample std of the fixed noise batch. The collapse flag is sample std under 0.2 times real std. Hover an epoch to see where the resolution changed.",
+  "process": "`GrowingGenerator` and `GrowingDiscriminator` in `src/mnist_pg_gan/model.py` add resolution on the schedule from `_phases`: stable \\(4\\times 4\\), then a fade and a stable phase at 8, 16, and 32. During a fade, `_blend` sets \\( \\alpha = (\\mathrm{epoch\\ in\\ phase}+1)/\\mathrm{epochs} \\). The run is CIFAR-10, 200 train and 40 test images per class, two epochs per phase, 14 epochs. `growth.json` and `growth_timeline.png` record every phase. The chart is logged sample std of the fixed noise batch. `mode_collapse` is sample std under 0.2 times real std.",
   "opening": {
     "answers": "What worked well?",
     "summary": "The growth archive is on disk: growth.json, the timeline, and a frame for every epoch. Color blocks at 4×4 become finer noise, then a shared gray field at 32×32. Logged sample std falls from 0.581 to 0.104 along that path.",
@@ -21,25 +21,119 @@
       "xLabel": "epoch",
       "yLabel": "logged sample std",
       "marks": [
-        {"epoch": 1, "sample_std": 0.5809, "answers": "What worked well?", "summary": "Epoch 1 is 4×4 stable, alpha 1. Logged sample std is 0.581. Eval D 1.458, eval G 0.774. The frames are large color blocks, and they are not copies of each other.", "hover": "epoch 1 · 4×4 stable · sample std 0.581", "frame": "figures/pgan/epoch_0001_res04_stable.png", "frameCaption": "4×4 stable, epoch 1."},
-        {"epoch": 2, "sample_std": 0.6119, "answers": "What worked well?", "summary": "Epoch 2 stays at 4×4. Logged sample std is 0.612, the high point of the run. Eval D 1.403, eval G 0.857.", "hover": "epoch 2 · 4×4 stable · sample std 0.612"},
-        {"epoch": 3, "sample_std": 0.4146, "answers": "Why do you think the results might not be great?", "summary": "Epoch 3 fades in 8×8 at alpha 0.5. Logged sample std drops to 0.415. Eval D 1.367, eval G 0.759. The new block is only half blended.", "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415"},
-        {"epoch": 4, "sample_std": 0.4054, "answers": "Why do you think the results might not be great?", "summary": "Epoch 4 finishes the 8×8 fade at alpha 1. Logged sample std is 0.405. Eval D 1.132, eval G 1.071.", "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405"},
-        {"epoch": 5, "sample_std": 0.5039, "answers": "What worked well?", "summary": "Epoch 5 is the first 8×8 stable epoch. Logged sample std bounces back to 0.504. Eval D 0.945, eval G 1.092. The grid is still colorful and varied.", "hover": "epoch 5 · 8×8 stable · sample std 0.504"},
-        {"epoch": 6, "sample_std": 0.4142, "answers": "What worked well?", "summary": "Epoch 6 is 8×8 stable. Logged sample std is 0.414. Eval D 0.734, eval G 1.786. This is the last resolution where the batch still looks like different color fields.", "hover": "epoch 6 · 8×8 stable · sample std 0.414", "frame": "figures/pgan/epoch_0006_res08_stable.png", "frameCaption": "8×8 stable, epoch 6."},
-        {"epoch": 7, "sample_std": 0.2735, "answers": "What didn't turn out as expected?", "summary": "Epoch 7 fades in 16×16 at alpha 0.5 and logged sample std falls to 0.274. Eval D 1.329, eval G 0.713. Growing the canvas coincides with the samples getting more alike.", "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274"},
-        {"epoch": 8, "sample_std": 0.4495, "answers": "Why do you think the results might not be great?", "summary": "Epoch 8 completes the 16×16 fade at alpha 1. Logged sample std rebounds to 0.450. Eval D 1.102, eval G 0.890. Two epochs is a short stay at the new resolution.", "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450"},
-        {"epoch": 9, "sample_std": 0.4057, "answers": "Why do you think the results might not be great?", "summary": "Epoch 9 is 16×16 stable. Logged sample std is 0.406. Eval D 1.043, eval G 1.190.", "hover": "epoch 9 · 16×16 stable · sample std 0.406"},
-        {"epoch": 10, "sample_std": 0.3316, "answers": "What didn't turn out as expected?", "summary": "Epoch 10 is the second 16×16 stable epoch. Logged sample std is 0.332. Eval D 1.094, eval G 1.216. The frames are mottled and closer to each other than the 8×8 row.", "hover": "epoch 10 · 16×16 stable · sample std 0.332", "frame": "figures/pgan/epoch_0010_res16_stable.png", "frameCaption": "16×16 stable, epoch 10."},
-        {"epoch": 11, "sample_std": 0.2165, "answers": "What didn't turn out as expected?", "summary": "Epoch 11 fades in 32×32 at alpha 0.5. Logged sample std is 0.217. Eval D 1.098, eval G 0.760. The batch is tightening as the full CIFAR resolution appears.", "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217"},
-        {"epoch": 12, "sample_std": 0.2047, "answers": "What didn't turn out as expected?", "summary": "Epoch 12 finishes the 32×32 fade at alpha 1. Logged sample std is 0.205. Eval D 1.170, eval G 0.748.", "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205"},
-        {"epoch": 13, "sample_std": 0.1307, "answers": "What didn't turn out as expected?", "summary": "Epoch 13 is the first 32×32 stable epoch. Logged sample std drops to 0.131. Eval D 0.634, eval G 1.403. The frames are pale and nearly the same.", "hover": "epoch 13 · 32×32 stable · sample std 0.131"},
-        {"epoch": 14, "sample_std": 0.1041, "answers": "What didn't turn out as expected?", "summary": "Epoch 14 is 32×32 stable. Logged sample std is 0.104. The scored grid has sample std 0.1040 against real std 0.493, a ratio of 0.211. mode_collapse stays false because the cutoff is 0.20. The picture is one gray-purple field repeated across the batch. Eval D on the log is 1.520 and eval G is 0.700. Two epochs at 32×32 was enough for the samples to agree with each other and not enough to grow an object.", "hover": "epoch 14 · 32×32 stable · scored ratio 0.211 · flag false", "frame": "figures/pgan/final.png", "frameCaption": "32×32 eval grid. One gray field."}
+        {
+          "epoch": 1,
+          "sample_std": 0.5809,
+          "answers": "What worked well?",
+          "summary": "Epoch 1 is 4×4 stable, alpha 1. Logged sample std is 0.581. Eval D 1.458, eval G 0.774. The frames are large color blocks, and they are not copies of each other.",
+          "hover": "epoch 1 · 4×4 stable · sample std 0.581",
+          "frame": "figures/pgan/epoch_0001_res04_stable.png",
+          "frameCaption": "4×4 stable, epoch 1."
+        },
+        {
+          "epoch": 2,
+          "sample_std": 0.6119,
+          "answers": "What worked well?",
+          "summary": "Epoch 2 stays at 4×4. Logged sample std is 0.612, the high point of the run. Eval D 1.403, eval G 0.857.",
+          "hover": "epoch 2 · 4×4 stable · sample std 0.612"
+        },
+        {
+          "epoch": 3,
+          "sample_std": 0.4146,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 3 fades in 8×8 at alpha 0.5. Logged sample std drops to 0.415. Eval D 1.367, eval G 0.759. The new block is only half blended.",
+          "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415"
+        },
+        {
+          "epoch": 4,
+          "sample_std": 0.4054,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 4 finishes the 8×8 fade at alpha 1. Logged sample std is 0.405. Eval D 1.132, eval G 1.071.",
+          "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405"
+        },
+        {
+          "epoch": 5,
+          "sample_std": 0.5039,
+          "answers": "What worked well?",
+          "summary": "Epoch 5 is the first 8×8 stable epoch. Logged sample std bounces back to 0.504. Eval D 0.945, eval G 1.092. The grid is still colorful and varied.",
+          "hover": "epoch 5 · 8×8 stable · sample std 0.504"
+        },
+        {
+          "epoch": 6,
+          "sample_std": 0.4142,
+          "answers": "What worked well?",
+          "summary": "Epoch 6 is bold because it is the last 8×8 stable epoch where the fixed-noise batch still looks like different color fields. Logged sample std is 0.414. Eval D is 0.734 and eval G is 1.786. Later growth makes the batch more alike. Epoch 14 is the scored 32×32 checkpoint, and that grid is one gray field.",
+          "hover": "epoch 6 · 8×8 stable · sample std 0.414",
+          "frame": "figures/pgan/epoch_0006_res08_stable.png",
+          "frameCaption": "8×8 stable, epoch 6.",
+          "selected": true,
+          "bestLabel": "varied"
+        },
+        {
+          "epoch": 7,
+          "sample_std": 0.2735,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 7 fades in 16×16 at alpha 0.5 and logged sample std falls to 0.274. Eval D 1.329, eval G 0.713. Growing the canvas coincides with the samples getting more alike.",
+          "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274"
+        },
+        {
+          "epoch": 8,
+          "sample_std": 0.4495,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 8 completes the 16×16 fade at alpha 1. Logged sample std rebounds to 0.450. Eval D 1.102, eval G 0.890. Two epochs is a short stay at the new resolution.",
+          "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450"
+        },
+        {
+          "epoch": 9,
+          "sample_std": 0.4057,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "Epoch 9 is 16×16 stable. Logged sample std is 0.406. Eval D 1.043, eval G 1.190.",
+          "hover": "epoch 9 · 16×16 stable · sample std 0.406"
+        },
+        {
+          "epoch": 10,
+          "sample_std": 0.3316,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 10 is the second 16×16 stable epoch. Logged sample std is 0.332. Eval D 1.094, eval G 1.216. The frames are mottled and closer to each other than the 8×8 row.",
+          "hover": "epoch 10 · 16×16 stable · sample std 0.332",
+          "frame": "figures/pgan/epoch_0010_res16_stable.png",
+          "frameCaption": "16×16 stable, epoch 10."
+        },
+        {
+          "epoch": 11,
+          "sample_std": 0.2165,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 11 fades in 32×32 at alpha 0.5. Logged sample std is 0.217. Eval D 1.098, eval G 0.760. The batch is tightening as the full CIFAR resolution appears.",
+          "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217"
+        },
+        {
+          "epoch": 12,
+          "sample_std": 0.2047,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 12 finishes the 32×32 fade at alpha 1. Logged sample std is 0.205. Eval D 1.170, eval G 0.748.",
+          "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205"
+        },
+        {
+          "epoch": 13,
+          "sample_std": 0.1307,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 13 is the first 32×32 stable epoch. Logged sample std drops to 0.131. Eval D 0.634, eval G 1.403. The frames are pale and nearly the same.",
+          "hover": "epoch 13 · 32×32 stable · sample std 0.131"
+        },
+        {
+          "epoch": 14,
+          "sample_std": 0.1041,
+          "answers": "What didn't turn out as expected?",
+          "summary": "Epoch 14 is 32×32 stable. Logged sample std is 0.104. The scored grid has sample std 0.1040 against real std 0.493, a ratio of 0.211. mode_collapse stays false because the cutoff is 0.20. The picture is one gray-purple field repeated across the batch. Eval D on the log is 1.520 and eval G is 0.700. Two epochs at 32×32 was enough for the samples to agree with each other and not enough to grow an object.",
+          "hover": "epoch 14 · 32×32 stable · scored ratio 0.211 · flag false",
+          "frame": "figures/pgan/final.png",
+          "frameCaption": "32×32 eval grid. One gray field."
+        }
       ]
     }
   ],
   "reflection": {
-    "worked": "The schedule ran all seven phases and wrote the timeline the notebook reads. At 4×4 and 8×8 the fixed-noise batch is still a set of different color blocks, and discriminator and generator losses stay in a band around 1 instead of one of them running away.",
+    "worked": "The schedule ran all seven phases and wrote the timeline the notebook reads. Epoch 6, the bold point, is the last resolution where the fixed-noise batch is still a set of different color fields. Discriminator and generator losses stay in a band around 1 through the early phases.",
     "unexpected": "Resolution growth and sample variety move in opposite directions. By 32×32 every cell is the same gray field. The collapse flag stays false because 0.104 / 0.493 = 0.211, just above the 0.2 cutoff.",
     "why": "Each new resolution gets two epochs on 2,000 images. That is enough for the generator to find one average color that survives the discriminator, and not enough to fit airplanes and trucks. The fade spends one of those two epochs at a half-blended block. A short stay at 32×32 favors the mean image.",
     "improve": "Give the 16×16 and 32×32 stable phases more epochs before judging CIFAR, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag. The timeline is already the right picture to watch while that longer run goes."
@@ -67,9 +161,11 @@
     }
   ],
   "sources": [
+    "src/mnist_pg_gan/model.py",
+    "scripts/mnist_pg_gan/train_progan.py",
     "reports/mnist_pg_gan/generations/cifar/growth.json",
     "reports/mnist_pg_gan/generations/cifar/history.json",
     "reports/mnist_pg_gan/generations/cifar/evaluation_test.json",
-    "scripts/mnist_pg_gan/train_progan.py"
+    "notebooks/mnist_pg_gan/growth.ipynb"
   ]
 }

@@ -32,7 +32,12 @@ function fill(template, row) {
 function activate(article, stop, event) {
   if (!stop) return;
   article.querySelector("[data-answers]").textContent = stop.answers;
-  article.querySelector("[data-summary]").textContent = stop.summary;
+  const summary = article.querySelector("[data-summary]");
+  const summaryChanged = summary._raw !== stop.summary;
+  if (summaryChanged) {
+    summary._raw = stop.summary;
+    summary.textContent = stop.summary;
+  }
   if (stop.frame) {
     const img = article.querySelector(".live img");
     const cap = article.querySelector(".live figcaption");
@@ -43,6 +48,7 @@ function activate(article, stop, event) {
     item.classList.toggle("is-hot", item.dataset.q === stop.answers);
   });
   if (event) showTip(event, stop.hover || stop.summary);
+  if (summaryChanged) typeset(article.querySelector(".finding"));
 }
 
 function showTip(event, text) {
@@ -60,6 +66,28 @@ function showTip(event, text) {
 
 function hideTip() {
   tip.hidden = true;
+}
+
+let mathChain = Promise.resolve();
+
+function typeset(node) {
+  if (!node) return;
+  const run = () => {
+    if (!window.MathJax || !MathJax.typesetPromise) return;
+    mathChain = mathChain
+      .then(() => {
+        MathJax.typesetClear([node]);
+        return MathJax.typesetPromise([node]);
+      })
+      .catch((error) => console.error(error));
+  };
+  if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+    MathJax.startup.promise.then(run);
+    return;
+  }
+  const waits = (node._mathWait || 0) + 1;
+  node._mathWait = waits;
+  if (waits < 80) window.setTimeout(typeset, 60, node);
 }
 
 function size(host) {
@@ -99,7 +127,11 @@ function drawLine(host, chart, article) {
     : d3.scaleLinear().domain(d3.extent(marks, (d) => d[chart.xKey])).range([0, innerW]);
   const yValues = marks.map((d) => d[chart.yKey]);
   const yMax = Math.max(...yValues);
-  const y = d3.scaleLinear().domain([0, yMax * 1.12]).range([innerH, 0]);
+  const yMin = Math.min(...yValues);
+  const span = yMax - yMin || Math.abs(yMax) || 1;
+  const y = d3.scaleLinear()
+    .domain(chart.yFromZero === false ? [yMin - span * 0.45, yMax + span * 0.55] : [0, yMax * 1.12])
+    .range([innerH, 0]);
   const svg = d3.select(host).append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("role", "img");
   svg.append("title").text(chart.title);
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -118,12 +150,19 @@ function drawLine(host, chart, article) {
   g.append("text").attr("x", 0).attr("y", -4).attr("class", "row-label").text(chart.yLabel);
   const circles = g.selectAll("circle").data(marks).join("circle")
     .attr("class", "mark")
+    .classed("is-best", (d) => !!d.selected)
     .attr("cx", (d) => x(d[chart.xKey]))
     .attr("cy", (d) => y(d[chart.yKey]))
-    .attr("r", 7)
+    .attr("r", (d) => (d.selected ? 10 : 7))
     .attr("fill", "var(--accent)")
-    .attr("stroke", "#fffdf8")
-    .attr("stroke-width", 2);
+    .attr("stroke", (d) => (d.selected ? "#1c1915" : "#fffdf8"))
+    .attr("stroke-width", (d) => (d.selected ? 3 : 2));
+  g.selectAll("text.best-tag").data(marks.filter((d) => d.selected)).join("text")
+    .attr("class", "best-tag")
+    .attr("x", (d) => x(d[chart.xKey]))
+    .attr("y", (d) => Math.max(12, y(d[chart.yKey]) - 14))
+    .attr("text-anchor", "middle")
+    .text((d) => d.bestLabel || "best");
   bindMark(circles, article, svg, (d) => d);
   marks.forEach((mark) => article._stops.push(mark));
 }
@@ -132,7 +171,7 @@ function drawPanels(host, chart, article) {
   host.classList.add("panels");
   const wrap = d3.select(host);
   const width = Math.max(160, host.clientWidth / chart.panels.length);
-  chart.panels.forEach((panel) => {
+  chart.panels.forEach((panel, panelIndex) => {
     const height = 220;
     const margin = { top: 22, right: 12, bottom: 32, left: 44 };
     const innerW = width - margin.left - margin.right;
@@ -161,12 +200,21 @@ function drawPanels(host, chart, article) {
     g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(3).tickFormat((d) => fmt(d)));
     const dots = g.selectAll("circle").data(chart.marks).join("circle")
       .attr("class", "mark")
+      .classed("is-best", (d) => !!d.selected)
       .attr("cx", (d) => x(d[chart.xKey]))
       .attr("cy", (d) => y(d[panel.yKey]))
-      .attr("r", 7)
+      .attr("r", (d) => (d.selected ? 10 : 7))
       .attr("fill", "var(--accent)")
-      .attr("stroke", "#fffdf8")
-      .attr("stroke-width", 2);
+      .attr("stroke", (d) => (d.selected ? "#1c1915" : "#fffdf8"))
+      .attr("stroke-width", (d) => (d.selected ? 3 : 2));
+    if (panelIndex === 0) {
+      g.selectAll("text.best-tag").data(chart.marks.filter((d) => d.selected)).join("text")
+        .attr("class", "best-tag")
+        .attr("x", (d) => x(d[chart.xKey]))
+        .attr("y", (d) => Math.max(11, y(d[panel.yKey]) - 12))
+        .attr("text-anchor", "middle")
+        .text((d) => d.bestLabel || "best");
+    }
     bindMark(dots, article, svg, (d) => d);
   });
   chart.marks.forEach((mark) => article._stops.push(mark));
@@ -191,15 +239,22 @@ function drawHbar(host, chart, article) {
     g.append("text").attr("class", "guide-label").attr("x", x(chart.guide.value) + 4).attr("y", chart.marks.length * rowH + 8).text(chart.guide.label);
   }
   const rows = g.selectAll("g").data(chart.marks).join("g").attr("transform", (_, i) => `translate(0,${i * rowH})`);
-  rows.append("text").attr("class", "row-label").attr("x", -8).attr("y", 18).attr("text-anchor", "end").text((d) => d.label);
+  rows.append("text").attr("class", "row-label").attr("x", -8).attr("y", 18).attr("text-anchor", "end")
+    .attr("font-weight", (d) => (d.selected ? 700 : 400))
+    .text((d) => d.label);
   rows.append("rect")
     .attr("class", "mark")
+    .classed("is-best", (d) => !!d.selected)
     .attr("y", 4)
     .attr("height", 22)
     .attr("width", (d) => x(d.value))
     .attr("rx", 4)
-    .attr("fill", "var(--accent)");
-  rows.append("text").attr("class", "row-value").attr("x", (d) => x(d.value) + 6).attr("y", 20).text((d) => fmt(d.value));
+    .attr("fill", "var(--accent)")
+    .attr("stroke", (d) => (d.selected ? "#1c1915" : "none"))
+    .attr("stroke-width", (d) => (d.selected ? 2.5 : 0));
+  rows.append("text").attr("class", "row-value").attr("x", (d) => x(d.value) + 6).attr("y", 20)
+    .attr("font-weight", (d) => (d.selected ? 700 : 400))
+    .text((d) => fmt(d.value));
   bindMark(rows.select("rect"), article, svg, (d) => d);
   chart.marks.forEach((mark) => article._stops.push(mark));
 }
@@ -221,8 +276,12 @@ function drawRows(host, chart, article) {
   rows.append("circle")
     .attr("cx", 26).attr("cy", (rowH - 8) / 2).attr("r", 6)
     .attr("fill", (d) => (d.state === "missing" ? "#a39b8d" : "var(--accent)"));
-  rows.append("text").attr("class", "row-label").attr("x", 42).attr("y", 20).attr("fill", "#1c1915").text((d) => d.label);
-  rows.append("text").attr("class", "row-value").attr("x", 42).attr("y", 36).text((d) => d.valueText);
+  rows.append("text").attr("class", "row-label").attr("x", 42).attr("y", 20).attr("fill", "#1c1915")
+    .attr("font-weight", (d) => (d.selected ? 700 : 400))
+    .text((d) => d.label);
+  rows.append("text").attr("class", "row-value").attr("x", 42).attr("y", 36)
+    .attr("font-weight", (d) => (d.selected ? 700 : 400))
+    .text((d) => d.valueText);
   bindMark(rows.select("rect"), article, svg, (d) => d);
   chart.marks.forEach((mark) => article._stops.push(mark));
 }
@@ -466,6 +525,7 @@ function renderChapter(bundle, history) {
   document.getElementById("chapters").append(article);
   activate(article, bundle.opening);
   drawCharts(article, bundle, history);
+  typeset(article);
   chapters.push({ article, bundle, history });
 }
 

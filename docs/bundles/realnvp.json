@@ -1,104 +1,122 @@
 {
   "id": "realnvp",
   "nav": "RealNVP",
-  "lede": "Digits likelihood falls, then the inverse samples stay broken. Fashion, trained on grayscale images, reaches test BPD 3.263, and its prior samples stay soft garment blobs.",
+  "lede": "Epoch 20 is the scored Fashion checkpoint: test BPD 3.263. Inverse samples stay fragments and blobs, while the VAE grids stay readable.",
   "accent": "#0f6e6e",
   "points": "Norm Flow · 5pt",
   "title": "Multi-scale RealNVP",
   "question": "Does the coupling flow assign high likelihood to grayscale MNIST and invert into recognizable samples?",
-  "process": "The model is a convolutional RealNVP. A checkerboard-style mask holds one part fixed and two heads predict scale and shift, y = m·x + (1−m)·(x·exp(s) + t), with s bounded by scale·tanh. The log-determinant sums s only on the changed coordinates. Multi-scale squeezes space into channels and factors half of them out at 14×14 and at 7×7. Pixels in [0, 1] are dequantized and logit-transformed. The recorded search is 2 trials and 1 epoch on digits (hidden 64, 4 layers, scale 2, lr 0.001). The digits train stage ran 20 epochs and wrote loss, bits-per-dimension, and inverse-sample plots. It did not write evaluation JSON. Fashion used those same hyperparameters on grayscale Fashion-MNIST, 60,000 train images and 10,000 test images, for 20 epochs. That run wrote the fashion checkpoint, the two curves, the prior-sample grid, evaluation JSON, and a reconstruction grid.",
+  "process": "Grayscale pixels in \\([0,1]\\) are uniformly dequantized and passed through a logit. `CouplingLayer` in `src/mnist_realnvp/model.py` holds the masked coordinates fixed and updates the rest, \\( y = m \\odot x + (1-m) \\odot (x e^{s} + t) \\), with \\( s = \\mathrm{scale}\\cdot\\tanh(\\cdot) \\). The log-determinant adds \\( s \\) only on the changed coordinates. `MultiScaleFlow` squeezes space into channels, couples, and factors half the channels out at \\(14\\times 14\\) and again at \\(7\\times 7\\); the base density on those three latent pieces is a standard normal, and samples invert that map. Optuna ran two 1-epoch trials on digits. The wider one (64 channels, 4 layers, scale 2, learning rate \\(10^{-3}\\), no weight decay, batch 128) reached validation NLL 860.1 and BPD 1.583. The narrow one (32 channels, scale 1, learning rate \\(10^{-4}\\), weight decay \\(10^{-6}\\), batch 64) reached NLL 1050.1, which is BPD 1.932 under the same conversion. Fashion trained 20 epochs from the wider setting, with no search of its own. `evaluation_test_fashion.json` records test BPD 3.263. The digits eval stage never wrote a test file.",
   "opening": {
     "answers": "What worked well?",
-    "summary": "The digits train plot shows negative log-likelihood and bits per dimension falling, then flattening, with the test curve under the train curve. The only numeric likelihood on disk for digits is the search: validation BPD 1.583 after one epoch. Fashion has a full score: test BPD falls from 3.582 to 3.263.",
-    "hover": "Start here, then hover a row."
+    "summary": "Fashion test BPD moves from 3.582 on the first point of `bpd_fashion.png` to 3.263 at epoch 20. That last point is bold: it is the checkpoint the training loop kept, and it matches the test file. A uniform 8-bit image would cost 8 bits per pixel, so 3.263 is a real density. The inverse samples are still soft.",
+    "hover": "Start on the bold epoch."
   },
   "charts": [
     {
-      "type": "rows",
-      "title": "What is actually on disk",
+      "type": "line",
+      "title": "Fashion test bits per dimension",
+      "xKey": "epoch",
+      "yKey": "bpd",
+      "xLabel": "epoch",
+      "yLabel": "test BPD",
+      "yFromZero": false,
       "marks": [
         {
-          "label": "Search, digits",
-          "valueText": "val BPD 1.583 · val NLL 860.1 · 1 epoch · 2 trials",
-          "state": "have",
+          "epoch": 1,
+          "bpd": 3.582,
           "answers": "Why do you think the results might not be great?",
-          "summary": "best_params.json records validation BPD 1.583 and NLL 860.1. That number is a 1-epoch, 2-trial search, not the score of the longer train. Fashion was fit with these digits hyperparameters and was not given its own search.",
-          "hover": "Tune only\nval BPD 1.583\nval NLL 860.1"
-        },
-        {
-          "label": "Train curves, digits",
-          "valueText": "loss.png and bpd.png fall, then level off",
-          "state": "have",
-          "answers": "What worked well?",
-          "summary": "The saved curves drop quickly and then flatten. Train keeps a smooth decline. The test curve sits below train and jitters. The stage is set to 20 epochs; the figures level off after about ten points. The series itself was not written to JSON, so this chart does not redraw those lines.",
-          "hover": "Likelihood improved, then flattened",
-          "frame": "figures/realnvp/bpd.png",
-          "frameCaption": "Bits per dimension during the digits train."
-        },
-        {
-          "label": "Inverse samples, digits",
-          "valueText": "64 draws, mostly stroke fragments",
-          "state": "have",
-          "answers": "What didn't turn out as expected?",
-          "summary": "Inverting the flow does produce bright strokes on black, and a few cells suggest a loop or a stem. Most cells are hooks, specks, and broken junctions. Likelihood moved; the samples did not become a digit set.",
-          "hover": "samples.png · inverse flow",
-          "frame": "figures/realnvp/samples.png",
-          "frameCaption": "64 inverse-flow samples from the digits train."
-        },
-        {
-          "label": "Test evaluation, digits",
-          "valueText": "evaluation_test.json was not written",
-          "state": "missing",
-          "answers": "What didn't turn out as expected?",
-          "summary": "The digits eval stage would have written test NLL and BPD. Those files are absent, so the digits plot is the likelihood record and there is no held-out number to quote beside the tune.",
-          "hover": "Missing digits test NLL and BPD"
-        },
-        {
-          "label": "Train curves, Fashion",
-          "valueText": "test BPD 3.582 → 3.263 over 20 epochs",
-          "state": "have",
-          "answers": "What worked well?",
-          "summary": "Grayscale Fashion-MNIST, pixels in [0, 1], trained for 20 epochs at batch 128. Test bits per dimension start at 3.582 and end at 3.263. Train starts at 4.109 and ends at 3.280, a smooth decline under uniform dequantization. The test curve sits below train and jitters, then flattens after about epoch 12.",
-          "hover": "Fashion test BPD 3.582 → 3.263",
+          "summary": "Epoch 1 is the first test point on bpd_fashion.png, BPD 3.582. The train curve on that figure starts near 4.11. Most of the drop happens in these early epochs. Intermediate epochs were drawn to the PNG and were not written as a series.",
+          "hover": "epoch 1 · test BPD 3.582",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Bits per dimension during the Fashion-MNIST train."
+          "frameCaption": "Fashion bits per dimension. Epoch 20 is the right-hand end."
         },
         {
-          "label": "Inverse samples, Fashion",
-          "valueText": "64 prior draws, soft garment blobs",
+          "epoch": 20,
+          "bpd": 3.263,
+          "selected": true,
+          "bestLabel": "epoch 20",
+          "answers": "What worked well?",
+          "summary": "Epoch 20 is bold because it is the scored checkpoint. evaluation_test_fashion.json records test NLL 1773.2 and BPD 3.263 on 10,000 images, the same BPD as the last point of bpd_fashion.png. Train on that split is NLL 1763.6 and BPD 3.245. The loop keeps the last weights, and the curve is flat here rather than rising, so this is the best likelihood the run left on disk. It is a partial success: 3.263 beats an 8-bit uniform code, and the inverse samples are still garment blobs. A tight grayscale flow sits nearer 1 bit per dimension. The digits search, after one epoch, was already at validation BPD 1.583.",
+          "hover": "epoch 20 · test BPD 3.263 · test NLL 1773.2",
+          "frame": "figures/realnvp/samples_fashion.png",
+          "frameCaption": "64 inverse-flow Fashion samples from the epoch-20 checkpoint."
+        }
+      ]
+    },
+    {
+      "type": "hbar",
+      "title": "Optuna validation NLL on digits",
+      "marks": [
+        {
+          "label": "trial 0 picked",
+          "value": 860.124,
+          "selected": true,
+          "answers": "What worked well?",
+          "summary": "Trial 0 is bold because it minimizes validation NLL. best_params.json stores hidden channels 64, 4 coupling layers, scale 2, learning rate 0.001, weight decay 0, batch 128, validation NLL 860.1, validation BPD 1.583. The objective was likelihood after one epoch, two folds, on digits. Generation quality was not in the score. Fashion reused these values.",
+          "hover": "NLL 860.1 · BPD 1.583 · hidden 64 · scale 2 · lr 0.001"
+        },
+        {
+          "label": "trial 1 narrow",
+          "value": 1050.113,
+          "answers": "How could the results be improved?",
+          "summary": "Trial 1 changed every free knob the other way: hidden channels 32, scale 1, learning rate 0.0001, weight decay 1e-6, batch 64. Validation NLL rose to 1050.1 (BPD 1.932). The wider, faster step won. Two trials and one epoch is the whole search that is on disk. The Plotly files optimization_history.html, param_importances.html, parallel_coordinate.html, and parameter_slice.html show this same pair.",
+          "hover": "NLL 1050.1 · BPD 1.932 · hidden 32 · scale 1 · lr 1e-4"
+        }
+      ]
+    },
+    {
+      "type": "rows",
+      "title": "Inverse samples and the missing digits score",
+      "marks": [
+        {
+          "label": "Digits inverse",
+          "valueText": "64 draws · stroke fragments",
           "state": "have",
           "answers": "What didn't turn out as expected?",
-          "summary": "Samples are draws from the standard normal pushed through the inverse flow. A few cells suggest a shirt, a trouser leg, a bag, or a boot. Most are smeared gray masses on black. Likelihood moved; the prior samples did not become a clothing set.",
-          "hover": "samples_fashion.png · inverse flow",
-          "frame": "figures/realnvp/samples_fashion.png",
-          "frameCaption": "64 inverse-flow samples from the Fashion train."
+          "summary": "samples.png inverts the digits flow. A few cells suggest a loop or a stem. Most cells are hooks, specks, and broken junctions. The VAE and f-VAE sample grids later in the report still read as digits. This grid does not.",
+          "hover": "samples.png",
+          "frame": "figures/realnvp/samples.png",
+          "frameCaption": "Digits inverse samples."
         },
         {
-          "label": "Reconstructions, Fashion",
-          "valueText": "test clothes stay sharp after the inverse",
+          "label": "Fashion inverse",
+          "valueText": "64 draws · soft garment blobs",
+          "state": "have",
+          "answers": "What didn't turn out as expected?",
+          "summary": "samples_fashion.png draws the standard normal through the inverse. A few cells suggest a shirt, a trouser leg, a bag, or a boot. Most are smeared gray masses. The Fashion VAE samples keep those garment types readable.",
+          "hover": "samples_fashion.png",
+          "frame": "figures/realnvp/samples_fashion.png",
+          "frameCaption": "Fashion inverse samples."
+        },
+        {
+          "label": "Fashion reconstruct",
+          "valueText": "encode then invert · clothes stay sharp",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Encoding eight Fashion test images and inverting the flow returns the boot, the shirt, the trousers, and the plaid. The inverse is not dropping the image. Unconditional samples are soft because those draws never passed through a real garment.",
+          "summary": "reconstructions_fashion.png encodes eight Fashion test images and inverts the flow. The boot, the shirt, the trousers, and the plaid stay sharp. The coupling inverse preserves a real image. The soft sample grid is the prior.",
           "hover": "reconstructions_fashion.png",
           "frame": "figures/realnvp/reconstructions_fashion.png",
-          "frameCaption": "Fashion test images above, the same images after encode-and-invert below."
+          "frameCaption": "Fashion test images above, encode-and-invert below."
         },
         {
-          "label": "Test evaluation, Fashion",
-          "valueText": "test BPD 3.263 · test NLL 1773.2",
-          "state": "have",
-          "answers": "Why do you think the results might not be great?",
-          "summary": "evaluation_test_fashion.json records bin-center test NLL 1773.2 and BPD 3.263 on 10,000 images. Train is 1763.6 and 3.245 on 60,000. The curve's last test point is the same 3.263. That is a held-out score, and it is still a coarse density: the prior samples do not become clothes.",
-          "hover": "test BPD 3.263\ntest NLL 1773.2"
+          "label": "Digits test file",
+          "valueText": "mnist_realnvp_eval never ran",
+          "state": "missing",
+          "answers": "What didn't turn out as expected?",
+          "summary": "The digits checkpoint, loss.png, bpd.png, and samples.png are on disk. evaluation_test.json is not, because mnist_realnvp_eval did not run. The digits likelihood we can quote exactly is the 1-epoch search, validation BPD 1.583. bpd.png shows the longer train falling and flattening, with the test curve under the train curve.",
+          "hover": "no digits evaluation_test.json",
+          "frame": "figures/realnvp/bpd.png",
+          "frameCaption": "Digits bits per dimension during training."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Coupling layers, the masked log-determinant, and the two squeeze scales are in the model. The digits train reduces bits per dimension before the curve flattens. Fashion does the same, from test BPD 3.582 at epoch 1 to 3.263 at epoch 20. Encoding real Fashion images and inverting the flow returns sharp clothes, so the inverse itself runs.",
-    "unexpected": "Prior samples stay broken on both sets: stroke fragments on digits, soft gray garment blobs on Fashion. The digits search file and the digits train plots are different runs, and the digits test JSON never landed.",
-    "why": "A short search cannot place a 28×28 density on either manifold. Dequantization and the logit transform let likelihood improve by explaining background and a rough silhouette while individual glyphs and garments stay off-manifold. The Fashion reconstructions show the coupling inverse preserves a real image, so the blurry grid is the prior, not a broken inverse. Twenty epochs on the digits hyperparameters is still a short fit, and Fashion was not given its own search.",
-    "improve": "Write the missing digits evaluation_test.json so that run has a held-out number beside the tune. Give Fashion its own search, then train longer, and keep the reconstruction grid next to the prior samples. If BPD keeps falling while prior samples stay soft and reconstructions stay sharp, add capacity before debugging the masked log-det."
+    "worked": "The masked coupling and the two squeeze scales are in `CouplingLayer` and `MultiScaleFlow`. Fashion test BPD falls from 3.582 to 3.263, and epoch 20 matches `evaluation_test_fashion.json`. Encode-and-invert returns sharp clothes, so the inverse runs. The wider Optuna trial beat the narrow one, 860.1 against 1050.1.",
+    "unexpected": "Inverse samples stay broken on both sets: stroke fragments on digits, soft gray blobs on Fashion. The VAE sample grids are the readable ones. The digits test JSON is absent.",
+    "why": "The search is two trials and one epoch, and Fashion inherited the digits hyperparameters. Dequantization plus the logit lets BPD fall by explaining background and a rough silhouette. 3.263 bits per dimension is better than 8 and far from a tight flow near 1. The sharp reconstructions show the blur sits in the prior.",
+    "improve": "Run mnist_realnvp_eval on the digits checkpoint so that run has a held-out NLL. Give Fashion its own search, train longer, and keep the reconstruction grid beside the prior samples. If BPD keeps falling while prior samples stay soft, add capacity in the coupling networks."
   },
   "live": {
     "src": "figures/realnvp/samples_fashion.png",
@@ -138,17 +156,12 @@
     }
   ],
   "sources": [
-    "reports/mnist_realnvp/best_params.json",
-    "reports/mnist_realnvp/plots/loss.png",
-    "reports/mnist_realnvp/plots/bpd.png",
-    "reports/mnist_realnvp/plots/samples.png",
-    "reports/mnist_realnvp/plots/loss_fashion.png",
-    "reports/mnist_realnvp/plots/bpd_fashion.png",
-    "reports/mnist_realnvp/plots/samples_fashion.png",
-    "reports/mnist_realnvp/evaluation_test_fashion.json",
-    "reports/mnist_realnvp/plots/reconstructions_fashion.png",
-    "models/mnist_realnvp/mnist_realnvp_fashion.pt",
     "src/mnist_realnvp/model.py",
-    "dvc.yaml mnist_realnvp_train_fashion --epochs 20 --dataset fashion"
+    "reports/mnist_realnvp/best_params.json",
+    "reports/mnist_realnvp/evaluation_test_fashion.json",
+    "reports/mnist_realnvp/plots/bpd_fashion.png",
+    "reports/mnist_realnvp/plots/samples.png",
+    "reports/mnist_realnvp/plots/samples_fashion.png",
+    "reports/mnist_realnvp/plots/optimization_history.html"
   ]
 }

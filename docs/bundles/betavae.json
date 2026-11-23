@@ -6,10 +6,10 @@
   "points": "VAE · bonus β-VAE",
   "title": "β-VAE on digits",
   "question": "What does the KL weight do to reconstruction, active latent axes, and sample diversity?",
-  "process": "The loss is per-image squared error plus β times the closed-form KL. Latent width is fixed at 8. The sweep fits β in {0.1, 1, 4, 10} for 10 epochs from the same initialization, on 1,000 training images and 200 test images of each class. An active unit is a latent axis whose posterior mean still varies across the test set (variance above 0.01). Diversity is the mean pairwise per-pixel squared distance of 64 prior samples. A traversal walks one coordinate of the zero code from −3 to 3. Optuna minimizes the β-weighted validation loss and selects β = 0.1 (val loss 100.37). The directory name is mnist_betta_vae.",
+  "process": "`_vae_loss` in `src/mnist_betta_vae/model.py` is the same sum of squares plus \\( \\beta\\,\\mathrm{KL} \\), and \\( \\beta \\) is the weight on that KL. Latent width is fixed at 8. Optuna scored \\( \\beta \\in \\{0.1, 1, 4, 10\\} \\) with every other hyperparameter fixed and picked 0.1, validation loss 100.37, against 117.77, 151.98, and 189.53. A separate 10-epoch sweep from one initialization, on 1,000 training images per class, records test MSE, active axes (posterior-mean variance above 0.01), and diversity (mean pairwise squared distance of 64 prior samples). `07_explore.py` walks one coordinate of the zero code from \\( -3 \\) to \\( 3 \\). Small \\( \\beta \\) reconstructs. Diversity peaks at \\( \\beta = 1 \\). Large \\( \\beta \\) turns axes off.",
   "opening": {
     "answers": "What worked well?",
-    "summary": "The three panels move together. Reconstruction MSE rises with β, active axes fall from 8 to 6, and diversity peaks at β = 1. Hover a β to swap the traversal grid.",
+    "summary": "Two charts, two objectives. The Optuna bars pick β = 0.1 because that minimizes the weighted loss. The panels pick β = 1 for diversity. Hover a β to swap the traversal, which is one latent axis at a time.",
     "hover": "Hover a β."
   },
   "charts": [
@@ -18,9 +18,18 @@
       "title": "Test MSE, active axes, and diversity",
       "xKey": "beta",
       "panels": [
-        {"yKey": "mse", "label": "test MSE"},
-        {"yKey": "active_units", "label": "active units"},
-        {"yKey": "diversity", "label": "diversity"}
+        {
+          "yKey": "mse",
+          "label": "test MSE"
+        },
+        {
+          "yKey": "active_units",
+          "label": "active units"
+        },
+        {
+          "yKey": "diversity",
+          "label": "diversity"
+        }
       ],
       "marks": [
         {
@@ -36,14 +45,16 @@
         },
         {
           "beta": 1,
-          "mse": 0.0940,
+          "mse": 0.094,
           "active_units": 8,
           "diversity": 0.2264,
           "answers": "What worked well?",
-          "summary": "β = 1 is the standard VAE in this sweep. Test MSE rises only to 0.0940, all 8 axes stay active, and diversity peaks at 0.226. KL falls to 15.03. The rows still change the glyph. This is the best generation diversity, not the point Optuna selected.",
+          "summary": "β = 1 is bold on these panels because diversity peaks here at 0.226. Test MSE rises only to 0.0940, all 8 axes stay active, and KL falls to 15.03. The traversal rows still change the glyph. Optuna does not pick this point. It picks β = 0.1, where the weighted validation loss is lower and the samples are tighter.",
           "hover": "β 1 · MSE 0.0940 · KL 15.03 · active 8 · diversity 0.226",
           "frame": "figures/beta/traversal_beta_1.png",
-          "frameCaption": "Latent traversal at β = 1, the diversity peak."
+          "frameCaption": "Latent traversal at β = 1, the diversity peak.",
+          "selected": true,
+          "bestLabel": "diverse"
         },
         {
           "beta": 4,
@@ -58,7 +69,7 @@
         },
         {
           "beta": 10,
-          "mse": 0.1480,
+          "mse": 0.148,
           "active_units": 6,
           "diversity": 0.1515,
           "answers": "What didn't turn out as expected?",
@@ -68,13 +79,62 @@
           "frameCaption": "Latent traversal at β = 10. Three rows stay frozen."
         }
       ]
+    },
+    {
+      "type": "line",
+      "title": "Optuna validation loss against β",
+      "xKey": "beta",
+      "yKey": "val_loss",
+      "xLabel": "beta",
+      "yLabel": "validation loss",
+      "yFromZero": false,
+      "marks": [
+        {
+          "beta": 0.1,
+          "val_loss": 100.371,
+          "selected": true,
+          "bestLabel": "picked",
+          "answers": "What worked well?",
+          "summary": "β = 0.1 is bold because Optuna minimizes the β-weighted validation loss and this trial scores 100.37. Hidden size, dropout, learning rate, weight decay, batch size, and latent size were the same on every trial, so the bar isolates β. best_params.json stores this value. It is the best reconstruction weight in the search, and it is the low-diversity end of the sweep.",
+          "hover": "β 0.1 · val loss 100.37",
+          "frame": "figures/beta/traversal_beta_0_1.png",
+          "frameCaption": "Traversal at the Optuna pick, β = 0.1. Every row moves."
+        },
+        {
+          "beta": 1,
+          "val_loss": 117.768,
+          "answers": "What worked well?",
+          "summary": "β = 1 scores validation loss 117.77. The weighted objective is worse than at 0.1, and the exploration sweep says this is where diversity peaks. The search and the sample grid want different β.",
+          "hover": "β 1 · val loss 117.77",
+          "frame": "figures/beta/traversal_beta_1.png",
+          "frameCaption": "Traversal at β = 1."
+        },
+        {
+          "beta": 4,
+          "val_loss": 151.985,
+          "answers": "Why do you think the results might not be great?",
+          "summary": "β = 4 scores validation loss 151.98. In the longer sweep, test MSE is 0.1114, active units fall to 7, and one traversal row goes quiet. The objective and the pictures agree that the code is being squeezed.",
+          "hover": "β 4 · val loss 151.98",
+          "frame": "figures/beta/traversal_beta_4.png",
+          "frameCaption": "Traversal at β = 4."
+        },
+        {
+          "beta": 10,
+          "val_loss": 189.527,
+          "answers": "What didn't turn out as expected?",
+          "summary": "β = 10 is the worst Optuna loss, 189.53, and the blurriest sweep point, test MSE 0.1480, diversity 0.151, six active axes. z3, z4, and z5 have KL under 0.02 and their traversal rows barely move. The frozen rows are unused axes. MNIST does not label a continuous factor, so the grid is not a disentanglement claim.",
+          "hover": "β 10 · val loss 189.53",
+          "frame": "figures/beta/traversal_beta_10.png",
+          "frameCaption": "Traversal at β = 10. Three rows stay frozen."
+        }
+      ]
     }
   ],
   "reflection": {
-    "worked": "The sweep separates the three effects the bonus asks for. Small β reconstructs. β = 1 is the most diverse. Large β turns axes off, and the traversal pictures show which rows died.",
-    "unexpected": "The search does not pick the diverse or the compact model. It picks β = 0.1, because that is the smallest weighted loss. High β does not reveal a single factor such as slant; the dead rows are unused capacity.",
-    "why": "β multiplies the KL, so a large weight is cheaper to satisfy by pinning posterior means than by preserving stroke detail. Diversity falls at both ends: β = 0.1 concentrates the prior samples, and β = 10 has directions that no longer change the image. The active-unit count is a variance threshold, not a labeled-factor score.",
-    "improve": "Report reconstruction and diversity beside the Optuna objective, or the search will always prefer a small β. For a real disentanglement check, use a dataset with known factors. On MNIST, keep β near 1 if the goal is the sample grid, and use the traversal only to see which axes went quiet."
+    "worked": "\\( \\beta \\) is one multiplier on the KL, and the two charts separate what it does. Optuna’s bold point, \\( \\beta = 0.1 \\), has the lowest weighted loss and the sharpest sweep reconstructions, MSE 0.0907, with all 8 axes active. The panels’ bold point, \\( \\beta = 1 \\), has the highest diversity, 0.226. The traversal pictures show which latent row moves.",
+    "unexpected": "The search picks the reconstruction weight, not the diverse one. High β does not reveal a single factor such as slant. The dead rows at β = 10 are unused capacity.",
+    "why": "β multiplies the KL, so a large weight is cheaper to satisfy by pinning posterior means than by preserving stroke detail. Diversity falls at both ends: β = 0.1 concentrates the prior samples, and β = 10 has directions that no longer change the image. The active-unit count is a variance threshold of 0.01, not a labeled-factor score.",
+    "improve": "Report reconstruction and diversity beside the Optuna objective, or the search will keep preferring a small β. For a disentanglement check, use a dataset with known factors. On MNIST, keep β near 1 when the goal is the sample grid, and use the traversal to see which axes went quiet."
   },
   "live": {
     "src": "figures/beta/traversal_beta_1.png",
@@ -104,6 +164,8 @@
     }
   ],
   "sources": [
+    "src/mnist_betta_vae/model.py",
+    "src/mnist_betta_vae/07_explore.py",
     "reports/mnist_betta_vae/beta_exploration.json",
     "reports/mnist_betta_vae/best_params.json",
     "notebooks/mnist_betta_vae/exploration.ipynb"

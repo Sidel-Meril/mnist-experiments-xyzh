@@ -8,12 +8,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/site.css">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [["\\[", "\\]"]],
+      },
+      options: {
+        skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+      },
+      startup: { typeset: false },
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 </head>
 <body>
   <div class="shell">
     <nav class="nav" aria-label="Sections">
       <a class="brand" href="#top">MNIST report</a>
-      <p class="nav-note">Hover a mark. The sentence beside the chart is that point’s bundle summary.</p>
+      <p class="nav-note">Hover a mark. A bold mark is the chosen epoch or trial. Formulas are set with MathJax.</p>
       <ol id="toc"></ol>
     </nav>
     <main id="top">
@@ -25,7 +38,7 @@
       </header>
       <div id="chapters"></div>
       <footer class="colophon">
-        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the executed notebooks. The JSON files in <code>docs/bundles/</code> are the hover copy for each chart. Curves that were never written as a series are shown as the original PNG instead of a redrawn D3 line.</p>
+        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the executed notebooks. The JSON files in <code>docs/bundles/</code> are the hover copy for each chart. Curves that were never written as a series are shown as the original PNG instead of a redrawn D3 line. Inline formulas are MathJax.</p>
         <p>GitHub Pages: Settings → Pages → Deploy from a branch → folder <code>/docs</code>. The site root is this folder, so <code>bundles/</code> and <code>figures/</code> resolve as they do here. Open it with a local server (<code>python -m http.server -d docs</code>). A <code>file://</code> tab cannot fetch the bundles.</p>
       </footer>
     </main>

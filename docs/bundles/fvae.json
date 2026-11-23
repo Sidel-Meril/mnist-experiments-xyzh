@@ -1,15 +1,15 @@
 {
   "id": "fvae",
   "nav": "f-VAE",
-  "lede": "A RealNVP posterior on full MNIST digits reconstructs softly and samples every class. The same fit on Fashion-MNIST keeps the garment and drops the print.",
+  "lede": "A RealNVP inside the latent code reconstructs softly on both datasets. Samples beat RealNVP and sit in the same family as the VAE.",
   "accent": "#3d6b4f",
   "points": "VAE · normalizing flow in the latent space",
   "title": "f-VAE",
   "question": "Does a RealNVP inside the VAE latent space improve reconstruction and likelihood on digits?",
-  "process": "The encoder proposes a Gaussian, four coupling layers warp it, and the decoder reads the flowed code. KL is a Monte Carlo estimate of that RealNVP posterior against N(0, I). ELBO is the negative of the training objective. Bits per dimension use the Gaussian decoder that matches the squared error. Reconstruction grids decode the flowed posterior mean. The sample grid decodes draws from N(0, I), not an inverse through the flow: the flow is inside the posterior. Both runs use latent 32, hidden 256, 4 flows, and the official 60,000 / 10,000 split. Fashion uses the digits hyperparameters for 20 epochs. There is no second Optuna search and no Optuna plot.",
+  "process": "`FVAE.forward` in `src/mnist_f_vae/model.py` draws \\( z_0 \\) from the encoder Gaussian, pushes it through `LatentFlow` (four affine couplings, \\( y = m \\odot x + (1-m) \\odot (x e^{s} + t) \\)), and decodes \\( z_K \\). `_fvae_loss` adds \\( \\beta \\) times the Monte Carlo KL \\( \\log q_0(z_0|x) - \\log\\mathcal{N}(z_K;0,I) - \\log|\\det| \\). Samples decode \\( \\mathcal{N}(0,I) \\) and do not invert the flow. The flow sits in the posterior. Both datasets use latent 32, hidden 256, 4 flows, \\( \\beta = 1 \\), and the full 60,000 / 10,000 split for 20 epochs. Digits test MSE is 0.0554, ELBO \\( -69.35 \\), BPD 0.953, log-det \\( -12.87 \\). Fashion test MSE is 0.0621, ELBO \\( -65.00 \\), BPD 0.945, log-det \\( -9.07 \\). Per-epoch curves are `loss.png` and `loss_fashion.png`. The reported BPD is the Gaussian-decoder ELBO, a different number from the RealNVP change-of-variables BPD.",
   "opening": {
     "answers": "What worked well?",
-    "summary": "Test MSE is 0.0554 and test ELBO is −69.35, essentially the same as train. Prior samples are soft digits from many classes. The flow’s test log-det is −12.87, so it is changing volume rather than sitting at the identity.",
+    "summary": "Train and test agree on both full splits. Digit samples cover many classes and are cleaner than the RealNVP inverse grid. They are the same soft family as the vanilla VAE. The flow’s test log-det is −12.87, so the couplings change volume.",
     "hover": "Hover a row for the number behind that sentence."
   },
   "charts": [
@@ -46,7 +46,7 @@
           "valueText": "many digit classes, soft strokes",
           "state": "have",
           "answers": "What didn't turn out as expected?",
-          "summary": "The 64 prior samples cover 0–9 and a few ambiguous blobs. They are cleaner than the RealNVP inverse grid and softer than a sharp GAN. The flow fixed the posterior shape. It did not give the decoder a sharper pixel likelihood.",
+          "summary": "The 64 digit samples cover 0–9 and a few ambiguous blobs. They are cleaner than the RealNVP inverse grid, which is stroke fragments. They are softer than a sharp GAN and in the same family as the vanilla VAE samples. The vanilla VAE digits run is a 10,000-image slice at latent 8 with test MSE 0.0852. This run is the full split at latent 32 with test MSE 0.0554, so the lower error is a larger experiment, not a paired win. The gallery decodes N(0, I). The inverse flow is inside the posterior.",
           "hover": "generated_samples.png · N(0, I)",
           "frame": "figures/fvae/generated_samples.png",
           "frameCaption": "f-VAE prior samples on digits."
@@ -56,7 +56,7 @@
           "valueText": "test ELBO −65.00 · MSE 0.0621",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Same hyperparameters, 20 epochs, full 60,000 / 10,000 split. Test ELBO is −65.00 and BPD is 0.945, against train ELBO −64.33 and BPD 0.944. Test MSE is 0.0621 and MAE is 0.1328; train is 0.0612 and 0.1315. KL is 12.95 and log-det is −9.07, so the couplings still change volume. Prior samples read as shirts, trousers, dresses, shoes, and bags. The shirt logo and the thin sandal do not survive.",
+          "summary": "Same hyperparameters, 20 epochs, full split. Test ELBO −65.00 and BPD 0.945, against train ELBO −64.33. Test MSE 0.0621 and MAE 0.1328. KL 12.95 and log-det −9.07. Prior samples read as shirts, trousers, dresses, shoes, and bags, which is clearer than the RealNVP Fashion blobs. The vanilla Fashion VAE (latent 8, slice) has test MSE 0.0749 and ELBO −71.09. The shirt logo and the thin sandal still disappear, the same failure as that VAE.",
           "hover": "test ELBO −65.00\ntest MSE 0.0621\nlog-det −9.07",
           "frame": "figures/fvae/fashion/generated_samples.png",
           "frameCaption": "f-VAE prior samples on Fashion-MNIST. N(0, I) through the decoder."
@@ -65,10 +65,10 @@
     }
   ],
   "reflection": {
-    "worked": "Reconstruction and the ELBO agree between train and test on both full splits. Digit samples cover many classes. Fashion samples cover shirts, trousers, dresses, shoes, and bags. Fashion’s test ELBO is −65.00 against −69.35 on digits, and its log-det of −9.07 shows the couplings are still doing work.",
-    "unexpected": "Fashion’s better ELBO comes with a worse pixel error: test MSE 0.0621 and MAE 0.1328, against 0.0554 and 0.0920 on digits. The shirt print is wiped out, and the loss curve is still falling at epoch 20.",
-    "why": "Squared error trains the decoder to average every stroke or weave that could explain a code. A wide silhouette survives that average; a logo and a sandal strap do not. Fashion’s KL is 12.95 against 19.51 on digits, so the higher ELBO is mostly a closer posterior, not a sharper picture. These samples never pass through the inverse flow.",
-    "improve": "The loss is still descending at epoch 20, so a longer Fashion run is the next measurement, not a new latent size. If the goal is the shirt print, change the decoder likelihood. More coupling layers will not sharpen a Gaussian decoder by themselves."
+    "worked": "Reconstruction and the ELBO agree between train and test on both full splits. Digit and Fashion samples cover many classes, and both grids are clearer than the RealNVP inverse samples. Fashion’s test ELBO is −65.00 against −69.35 on digits. Log-det −9.07 on Fashion and −12.87 on digits shows the couplings change volume.",
+    "unexpected": "Fashion’s higher ELBO comes with a higher pixel error: test MSE 0.0621 against 0.0554 on digits. The shirt print is wiped out. The loss curve is still falling at epoch 20. Against the vanilla VAE the pictures stay in the same soft family, so the flow is not a clear visual upgrade.",
+    "why": "Squared error trains the decoder to average every stroke or weave that could explain a code. A wide silhouette survives that average. A logo and a sandal strap do not. The f-VAE BPD near 0.95 and the RealNVP Fashion BPD of 3.263 are different likelihoods, so the smaller number is not a better density on the same scale. These samples never pass through the inverse flow.",
+    "improve": "The Fashion loss is still descending at epoch 20, so a longer run is the next measurement. A paired comparison with the vanilla VAE needs the same split and the same latent size. Sharper prints need a different decoder likelihood. More coupling layers will not sharpen a Gaussian decoder by themselves."
   },
   "live": {
     "src": "figures/fvae/generated_samples.png",
@@ -98,11 +98,11 @@
     }
   ],
   "sources": [
+    "src/mnist_f_vae/model.py",
     "reports/mnist_f_vae/evaluation_test.json",
-    "reports/mnist_f_vae/evaluation_train.json",
     "reports/mnist_f_vae/evaluation_test_fashion.json",
-    "reports/mnist_f_vae/evaluation_train_fashion.json",
     "reports/mnist_f_vae/best_params.json",
-    "src/mnist_f_vae/06_eval.py"
+    "reports/mnist_f_vae/plots/loss.png",
+    "reports/mnist_f_vae/plots/loss_fashion.png"
   ]
 }
