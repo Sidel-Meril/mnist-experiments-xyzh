@@ -18,8 +18,10 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 
-from mnist_vae_comparison.config import MODELING_CONTRACT_PATH, RANDOM_SEED
+from mnist_vae_comparison.config import MODELING_CONTRACT_PATH, PIXEL_MEAN, PIXEL_STD, RANDOM_SEED
 from mnist_vae_comparison.model import VAE
 from input_contracts.model_contract import ModelingContract
 
@@ -37,6 +39,22 @@ def _save_loss(history: dict[str, list[float]], plot_path: Path) -> None:
     plt.close(fig)
 
 
+def _save_epoch_grid(images: np.ndarray, path: Path) -> None:
+    gray = np.clip(images[:, 0] * np.float32(PIXEL_STD) + np.float32(PIXEL_MEAN), 0, 1)
+    side = 8
+    if len(gray) != side * side:
+        raise ValueError("generated sample grid expects 64 images")
+    plt.switch_backend("Agg")
+    fig, axes = plt.subplots(side, side, figsize=(8, 8))
+    for axis, image in zip(axes.ravel(), gray, strict=True):
+        axis.imshow(image, cmap="gray", vmin=0, vmax=1)
+        axis.axis("off")
+    fig.suptitle("samples from N(0, I)")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
 def run(
     data_path: Path,
     pixels_path: Path,
@@ -46,6 +64,7 @@ def run(
     *,
     epochs: int = 20,
     plot_path: Path,
+    epochs_dir: Path | None = None,
 ) -> Path:
     contract = ModelingContract.load(MODELING_CONTRACT_PATH)
     _batch, pixels = contract.read(data_path, pixels_path)
@@ -60,12 +79,22 @@ def run(
         batch_size=int(hparams["batch_size"]),
         seed=RANDOM_SEED,
     )
+    def _on_epoch(epoch: int, _history: dict[str, list[float]]) -> None:
+        if epochs_dir is None:
+            return
+        rng = torch.get_rng_state()
+        torch.manual_seed(RANDOM_SEED)
+        _save_epoch_grid(model.sample(64), epochs_dir / f"epoch_{epoch + 1:04d}.png")
+        torch.set_rng_state(rng)
+        print(f"samples epoch {epoch + 1} -> {epochs_dir}", flush=True)
+
     history = model.fit_from_dataset(
         train_loader,
         test_loader,
         hparams,
         epochs=epochs,
         seed=RANDOM_SEED,
+        on_epoch=_on_epoch if epochs_dir is not None else None,
     )
     model.save(model_path, list(contract.features), hparams)
     _save_loss(history, plot_path)
@@ -82,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--plot", type=Path, required=True)
     parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs-dir", type=Path)
     args = parser.parse_args(argv)
     run(
         args.data,
@@ -91,6 +121,7 @@ def main(argv: list[str] | None = None) -> int:
         args.model,
         epochs=args.epochs,
         plot_path=args.plot,
+        epochs_dir=args.epochs_dir,
     )
     return 0
 

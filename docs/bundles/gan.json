@@ -1,41 +1,41 @@
 {
   "id": "gan",
   "nav": "Vanilla GAN",
-  "lede": "Both datasets collapse to one shape. On digits the losses barely move and the logged spread is already tiny. On Fashion the generator loss climbs, the training spread stays large, and the scored grid is one shirt.",
+  "lede": "Both datasets collapse to one shape: a stroke on digits, a shirt on Fashion-MNIST.",
   "accent": "#8c2f2f",
-  "points": "GAN · vanilla",
+  "points": "Vanilla GAN",
   "title": "Vanilla GAN",
-  "question": "Do the generator and discriminator stay stable, and do the samples cover more than one mode?",
+  "question": "Do the generator and the discriminator stay stable, and do the samples cover more than one mode?",
   "process": [
-    "Generator maps noise through an MLP that ends in tanh, so a sample lies in [−1, 1]. Discriminator maps an image to one probability. The loss is binary cross-entropy, criterion in the training step.",
+    "The generator maps noise through a multilayer network that ends in tanh, so each sample lies in [−1, 1]. The discriminator maps an image to one probability. The loss is binary cross-entropy.",
     "One discriminator step scores a real batch against a label of 1 and a generated batch against a label of 0:",
     "\\[ \\mathcal{L}_D = \\mathrm{BCE}\\bigl(D(x), 1\\bigr) + \\mathrm{BCE}\\bigl(D(G(z)), 0\\bigr) \\]",
-    "The generator step uses the same fake batch and a label of 1, so D(G(z)) is pushed toward 1:",
+    "The generator step reuses that fake batch with a label of 1, so D(G(z)) is pushed toward 1:",
     "\\[ \\mathcal{L}_G = \\mathrm{BCE}\\bigl(D(G(z)), 1\\bigr) \\]",
-    "The loop takes one discriminator step and then two generator steps. There is no likelihood.",
-    "On 400 images per class for 40 epochs, digits eval losses stay near 1.40 and 0.68 and the grid is one stroke (sample std 0.0134). Fashion eval D falls to 0.20, eval G rises to 3.43, and the scored grid is one shirt."
+    "The loop takes one discriminator step, then two generator steps. There is no likelihood.",
+    "Trained on 400 images per class for 40 epochs, the digit losses stay near 1.40 and 0.68, and the grid is one stroke, with sample standard deviation 0.0134. On Fashion-MNIST the held-out discriminator loss falls to 0.20, the generator loss rises to 3.43, and the scored grid is one shirt."
   ],
   "opening": {
     "answers": "What didn't turn out as expected?",
-    "summary": "Both final grids are one shape, and both score files set mode_collapse. Digits losses barely move. Fashion generator loss climbs.",
-    "hover": "Hover the curve, or switch dataset."
+    "summary": "Both final grids are a single shape, and both score files set the collapse flag. The digit losses barely move. On Fashion-MNIST the generator loss climbs.",
+    "hover": "The curve covers both datasets."
   },
   "charts": [
     {
       "type": "series",
-      "title": "Eval loss over 40 epochs",
+      "title": "Held-out loss over 40 epochs",
       "datasets": [
         {
           "id": "digits",
-          "label": "digits"
+          "label": "Digits"
         },
         {
           "id": "fashion",
-          "label": "fashion"
+          "label": "Fashion"
         }
       ],
       "fallbackAnswers": "Why do you think the results might not be great?",
-      "fallback": "Epoch {epoch}: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The scored grid uses a different sample std than this logged series.",
+      "fallback": "Epoch {epoch}: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. The scored grid uses a different sample standard deviation from this logged series.",
       "frames": {
         "digits": {
           "1": "figures/gan/digits/epoch_0001.png",
@@ -127,91 +127,91 @@
           "dataset": "digits",
           "epoch": 1,
           "answers": "What worked well?",
-          "summary": "Epoch 1 on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The two losses sit near each other. The spread is already small."
+          "summary": "Epoch 1 on digits: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. The two losses sit near each other. The spread is already small."
         },
         {
           "dataset": "digits",
           "epoch": 10,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on digits: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "digits",
           "epoch": 20,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on digits: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "digits",
           "epoch": 30,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on digits: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on digits: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "digits",
           "epoch": 40,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 40 on digits: eval D {eval_d}, eval G {eval_g}, train D {train_d}, train G {train_g}, logged sample std {sample_std}. The losses have barely moved in 40 epochs. The score file records sample std 0.0134 against real std 0.378, so mode_collapse is true. The picture is one repeated fuzzy vertical stroke."
+          "summary": "Epoch 40 on digits: held-out discriminator loss {eval_d}, generator loss {eval_g}, training discriminator loss {train_d}, training generator loss {train_g}, logged sample standard deviation {sample_std}. The losses have barely moved across 40 epochs. The scored batch has sample standard deviation 0.0134, against 0.378 on real images, so the collapse flag is set. The picture is one fuzzy vertical stroke, repeated."
         },
         {
           "dataset": "fashion",
           "epoch": 1,
           "answers": "What worked well?",
-          "summary": "Epoch 1 on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. The batch still varies."
+          "summary": "Epoch 1 on Fashion-MNIST: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. The batch still varies."
         },
         {
           "dataset": "fashion",
           "epoch": 10,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on Fashion-MNIST: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "fashion",
           "epoch": 20,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on Fashion-MNIST: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "fashion",
           "epoch": 30,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch {epoch} on Fashion: eval D {eval_d}, eval G {eval_g}, logged sample std {sample_std}. This epoch has its own saved grid."
+          "summary": "Epoch {epoch} on Fashion-MNIST: held-out discriminator loss {eval_d}, generator loss {eval_g}, logged sample standard deviation {sample_std}. This epoch has its own saved grid."
         },
         {
           "dataset": "fashion",
           "epoch": 40,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 40 on Fashion: eval D {eval_d}, eval G {eval_g}, train G {train_g}, logged sample std {sample_std}. Discriminator loss fell and generator loss climbed. The score file records sample std 0.0413 against real std 0.531, mode_collapse true, and every cell is the same shirt. The training log’s spread stayed large, so that series alone misses the collapse."
+          "summary": "Epoch 40 on Fashion-MNIST: held-out discriminator loss {eval_d}, generator loss {eval_g}, training generator loss {train_g}, logged sample standard deviation {sample_std}. The discriminator loss fell and the generator loss climbed. The scored batch has sample standard deviation 0.0413, against 0.531 on real images, the collapse flag is set, and every cell is the same shirt. The spread in the training log stayed large, so that series on its own misses the collapse."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: both runs wrote 40 epochs of loss and a grid every epoch. The collapse flag matches the pictures: one stroke on digits, one shirt on Fashion.",
-    "unexpected": "Measured: digits eval losses stay near 1.40 and 0.68 while sample std ends at 0.012, matching the score file’s 0.0134. Fashion eval D falls to 0.20 and eval G rises to 3.43, but logged std ends at 0.641 while the scored batch is 0.041.",
-    "why": "Measured: the slice is 400 images per class, and the two stds are the same statistic on different noise draws. On Fashion those draws disagree. Guess: vanilla BCE gives the generator no class to cover, so one image that still fools the discriminator wins.",
-    "improve": "Read the grid and the scored sample std beside the loss. The class-conditional run is the control that stops this collapse. On Fashion, where generator loss runs away, take a smaller discriminator step."
+    "worked": "Both runs wrote 40 epochs of loss and a grid at every epoch. The collapse flag matches the pictures: one stroke on digits, and one shirt on Fashion-MNIST.",
+    "unexpected": "Digit held-out losses stay near 1.40 and 0.68 while the sample standard deviation ends at 0.012, matching the score file’s 0.0134. On Fashion-MNIST the held-out discriminator loss falls to 0.20 and the generator loss rises to 3.43, but the logged standard deviation ends at 0.641 while the scored batch is 0.041.",
+    "why": "The training slice is 400 images per class, and the two standard deviations are the same statistic on different noise draws. On Fashion-MNIST those draws disagree. A reasonable reading is that vanilla binary cross-entropy gives the generator no class to cover, so one image that still fools the discriminator wins.",
+    "improve": "Read the grid and the scored sample standard deviation beside the loss. The class-conditional run is the control that stops this collapse. On Fashion-MNIST, where the generator loss runs away, take a smaller discriminator step."
   },
   "live": {
     "src": "figures/gan/digits/final.png",
     "alt": "Vanilla GAN digits collapsed to one repeated noisy stroke.",
-    "caption": "Digits, epoch 40: one noisy stroke repeated. Hover any epoch, on either dataset, to put that epoch's grid here."
+    "caption": "Digits at epoch 40: one noisy stroke, repeated. Each dataset has a saved grid at every epoch."
   },
   "figures": [
     {
       "src": "figures/gan/digits/real_test.png",
-      "alt": "Real MNIST test digits of many classes.",
-      "caption": "The real test batch the collapse is measured against. These are different digits. Generator sample std is 0.013 against 0.378 here."
+      "alt": "Real MNIST test digits from many classes.",
+      "caption": "The real test batch the collapse is measured against. These are different digits. The generator’s sample standard deviation is 0.013, against 0.378 here."
     },
     {
       "src": "figures/gan/fashion/final.png",
-      "alt": "Vanilla GAN Fashion collapsed to one repeated speckled shape.",
-      "caption": "Fashion at the end of training. One speckled garment, repeated."
+      "alt": "Vanilla GAN Fashion-MNIST collapsed to one repeated speckled shape.",
+      "caption": "Fashion-MNIST at the end of training. One speckled garment, repeated."
     },
     {
       "src": "figures/gan/fashion/real_test.png",
       "alt": "Real Fashion-MNIST test images of many garment types.",
-      "caption": "The real Fashion batch: dresses, shirts, shoes, bags, trousers. The generator did not cover this."
+      "caption": "The real Fashion-MNIST batch: dresses, shirts, shoes, bags, and trousers. The generator did not cover this set."
     }
   ],
   "sources": [

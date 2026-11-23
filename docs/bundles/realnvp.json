@@ -1,247 +1,247 @@
 {
   "id": "realnvp",
   "nav": "RealNVP",
-  "lede": "Digits test BPD is 1.210. Fashion test BPD is 3.263. Both inverse-sample grids stay broken.",
+  "lede": "Digits reach 1.210 bits per dimension and Fashion-MNIST 3.263, with broken samples from the inverse.",
   "accent": "#0f6e6e",
-  "points": "Norm Flow · 5pt",
+  "points": "Normalizing flow",
   "title": "Multi-scale RealNVP",
-  "question": "Does the coupling flow assign high likelihood to grayscale MNIST and invert into recognizable samples?",
+  "question": "Does the coupling flow assign a high likelihood to grayscale MNIST, and does inverting it produce recognizable samples?",
   "process": [
-    "CouplingLayer splits the channels with a mask. Where the mask is 1 the value is kept. Where it is 0, ScaleTranslate reads only the kept part and predicts a scale and a shift.",
+    "A coupling layer splits the channels with a mask. Where the mask is 1, the value is kept. Where it is 0, a small network reads only the kept part and predicts a scale and a shift.",
     "\\[ s = \\mathrm{scale}\\cdot\\tanh(s_{\\mathrm{raw}}), \\qquad t = \\mathrm{shift} \\]",
-    "forward then applies that affine map, which is the line in CouplingLayer.forward:",
+    "The forward map applies that affine transform:",
     "\\[ y = m \\odot x + (1-m)\\odot\\bigl(x \\odot e^{s} + t\\bigr) \\]",
-    "The Jacobian of a coupling is triangular, so its log-determinant is the sum of s on the changed coordinates only. That is the next line:",
+    "The Jacobian of a coupling is triangular, so the log-determinant is the sum of s on the changed coordinates only:",
     "\\[ \\log|\\det J| = \\sum (1-m)\\odot s \\]",
-    "inverse recomputes s and t from the kept part of y and undoes the affine map:",
+    "The inverse recomputes s and t from the kept part of y and undoes the affine map:",
     "\\[ x = m \\odot y + (1-m)\\odot(y-t)\\odot e^{-s} \\]",
-    "MultiScaleFlow stacks these layers. It squeezes 28×28 into 14×14, couples, and factors half the channels out as z1. It squeezes again to 7×7, couples, and factors z2. The last block emits z3. Each piece is scored under a standard normal.",
-    "log_prob is the change-of-variables density. Pixels are dequantized and logit-mapped first, and that Jacobian is added too:",
+    "The multi-scale model stacks these layers. It squeezes 28×28 down to 14×14, applies couplings, and factors half the channels out as z1. It squeezes again to 7×7, applies couplings, and factors z2. The last block emits z3. Each piece is scored under a standard normal.",
+    "The log-density is the change-of-variables formula. Pixels are dequantized and passed through a logit first, and that Jacobian is included as well:",
     "\\[ \\log p(x) = \\log p(z_1)+\\log p(z_2)+\\log p(z_3) + \\log|\\det J_{\\mathrm{flow}}| + \\log|\\det J_{\\mathrm{logit}}| \\]",
-    "Training minimises the batch mean of −log p(x). Samples draw the three normals and run flow.inverse, then the inverse logit.",
-    "The digits checkpoint is kept in reports/mnist_realnvp/digits/, separate from the Fashion files. The saved digits curve stops near epoch 9, and its test line finishes at the scored test NLL 657.3 (1.210 bits per dimension; train 660.3 and 1.215). Fashion, 20 epochs on the same hyperparameters, has test BPD 3.263. The one-epoch search that chose those hyperparameters had validation BPD 1.583."
+    "Training minimizes the mean of −log p(x) over the batch. A sample draws the three normals, runs the inverse flow, then applies the inverse logit.",
+    "The digits checkpoint is kept apart from the Fashion-MNIST files, so the Fashion-MNIST run did not replace it. The saved digits curve stops near epoch 9, and the test line ends at the scored negative log-likelihood of 657.3 (1.210 bits per dimension; the training figures are 660.3 and 1.215). Fashion-MNIST, trained for 20 epochs with those same hyperparameters, reaches a test value of 3.263 bits per dimension. The one-epoch search that chose the hyperparameters had a validation value of 1.583 bits per dimension."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Epoch 20 is bold: it is the Fashion checkpoint that was scored. Hover it for the test BPD, then the Optuna bar for the two trials.",
-    "hover": "Start on the bold epoch."
+    "summary": "Epoch 20 is the Fashion-MNIST checkpoint that was scored. Its hyperparameters are the wider network from the search.",
+    "hover": "The marked point is epoch 20."
   },
   "charts": [
     {
       "type": "line",
-      "title": "Fashion test bits per dimension, all 20 epochs",
+      "title": "Fashion-MNIST test bits per dimension",
       "xKey": "epoch",
       "yKey": "bpd",
-      "xLabel": "epoch",
-      "yLabel": "test BPD",
+      "xLabel": "Epoch",
+      "yLabel": "Bits per dimension",
       "yFromZero": false,
       "marks": [
         {
           "epoch": 1,
           "bpd": 3.582,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 1 is the first test point on the Fashion curve, BPD 3.582. The later points are read from that same line. Most of the drop happens in these early epochs.",
-          "hover": "epoch 1 · test BPD 3.582",
+          "summary": "Epoch 1 is the first test point on the Fashion-MNIST curve, at 3.582 bits per dimension. The later points are read from that same curve. Most of the drop happens in these early epochs.",
+          "hover": "Epoch 1, test bits per dimension 3.582.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 2,
           "bpd": 3.477,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 2 on the Fashion test curve, read from bpd_fashion.png: BPD 3.477. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 2 · test BPD 3.477",
+          "summary": "Epoch 2 on the Fashion-MNIST test curve is at 3.477 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 2, test bits per dimension 3.477.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 3,
           "bpd": 3.42,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 3 on the Fashion test curve, read from bpd_fashion.png: BPD 3.420. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 3 · test BPD 3.420",
+          "summary": "Epoch 3 on the Fashion-MNIST test curve is at 3.420 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 3, test bits per dimension 3.420.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 4,
           "bpd": 3.384,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 4 on the Fashion test curve, read from bpd_fashion.png: BPD 3.384. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 4 · test BPD 3.384",
+          "summary": "Epoch 4 on the Fashion-MNIST test curve is at 3.384 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 4, test bits per dimension 3.384.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 5,
           "bpd": 3.333,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 5 on the Fashion test curve, read from bpd_fashion.png: BPD 3.333. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 5 · test BPD 3.333",
+          "summary": "Epoch 5 on the Fashion-MNIST test curve is at 3.333 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 5, test bits per dimension 3.333.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 6,
           "bpd": 3.365,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 6 on the Fashion test curve, read from bpd_fashion.png: BPD 3.365. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 6 · test BPD 3.365",
+          "summary": "Epoch 6 on the Fashion-MNIST test curve is at 3.365 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 6, test bits per dimension 3.365.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 7,
           "bpd": 3.333,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 7 on the Fashion test curve, read from bpd_fashion.png: BPD 3.333. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 7 · test BPD 3.333",
+          "summary": "Epoch 7 on the Fashion-MNIST test curve is at 3.333 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 7, test bits per dimension 3.333.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 8,
           "bpd": 3.304,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 8 on the Fashion test curve, read from bpd_fashion.png: BPD 3.304. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 8 · test BPD 3.304",
+          "summary": "Epoch 8 on the Fashion-MNIST test curve is at 3.304 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 8, test bits per dimension 3.304.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 9,
           "bpd": 3.276,
           "answers": "What worked well?",
-          "summary": "Epoch 9 on the Fashion test curve, read from bpd_fashion.png: BPD 3.276. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 9 · test BPD 3.276",
+          "summary": "Epoch 9 on the Fashion-MNIST test curve is at 3.276 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 9, test bits per dimension 3.276.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 10,
           "bpd": 3.306,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 10 on the Fashion test curve, read from bpd_fashion.png: BPD 3.306. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 10 · test BPD 3.306",
+          "summary": "Epoch 10 on the Fashion-MNIST test curve is at 3.306 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 10, test bits per dimension 3.306.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 11,
           "bpd": 3.281,
           "answers": "What worked well?",
-          "summary": "Epoch 11 on the Fashion test curve, read from bpd_fashion.png: BPD 3.281. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 11 · test BPD 3.281",
+          "summary": "Epoch 11 on the Fashion-MNIST test curve is at 3.281 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 11, test bits per dimension 3.281.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 12,
           "bpd": 3.258,
           "answers": "What worked well?",
-          "summary": "Epoch 12 on the Fashion test curve, read from bpd_fashion.png: BPD 3.258. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 12 · test BPD 3.258",
+          "summary": "Epoch 12 on the Fashion-MNIST test curve is at 3.258 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 12, test bits per dimension 3.258.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 13,
           "bpd": 3.24,
           "answers": "What worked well?",
-          "summary": "Epoch 13 on the Fashion test curve, read from bpd_fashion.png: BPD 3.240. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 13 · test BPD 3.240",
+          "summary": "Epoch 13 on the Fashion-MNIST test curve is at 3.240 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 13, test bits per dimension 3.240.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 14,
           "bpd": 3.262,
           "answers": "What worked well?",
-          "summary": "Epoch 14 on the Fashion test curve, read from bpd_fashion.png: BPD 3.262. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 14 · test BPD 3.262",
+          "summary": "Epoch 14 on the Fashion-MNIST test curve is at 3.262 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 14, test bits per dimension 3.262.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 15,
           "bpd": 3.263,
           "answers": "What worked well?",
-          "summary": "Epoch 15 on the Fashion test curve, read from bpd_fashion.png: BPD 3.263. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 15 · test BPD 3.263",
+          "summary": "Epoch 15 on the Fashion-MNIST test curve is at 3.263 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 15, test bits per dimension 3.263.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 16,
           "bpd": 3.247,
           "answers": "What worked well?",
-          "summary": "Epoch 16 on the Fashion test curve, read from bpd_fashion.png: BPD 3.247. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 16 · test BPD 3.247",
+          "summary": "Epoch 16 on the Fashion-MNIST test curve is at 3.247 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 16, test bits per dimension 3.247.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 17,
           "bpd": 3.264,
           "answers": "What worked well?",
-          "summary": "Epoch 17 on the Fashion test curve, read from bpd_fashion.png: BPD 3.264. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 17 · test BPD 3.264",
+          "summary": "Epoch 17 on the Fashion-MNIST test curve is at 3.264 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 17, test bits per dimension 3.264.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 18,
           "bpd": 3.266,
           "answers": "What worked well?",
-          "summary": "Epoch 18 on the Fashion test curve, read from bpd_fashion.png: BPD 3.266. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 18 · test BPD 3.266",
+          "summary": "Epoch 18 on the Fashion-MNIST test curve is at 3.266 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 18, test bits per dimension 3.266.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 19,
           "bpd": 3.264,
           "answers": "What worked well?",
-          "summary": "Epoch 19 on the Fashion test curve, read from bpd_fashion.png: BPD 3.264. The last point is the scored 3.263, not this one.",
-          "hover": "epoch 19 · test BPD 3.264",
+          "summary": "Epoch 19 on the Fashion-MNIST test curve is at 3.264 bits per dimension. The scored checkpoint is epoch 20, at 3.263.",
+          "hover": "Epoch 19, test bits per dimension 3.264.",
           "frame": "figures/realnvp/bpd_fashion.png",
-          "frameCaption": "Fashion bits per dimension. The right-hand end is the scored 3.263."
+          "frameCaption": "Fashion-MNIST bits per dimension. The right-hand end is the scored value, 3.263."
         },
         {
           "epoch": 20,
           "bpd": 3.263,
           "selected": true,
-          "bestLabel": "epoch 20",
+          "bestLabel": "scored",
           "answers": "What worked well?",
-          "summary": "Epoch 20 is bold because it is the scored checkpoint. evaluation_test_fashion.json records test NLL 1773.2 and BPD 3.263 on 10,000 images. The curve is flat here. Digits, kept in their own folder, score a tighter test BPD of 1.210.",
-          "hover": "epoch 20 · test BPD 3.263 · test NLL 1773.2",
+          "summary": "Epoch 20 is marked because it is the scored checkpoint. The Fashion-MNIST evaluation records a test negative log-likelihood of 1773.2 and 3.263 bits per dimension on 10,000 images. The curve is flat here. Digits, kept in their own evaluation, score a tighter test value of 1.210 bits per dimension.",
+          "hover": "Epoch 20, test bits per dimension 3.263, test negative log-likelihood 1773.2.",
           "frame": "figures/realnvp/samples_fashion.png",
-          "frameCaption": "Fashion inverse samples from the epoch-20 checkpoint. A few clothes, mostly torn shapes."
+          "frameCaption": "Fashion-MNIST samples from the inverse at the epoch-20 checkpoint. A few clothes, mostly torn shapes."
         }
       ]
     },
     {
       "type": "hbar",
-      "title": "Optuna validation NLL on digits",
+      "title": "Validation negative log-likelihood on digits",
       "marks": [
         {
-          "label": "trial 0 picked",
+          "label": "Trial 0, chosen",
           "value": 860.124,
           "selected": true,
           "answers": "What worked well?",
-          "summary": "Trial 0 is bold because it minimizes validation NLL. best_params.json stores hidden channels 64, 4 coupling layers, scale 2, learning rate 0.001, weight decay 0, batch 128, validation NLL 860.1, validation BPD 1.583. The objective was likelihood after one epoch, two folds, on digits. Generation quality was not in the score. Fashion reused these values.",
-          "hover": "NLL 860.1 · BPD 1.583 · hidden 64 · scale 2 · lr 0.001",
+          "summary": "Trial 0 is marked because it has the lower validation negative log-likelihood. The saved hyperparameters are 64 hidden channels, 4 coupling layers, scale 2, learning rate 0.001, weight decay 0, and batch size 128, with validation negative log-likelihood 860.1 and 1.583 bits per dimension. The objective was likelihood after one epoch, on two folds, for digits. Generation quality was not part of the score. Fashion-MNIST reused these values.",
+          "hover": "Negative log-likelihood 860.1. Bits per dimension 1.583. Hidden channels 64, scale 2, learning rate 0.001.",
           "frame": "figures/realnvp/digits/bpd.png",
-          "frameCaption": "The digits curve trained from this winning trial. Test ends at the scored 1.21."
+          "frameCaption": "The digit curve trained from this winning trial. The test line ends at the scored 1.21."
         },
         {
-          "label": "trial 1 narrow",
+          "label": "Trial 1, narrower",
           "value": 1050.113,
           "answers": "How could the results be improved?",
-          "summary": "Trial 1 changed every free knob the other way: hidden channels 32, scale 1, learning rate 0.0001, weight decay 1e-6, batch 64. Validation NLL rose to 1050.1 (BPD 1.932). The wider, faster step won. Two trials and one epoch is the whole search that is on disk. The Plotly files optimization_history.html, param_importances.html, parallel_coordinate.html, and parameter_slice.html show this same pair.",
-          "hover": "NLL 1050.1 · BPD 1.932 · hidden 32 · scale 1 · lr 1e-4",
+          "summary": "Trial 1 moved every free setting the other way: 32 hidden channels, scale 1, learning rate 0.0001, weight decay 1e-6, and batch size 64. Validation negative log-likelihood rose to 1050.1, or 1.932 bits per dimension. The wider network and the larger step won. The saved search is these two settings, each scored after one epoch.",
+          "hover": "Negative log-likelihood 1050.1. Bits per dimension 1.932. Hidden channels 32, scale 1, learning rate 1e-4.",
           "frame": "figures/realnvp/digits/loss.png",
-          "frameCaption": "Digits negative log-likelihood. The narrow trial was worse, and this is the run that kept the wider one."
+          "frameCaption": "Digit negative log-likelihood. The narrower trial was worse, and the run that was kept is the wider one."
         }
       ]
     },
@@ -250,105 +250,281 @@
       "title": "Inverse samples and both test scores",
       "marks": [
         {
-          "label": "Digits inverse",
-          "valueText": "64 draws · stroke fragments",
+          "label": "Digits, inverse",
+          "valueText": "64 draws, mostly stroke fragments",
           "state": "have",
           "answers": "What didn't turn out as expected?",
-          "summary": "samples.png inverts the digits flow. A few cells suggest a loop or a stem. Most cells are hooks, specks, and broken junctions. The VAE and f-VAE sample grids later in the report still read as digits. This grid does not.",
-          "hover": "samples.png",
+          "summary": "Inverting the digit flow produces a few cells that suggest a loop or a stem. Most cells are hooks, specks, and broken junctions. The VAE and f-VAE sample grids later in the report still read as digits. This grid does not.",
+          "hover": "Digit samples from the inverse.",
           "frame": "figures/realnvp/samples.png",
-          "frameCaption": "Digits inverse samples. Readable digits sit next to broken hooks."
+          "frameCaption": "Digit samples from the inverse. A readable digit sits next to a broken hook."
         },
         {
-          "label": "Fashion inverse",
-          "valueText": "64 draws · soft garment blobs",
+          "label": "Fashion, inverse",
+          "valueText": "64 draws, mostly soft blobs",
           "state": "have",
           "answers": "What didn't turn out as expected?",
-          "summary": "samples_fashion.png draws the standard normal through the inverse. A few cells suggest a shirt, a trouser leg, a bag, or a boot. Most are smeared gray masses. The Fashion VAE samples keep those garment types readable.",
-          "hover": "samples_fashion.png",
+          "summary": "Drawing a standard normal through the inverse produces a few cells that suggest a shirt, a trouser leg, a bag, or a boot. Most are smeared gray masses. The Fashion-MNIST VAE samples keep those garment types readable.",
+          "hover": "Fashion-MNIST samples from the inverse.",
           "frame": "figures/realnvp/samples_fashion.png",
-          "frameCaption": "Fashion inverse samples from the epoch-20 checkpoint. A few clothes, mostly torn shapes."
+          "frameCaption": "Fashion-MNIST samples from the inverse at the epoch-20 checkpoint. A few clothes, mostly torn shapes."
         },
         {
-          "label": "Fashion reconstruct",
-          "valueText": "encode then invert · clothes stay sharp",
+          "label": "Fashion, reconstruction",
+          "valueText": "Encode, then invert: clothes stay sharp",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "reconstructions_fashion.png encodes eight Fashion test images and inverts the flow. The boot, the shirt, the trousers, and the plaid stay sharp. The coupling inverse preserves a real image. The soft sample grid is the prior.",
-          "hover": "reconstructions_fashion.png",
+          "summary": "Eight Fashion-MNIST test images can be encoded and passed back through the inverse. The boot, the shirt, the trousers, and the plaid stay sharp. The coupling inverse preserves a real image. The soft sample grid is what the prior produces.",
+          "hover": "Fashion-MNIST reconstructions from the inverse.",
           "frame": "figures/realnvp/reconstructions_fashion.png",
-          "frameCaption": "Fashion data row and inverse row. The clothes come back."
+          "frameCaption": "Fashion-MNIST data on one row and the inverse on the next. The clothes come back."
         },
         {
-          "label": "Digits test",
-          "valueText": "test BPD 1.210 · test NLL 657.3",
+          "label": "Digits, test set",
+          "valueText": "Test BPD 1.210, test NLL 657.3",
           "state": "have",
           "selected": true,
           "answers": "What worked well?",
-          "summary": "The digits model was not overwritten. It lives in reports/mnist_realnvp/digits/, copied from the mnist-realnvp-xyzh checkout, and was scored there. evaluation_test.json in that folder records test NLL 657.3 and BPD 1.210 on 10,000 images. Train is NLL 660.3 and BPD 1.215. That is a much tighter density than Fashion’s 3.263. The inverse samples are still stroke fragments.",
-          "hover": "digits test BPD 1.210\ntest NLL 657.3",
+          "summary": "The digit model was scored on its own, and the Fashion-MNIST run did not replace it. On 10,000 images the test negative log-likelihood is 657.3 and bits per dimension are 1.210. The training figures are 660.3 and 1.215. That is a much tighter density than Fashion-MNIST’s 3.263. The samples from the inverse are still stroke fragments.",
+          "hover": "Digit test bits per dimension 1.210. Test negative log-likelihood 657.3.",
           "frame": "figures/realnvp/digits/generated.png",
-          "frameCaption": "Digits inverse samples from the separate checkpoint. Test BPD 1.210."
+          "frameCaption": "Digit samples from the inverse of the separate checkpoint. Test bits per dimension 1.210."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: the digits checkpoint, kept in its own folder, scores test BPD 1.210. Fashion test BPD is 3.263 at epoch 20, and encode-and-invert keeps real clothes. The wider Optuna trial beat the narrow one, 860.1 against 1050.1.",
-    "unexpected": "Measured: digits test BPD is 1.210 and Fashion test BPD is 3.263. The digits inverse grid mixes readable digits with broken hooks. The Fashion inverse grid mixes a few garments with torn shapes.",
-    "why": "Measured: the search is two one-epoch trials, and Fashion reused those digits settings. Guess, not a measurement: bits per dimension can fall by explaining the background while the prior still misses the glyph. A published tight flow sits nearer 1 bit, so 3.263 is only a partial density.",
-    "improve": "Keep digits and Fashion in separate folders. reports/mnist_realnvp/digits/ is the digits run. Give Fashion its own search and a longer train. If BPD keeps falling and prior samples stay soft, add capacity in the coupling networks."
+    "worked": "The digit checkpoint, kept separate from the Fashion-MNIST run, scores 1.210 test bits per dimension. Fashion-MNIST reaches 3.263 at epoch 20, and encoding an image and inverting the flow keeps real clothes. The wider Optuna trial beat the narrower one, 860.1 against 1050.1.",
+    "unexpected": "Digit test bits per dimension are 1.210, and Fashion-MNIST test bits per dimension are 3.263. The digit samples from the inverse mix readable digits with broken hooks. The Fashion-MNIST samples mix a few garments with torn shapes.",
+    "why": "The search is two trials of one epoch each, and Fashion-MNIST reused the digit settings. Bits per dimension can fall while the model explains the background and the prior still misses the glyph. That is a reading of the pictures, not a separate measurement. A published flow with a tight density sits nearer 1 bit, so 3.263 is only a partial fit.",
+    "improve": "Keep the digit and Fashion-MNIST runs separate. Give Fashion-MNIST its own search and a longer training run. If bits per dimension keep falling while samples from the prior stay soft, add capacity in the coupling networks."
   },
   "live": {
     "src": "figures/realnvp/samples_fashion.png",
-    "alt": "64 Fashion inverse samples, a mix of garment shapes and torn gray masses.",
-    "caption": "Fashion inverse samples. A few cells are clothes. The rows replace this frame with the digits grid, the BPD curve, or the reconstruction."
+    "alt": "Sixty-four Fashion-MNIST samples from the inverse, a mix of garment shapes and torn gray masses.",
+    "caption": "Fashion-MNIST samples from the inverse. A few cells are clothes. The other rows are the digit grid, the bits-per-dimension curve, and the reconstruction.",
+    "sequences": [
+      {
+        "play": "Play Digits",
+        "playName": "Play digit epochs",
+        "pauseName": "Pause digit epochs",
+        "frames": [
+          {
+            "src": "figures/realnvp/digits/epoch_0001.png",
+            "caption": "Digit samples from the inverse, epoch 1."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0002.png",
+            "caption": "Digit samples from the inverse, epoch 2."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0003.png",
+            "caption": "Digit samples from the inverse, epoch 3."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0004.png",
+            "caption": "Digit samples from the inverse, epoch 4."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0005.png",
+            "caption": "Digit samples from the inverse, epoch 5."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0006.png",
+            "caption": "Digit samples from the inverse, epoch 6."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0007.png",
+            "caption": "Digit samples from the inverse, epoch 7."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0008.png",
+            "caption": "Digit samples from the inverse, epoch 8."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0009.png",
+            "caption": "Digit samples from the inverse, epoch 9."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0010.png",
+            "caption": "Digit samples from the inverse, epoch 10."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0011.png",
+            "caption": "Digit samples from the inverse, epoch 11."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0012.png",
+            "caption": "Digit samples from the inverse, epoch 12."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0013.png",
+            "caption": "Digit samples from the inverse, epoch 13."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0014.png",
+            "caption": "Digit samples from the inverse, epoch 14."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0015.png",
+            "caption": "Digit samples from the inverse, epoch 15."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0016.png",
+            "caption": "Digit samples from the inverse, epoch 16."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0017.png",
+            "caption": "Digit samples from the inverse, epoch 17."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0018.png",
+            "caption": "Digit samples from the inverse, epoch 18."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0019.png",
+            "caption": "Digit samples from the inverse, epoch 19."
+          },
+          {
+            "src": "figures/realnvp/digits/epoch_0020.png",
+            "caption": "Digit samples from the inverse, epoch 20."
+          }
+        ]
+      },
+      {
+        "play": "Play Fashion",
+        "playName": "Play Fashion-MNIST epochs",
+        "pauseName": "Pause Fashion-MNIST epochs",
+        "frames": [
+          {
+            "src": "figures/realnvp/fashion/epoch_0001.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 1."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0002.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 2."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0003.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 3."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0004.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 4."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0005.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 5."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0006.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 6."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0007.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 7."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0008.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 8."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0009.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 9."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0010.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 10."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0011.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 11."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0012.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 12."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0013.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 13."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0014.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 14."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0015.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 15."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0016.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 16."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0017.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 17."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0018.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 18."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0019.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 19."
+          },
+          {
+            "src": "figures/realnvp/fashion/epoch_0020.png",
+            "caption": "Fashion-MNIST samples from the inverse, epoch 20."
+          }
+        ]
+      }
+    ]
   },
   "figures": [
     {
       "src": "figures/realnvp/loss.png",
-      "alt": "Digits train and test negative log-likelihood. Test ends near 660.",
-      "caption": "Digits negative log-likelihood. The test line finishes near 660, which is the scored test NLL. The axis stops near epoch 9, so this file is not a 20-epoch curve."
+      "alt": "Digit training and test negative log-likelihood. The test line ends near 660.",
+      "caption": "Digit negative log-likelihood. The test line finishes near 660, which is the scored test value. The axis stops near epoch 9, so this is not a 20-epoch curve."
     },
     {
       "src": "figures/realnvp/bpd.png",
-      "alt": "Digits bits per dimension. Test ends near 1.21.",
-      "caption": "Same digits run in bits per dimension. Test settles near 1.21, the number in the digits evaluation file."
+      "alt": "Digit bits per dimension. The test line ends near 1.21.",
+      "caption": "The same digit run, in bits per dimension. The test line settles near 1.21, the number in the digit evaluation."
     },
     {
       "src": "figures/realnvp/loss_fashion.png",
-      "alt": "Fashion negative log-likelihood falling over 20 epochs.",
-      "caption": "Fashion negative log-likelihood across the full 20-epoch train. Train and test meet near 1780."
+      "alt": "Fashion-MNIST negative log-likelihood falling over 20 epochs.",
+      "caption": "Fashion-MNIST negative log-likelihood across the full 20-epoch training run. Training and test meet near 1780."
     },
     {
       "src": "figures/realnvp/bpd_fashion.png",
-      "alt": "Fashion bits per dimension ending at 3.26.",
-      "caption": "Fashion bits per dimension. The test line ends at 3.26, the scored test BPD, after falling from about 3.6."
+      "alt": "Fashion-MNIST bits per dimension, ending at 3.26.",
+      "caption": "Fashion-MNIST bits per dimension. The test line ends at 3.26, the scored test value, after falling from about 3.6."
     },
     {
       "src": "figures/realnvp/samples_fashion.png",
-      "alt": "64 Fashion inverse samples, a mix of garment shapes and torn gray masses.",
-      "caption": "Fashion inverse samples. A shirt, a trouser, or a boot shows up in a few cells. Most cells are torn shapes, which is why 3.263 bits per dimension is not a wardrobe."
+      "alt": "Sixty-four Fashion-MNIST samples from the inverse, a mix of garment shapes and torn gray masses.",
+      "caption": "Fashion-MNIST samples from the inverse. A shirt, a trouser, or a boot shows up in a few cells. Most cells are torn shapes, which is why 3.263 bits per dimension is not a wardrobe."
     },
     {
       "src": "figures/realnvp/reconstructions_fashion.png",
-      "alt": "Eight Fashion test images and the inverse of each. The clothes match.",
-      "caption": "Fashion test images on the data row, the inverse underneath. The boot, the printed shirt, the trousers, and the plaid come back, so the coupling inverse is not what failed."
+      "alt": "Eight Fashion-MNIST test images and the inverse of each. The clothes match.",
+      "caption": "Fashion-MNIST test images on the data row, and the inverse underneath. The boot, the printed shirt, the trousers, and the plaid come back, so the coupling inverse is not what failed."
     },
     {
       "src": "figures/realnvp/digits/generated.png",
-      "alt": "64 digits inverse samples. Many are readable digits, some are broken strokes.",
-      "caption": "Digits inverse samples from the separate digits checkpoint. Readable 0s, 1s, 3s, 5s, 6s, and 7s sit beside broken hooks. Test BPD is 1.210."
+      "alt": "Sixty-four digit samples from the inverse. Many are readable digits, and some are broken strokes.",
+      "caption": "Digit samples from the inverse of the separate digit checkpoint. Readable 0s, 1s, 3s, 5s, 6s, and 7s sit beside broken hooks. Test bits per dimension are 1.210."
     },
     {
       "src": "figures/realnvp/digits/reconstructions.png",
       "alt": "Eight MNIST digits and their RealNVP inverses. Each digit matches.",
-      "caption": "Digits data row and inverse row: 7, 2, 1, 0, 4, 1, 4, 9. The stroke comes back, the same way the Fashion clothes do."
+      "caption": "Digit data on one row and the inverse on the next: 7, 2, 1, 0, 4, 1, 4, 9. The stroke comes back, in the same way the Fashion-MNIST clothes do."
     },
     {
       "src": "figures/realnvp/digits/bpd.png",
-      "alt": "Digits bits per dimension, the curve kept in the digits folder.",
-      "caption": "The digits bits-per-dimension curve, stored apart from Fashion. Test ends at the scored 1.21."
+      "alt": "Digit bits per dimension, from the curve kept with the digit run.",
+      "caption": "The digit bits-per-dimension curve, stored apart from Fashion-MNIST. The test line ends at the scored 1.21."
     }
   ],
   "sources": [

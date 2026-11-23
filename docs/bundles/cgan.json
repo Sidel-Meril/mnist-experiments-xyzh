@@ -1,147 +1,215 @@
 {
   "id": "cgan",
   "nav": "cGAN and variants",
-  "lede": "All six extensions are scored. Class labels hold on Fashion. PatchGAN digits is one glyph with a high pixel std.",
+  "lede": "Class labels hold on Fashion-MNIST, but PatchGAN on digits repeats one glyph.",
   "accent": "#1f4d3a",
-  "points": "GAN · conditional, PatchGAN, feature matching",
-  "title": "Conditional GAN and the other two variants",
+  "points": "Conditional GAN, PatchGAN, and feature matching",
+  "title": "Conditional GAN and two other variants",
   "question": "Does a class label, a PatchGAN discriminator, or feature matching change quality and diversity?",
   "process": [
-    "ConditionalGenerator concatenates the noise with an embedding of the class label before the MLP. The MLP discriminator concatenates the same embedding with the image. PatchDiscriminator concatenates a one-hot map to the image and scores patches. The generator and discriminator losses stay the binary cross-entropy above, now conditioned on the label.",
-    "Feature matching adds one term inside _generator_terms. It is an L1 distance between the mean discriminator feature of the fake batch and the mean feature of the real batch, with weight 10:",
+    "The conditional generator concatenates the noise with an embedding of the class label. The matching discriminator concatenates that same embedding with the image. The PatchGAN discriminator concatenates a one-hot map onto the image and scores patches instead of the whole picture. Both losses stay the binary cross-entropy from the vanilla GAN, now conditioned on the label.",
+    "Feature matching adds one extra term to the generator. It is an L1 distance between the mean discriminator features of the fake batch and the mean features of the real batch, with weight 10:",
     "\\[ \\mathcal{L}_G = \\mathrm{BCE}\\bigl(D(G(z), y), 1\\bigr) + 10\\,\\|\\mathbb{E} f(G(z), y) - \\mathbb{E} f(x, y)\\|_1 \\]",
-    "DATASET in 01_get_data.py swaps digits and Fashion. model_selection.py then calls the same train and eval functions. Only the variant name and the output folder change. The six runs, 250 images per class, all have spread ratios between 0.88 and 1.12. PatchGAN digits still repeats one glyph."
+    "Digits and Fashion-MNIST share the training loop. Only the variant and the dataset change. Across the six runs, each on 250 images per class, the spread ratios sit between 0.88 and 1.12. PatchGAN on digits still repeats one glyph."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "The bar is sample std divided by real std. Vanilla sits near 0.04 and 0.08. The six conditional runs sit between 0.88 and 1.12. The class grid is the part the ratio hides.",
-    "hover": "Hover a bar to open that class grid."
+    "summary": "The bar is sample standard deviation divided by the standard deviation of real images. The vanilla runs sit near 0.04 and 0.08. The six conditional runs sit between 0.88 and 1.12. The class grid shows what that ratio hides.",
+    "hover": "Each bar opens the class grid for that run."
   },
   "charts": [
     {
       "type": "hbar",
-      "title": "Sample spread ÷ real spread",
+      "title": "Sample spread relative to real images",
       "guide": {
         "value": 1,
-        "label": "matches real spread"
+        "label": "matches real images"
       },
       "marks": [
         {
-          "label": "vanilla digits",
+          "label": "Vanilla digits",
           "value": 0.03543,
           "answers": "What didn't turn out as expected?",
-          "summary": "Vanilla digits, from the earlier run: sample std 0.0134 / real std 0.378 = 0.035. mode_collapse is true. One repeated stroke. The class-conditional runs below are the same training code with a label.",
-          "hover": "0.0134 / 0.378 = 0.035",
+          "summary": "Vanilla digits, from the earlier run: sample standard deviation 0.0134 divided by 0.378 on real images is 0.035. The collapse flag is set. The grid is one repeated stroke. The class-conditional runs below use the same training procedure with a label added.",
+          "hover": "0.0134 / 0.378 = 0.035.",
           "frame": "figures/gan/digits/final.png",
           "frameCaption": "Vanilla digits. One noisy stroke."
         },
         {
-          "label": "vanilla fashion",
+          "label": "Vanilla Fashion",
           "value": 0.0778,
           "answers": "What didn't turn out as expected?",
-          "summary": "Vanilla Fashion: 0.0413 / 0.531 = 0.078. mode_collapse is true. One shirt.",
-          "hover": "0.0413 / 0.531 = 0.078",
+          "summary": "Vanilla Fashion-MNIST: 0.0413 divided by 0.531 is 0.078. The collapse flag is set. The grid is one shirt.",
+          "hover": "0.0413 / 0.531 = 0.078.",
           "frame": "figures/gan/fashion/final.png",
-          "frameCaption": "Vanilla Fashion. One speckled garment."
+          "frameCaption": "Vanilla Fashion-MNIST. One speckled garment."
         },
         {
           "label": "cGAN digits",
           "value": 1.0474,
           "answers": "What worked well?",
-          "summary": "cGAN digits: sample std 0.6362 / real std 0.6074 = 1.05. mode_collapse is false. Diversity 0.630, class separation 0.636. Each row is a different digit. Sharpness is 0.628 against real 0.256, so the ink is speckled. Generator loss equals BCE at 2.074, so this run has no feature-matching term. Eval D is 0.216.",
-          "hover": "1.05 · diversity 0.630 · sharpness 0.628 vs 0.256",
+          "summary": "Conditional GAN on digits: sample standard deviation 0.6362 divided by 0.6074 on real images is 1.05. The collapse flag is not set. Diversity is 0.630 and class separation is 0.636. Each row is a different digit. Sharpness is 0.628 against 0.256 on real ink, so the strokes are speckled. The generator loss equals the binary cross-entropy, at 2.074, so this run has no feature-matching term. The held-out discriminator loss is 0.216.",
+          "hover": "Ratio 1.05. Diversity 0.630. Sharpness 0.628 against 0.256.",
           "frame": "figures/cgan/classes.png",
-          "frameCaption": "cGAN digits. Early rows hold, lower rows speckle."
+          "frameCaption": "Conditional GAN on digits. The early rows hold, and the lower rows speckle."
         },
         {
-          "label": "cGAN fashion",
+          "label": "cGAN Fashion",
           "value": 0.9493,
           "answers": "What worked well?",
-          "summary": "cGAN Fashion: 0.6140 / 0.6468 = 0.95. mode_collapse is false. Diversity 0.560, class separation 0.600. Rows separate into shirts, trousers, shoes, and bags, and they are speckled. Sharpness 0.698 against real 0.301. Eval D 0.665, generator loss 3.257, equal to BCE.",
-          "hover": "0.95 · diversity 0.560 · sharpness 0.698 vs 0.301",
+          "summary": "Conditional GAN on Fashion-MNIST: 0.6140 divided by 0.6468 is 0.95. The collapse flag is not set. Diversity is 0.560 and class separation is 0.600. The rows separate into shirts, trousers, shoes, and bags, and they are speckled. Sharpness is 0.698 against 0.301 on real images. The held-out discriminator loss is 0.665, and the generator loss is 3.257, equal to the binary cross-entropy.",
+          "hover": "Ratio 0.95. Diversity 0.560. Sharpness 0.698 against 0.301.",
           "frame": "figures/ext/cgan_fashion_classes.png",
-          "frameCaption": "cGAN Fashion. Shirts and trousers separate. Boots and bags do not."
+          "frameCaption": "Conditional GAN on Fashion-MNIST. Shirts and trousers separate. Boots and bags do not."
         },
         {
           "label": "PatchGAN digits",
           "value": 0.8832,
           "answers": "What didn't turn out as expected?",
-          "summary": "PatchGAN digits: 0.5365 / 0.6074 = 0.88, so mode_collapse is false and the ratio looks healthy. The class grid is still one binary glyph on every row. Pixel std stays high because that glyph is high-contrast and jitters. The label did not change the picture. Diversity 0.537, class separation 0.537, sharpness 0.393 against real 0.256. Eval D 0.611, generator loss 2.814, equal to BCE.",
-          "hover": "ratio 0.88, and every class row is the same glyph",
+          "summary": "PatchGAN on digits: 0.5365 divided by 0.6074 is 0.88, so the collapse flag is not set and the ratio looks healthy. The class grid is still one binary glyph on every row. The pixel standard deviation stays high because that glyph is high-contrast and jitters. The label did not change the picture. Diversity is 0.537, class separation is 0.537, and sharpness is 0.393 against 0.256 on real images. The held-out discriminator loss is 0.611, and the generator loss is 2.814, equal to the binary cross-entropy.",
+          "hover": "Ratio 0.88, and every class row is the same glyph.",
           "frame": "figures/ext/patchgan_digits_classes.png",
-          "frameCaption": "PatchGAN digits. One glyph in every row."
+          "frameCaption": "PatchGAN on digits. One glyph in every row."
         },
         {
-          "label": "PatchGAN fashion",
+          "label": "PatchGAN Fashion",
           "value": 1.1011,
           "answers": "What worked well?",
-          "summary": "PatchGAN Fashion: 0.7122 / 0.6468 = 1.10. mode_collapse is false. The class grid does change with the label: shirts, trousers, coats, sandals, bags, and shoes are different rows, and they read as garments more clearly than the speckled cGAN. Diversity 0.675, class separation 0.637, sharpness 0.427 against real 0.301. Eval D 1.075, generator loss 1.030.",
-          "hover": "1.10 · class rows are different garments",
+          "summary": "PatchGAN on Fashion-MNIST: 0.7122 divided by 0.6468 is 1.10. The collapse flag is not set. The class grid does change with the label. Shirts, trousers, coats, sandals, bags, and shoes are different rows, and they read as garments more clearly than the speckled conditional GAN. Diversity is 0.675, class separation is 0.637, and sharpness is 0.427 against 0.301 on real images. The held-out discriminator loss is 1.075, and the generator loss is 1.030.",
+          "hover": "Ratio 1.10. The class rows are different garments.",
           "frame": "figures/ext/patchgan_fashion_classes.png",
-          "frameCaption": "PatchGAN Fashion. The row is a different garment."
+          "frameCaption": "PatchGAN on Fashion-MNIST. Each row is a different garment."
         },
         {
-          "label": "FM digits",
+          "label": "FM loss, digits",
           "value": 0.9259,
           "answers": "What worked well?",
-          "summary": "Feature matching on digits: 0.5624 / 0.6074 = 0.93. mode_collapse is false. The class rows are different digits, still speckled. Diversity 0.554, class separation 0.561, sharpness 0.471 against real 0.256, closer to real ink than the cGAN's 0.628. Generator loss is 6.539 and BCE is 2.976, so the feature-matching term is in the objective. Eval D is 0.449.",
-          "hover": "0.93 · G 6.539 vs BCE 2.976",
+          "summary": "Feature matching on digits: 0.5624 divided by 0.6074 is 0.93. The collapse flag is not set. The class rows are different digits, and they are still speckled. Diversity is 0.554, class separation is 0.561, and sharpness is 0.471 against 0.256 on real images, closer to real ink than the conditional GAN’s 0.628. The generator loss is 6.539 and the binary cross-entropy is 2.976, so the feature-matching term is in the objective. The held-out discriminator loss is 0.449.",
+          "hover": "Ratio 0.93. Generator loss 6.539 against cross-entropy 2.976.",
           "frame": "figures/ext/fm_digits_classes.png",
-          "frameCaption": "Feature matching, digits. 0, 1, and 3 hold."
+          "frameCaption": "Feature matching on digits. 0, 1, and 3 hold."
         },
         {
-          "label": "FM fashion",
+          "label": "FM loss, Fashion",
           "value": 1.1235,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Feature matching on Fashion: 0.7266 / 0.6468 = 1.12. mode_collapse is false and diversity is 0.656, the high end of this table. The class grid is less readable than PatchGAN Fashion: several rows are speckled blobs, and a few still suggest a shirt, a sandal, or a bag. Sharpness 0.672 against real 0.301. Generator loss 7.411 against BCE 2.706. The extra term is active, and it did not buy a cleaner garment.",
-          "hover": "1.12 · G 7.411 vs BCE 2.706",
+          "summary": "Feature matching on Fashion-MNIST: 0.7266 divided by 0.6468 is 1.12. The collapse flag is not set, and diversity is 0.656, the high end of this table. The class grid is less readable than PatchGAN on Fashion-MNIST: several rows are speckled blobs, and a few still suggest a shirt, a sandal, or a bag. Sharpness is 0.672 against 0.301 on real images. The generator loss is 7.411 against a binary cross-entropy of 2.706. The extra term is active, and it did not produce a cleaner garment.",
+          "hover": "Ratio 1.12. Generator loss 7.411 against cross-entropy 2.706.",
           "frame": "figures/ext/fm_fashion_classes.png",
-          "frameCaption": "Feature matching, Fashion. Speckled columns."
+          "frameCaption": "Feature matching on Fashion-MNIST. Speckled columns."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: six archives finished 40 epochs with history, scores, class grids, and a model. Digits and Fashion share the training loop; only load_data and the variant folder change. Class labels stop the vanilla collapse. PatchGAN Fashion rows are different clothes. Feature matching on digits moves sharpness from the cGAN’s 0.628 toward real ink, to 0.471.",
-    "unexpected": "Measured: PatchGAN digits has spread ratio 0.88 and mode_collapse false, and every class row is the same glyph. Feature matching on Fashion has high diversity and speckled rows. The mirrored best_params.json records only the cGAN variant.",
-    "why": "Measured: the collapse flag fires only under a ratio of 0.2. Guess: a PatchGAN on a thin stroke collapses to one glyph that is still high-contrast, while the same discriminator keeps a wide garment silhouette.",
-    "improve": "Read the class grid next to the ratio. On digits, keep the cGAN or feature matching. On Fashion, train PatchGAN longer. Compare generator BCE across variants, and leave the feature-matching term on its own axis."
+    "worked": "Digits and Fashion-MNIST share the training loop. Only the data load and the variant change. Class labels stop the vanilla collapse. On Fashion-MNIST, PatchGAN rows are different clothes. Feature matching on digits moves sharpness from the conditional GAN’s 0.628 toward real ink, to 0.471.",
+    "unexpected": "PatchGAN on digits has a spread ratio of 0.88 and the collapse flag is not set, yet every class row is the same glyph. Feature matching on Fashion-MNIST has high diversity and speckled rows. The saved hyperparameters record only the conditional GAN.",
+    "why": "The collapse flag fires only when the ratio is under 0.2. A reasonable reading is that a PatchGAN on a thin stroke collapses to one glyph that is still high-contrast, while the same discriminator keeps a wide garment silhouette.",
+    "improve": "Read the class grid next to the ratio. On digits, keep the conditional GAN or feature matching. On Fashion-MNIST, train the PatchGAN longer. Compare the generator’s binary cross-entropy across variants, and keep the feature-matching term on its own axis."
   },
   "live": {
     "src": "figures/cgan/classes.png",
-    "alt": "cGAN digits class grid. Early rows are digits, later rows are speckled.",
-    "caption": "cGAN digits. The row is the class, and the lower classes fall apart. Hover a bar to replace this grid."
+    "alt": "Conditional GAN digit grid. The early rows are digits, and the later rows are speckled.",
+    "caption": "Conditional GAN on digits. The row is the class, and the lower classes fall apart. Each bar is the grid for that run.",
+    "sequences": [
+      {
+        "play": "Play cGAN digits",
+        "playName": "Play conditional GAN digits epochs",
+        "pauseName": "Pause conditional GAN digits epochs",
+        "frames": [
+          {"src": "figures/cgan/digits/epoch_0010.png", "caption": "Conditional GAN on digits, epoch 10."},
+          {"src": "figures/cgan/digits/epoch_0020.png", "caption": "Conditional GAN on digits, epoch 20."},
+          {"src": "figures/cgan/digits/epoch_0030.png", "caption": "Conditional GAN on digits, epoch 30."},
+          {"src": "figures/cgan/digits/epoch_0040.png", "caption": "Conditional GAN on digits, epoch 40."}
+        ]
+      },
+      {
+        "play": "Play cGAN Fashion",
+        "playName": "Play conditional GAN Fashion-MNIST epochs",
+        "pauseName": "Pause conditional GAN Fashion-MNIST epochs",
+        "frames": [
+          {"src": "figures/cgan/fashion/epoch_0010.png", "caption": "Conditional GAN on Fashion-MNIST, epoch 10."},
+          {"src": "figures/cgan/fashion/epoch_0020.png", "caption": "Conditional GAN on Fashion-MNIST, epoch 20."},
+          {"src": "figures/cgan/fashion/epoch_0030.png", "caption": "Conditional GAN on Fashion-MNIST, epoch 30."},
+          {"src": "figures/cgan/fashion/epoch_0040.png", "caption": "Conditional GAN on Fashion-MNIST, epoch 40."}
+        ]
+      },
+      {
+        "play": "Play PatchGAN digits",
+        "playName": "Play PatchGAN digits epochs",
+        "pauseName": "Pause PatchGAN digits epochs",
+        "frames": [
+          {"src": "figures/patchgan/digits/epoch_0010.png", "caption": "PatchGAN on digits, epoch 10."},
+          {"src": "figures/patchgan/digits/epoch_0020.png", "caption": "PatchGAN on digits, epoch 20."},
+          {"src": "figures/patchgan/digits/epoch_0030.png", "caption": "PatchGAN on digits, epoch 30."},
+          {"src": "figures/patchgan/digits/epoch_0040.png", "caption": "PatchGAN on digits, epoch 40."}
+        ]
+      },
+      {
+        "play": "Play PatchGAN Fashion",
+        "playName": "Play PatchGAN Fashion-MNIST epochs",
+        "pauseName": "Pause PatchGAN Fashion-MNIST epochs",
+        "frames": [
+          {"src": "figures/patchgan/fashion/epoch_0010.png", "caption": "PatchGAN on Fashion-MNIST, epoch 10."},
+          {"src": "figures/patchgan/fashion/epoch_0020.png", "caption": "PatchGAN on Fashion-MNIST, epoch 20."},
+          {"src": "figures/patchgan/fashion/epoch_0030.png", "caption": "PatchGAN on Fashion-MNIST, epoch 30."},
+          {"src": "figures/patchgan/fashion/epoch_0040.png", "caption": "PatchGAN on Fashion-MNIST, epoch 40."}
+        ]
+      },
+      {
+        "play": "Play feature matching digits",
+        "playName": "Play feature matching digits epochs",
+        "pauseName": "Pause feature matching digits epochs",
+        "frames": [
+          {"src": "figures/fm/digits/epoch_0010.png", "caption": "Feature matching on digits, epoch 10."},
+          {"src": "figures/fm/digits/epoch_0020.png", "caption": "Feature matching on digits, epoch 20."},
+          {"src": "figures/fm/digits/epoch_0030.png", "caption": "Feature matching on digits, epoch 30."},
+          {"src": "figures/fm/digits/epoch_0040.png", "caption": "Feature matching on digits, epoch 40."}
+        ]
+      },
+      {
+        "play": "Play feature matching Fashion",
+        "playName": "Play feature matching Fashion-MNIST epochs",
+        "pauseName": "Pause feature matching Fashion-MNIST epochs",
+        "frames": [
+          {"src": "figures/fm/fashion/epoch_0010.png", "caption": "Feature matching on Fashion-MNIST, epoch 10."},
+          {"src": "figures/fm/fashion/epoch_0020.png", "caption": "Feature matching on Fashion-MNIST, epoch 20."},
+          {"src": "figures/fm/fashion/epoch_0030.png", "caption": "Feature matching on Fashion-MNIST, epoch 30."},
+          {"src": "figures/fm/fashion/epoch_0040.png", "caption": "Feature matching on Fashion-MNIST, epoch 40."}
+        ]
+      }
+    ]
   },
   "figures": [
     {
       "src": "figures/ext/patchgan_digits_classes.png",
-      "alt": "PatchGAN digits. The same broken glyph in every class row.",
-      "caption": "PatchGAN digits. The ratio is 0.88 and every row is the same broken glyph. The label did not change the picture."
+      "alt": "PatchGAN on digits. The same broken glyph in every class row.",
+      "caption": "PatchGAN on digits. The ratio is 0.88, and every row is the same broken glyph. The label did not change the picture."
     },
     {
       "src": "figures/ext/patchgan_fashion_classes.png",
-      "alt": "PatchGAN Fashion class grid. Each row is a different garment.",
-      "caption": "PatchGAN Fashion. The row changes the garment: shirt, trousers, coat, dress, pullover, sandal, bag, sneaker, boot."
+      "alt": "PatchGAN Fashion-MNIST class grid. Each row is a different garment.",
+      "caption": "PatchGAN on Fashion-MNIST. The row changes the garment: shirt, trousers, coat, dress, pullover, sandal, bag, sneaker, boot."
     },
     {
       "src": "figures/ext/fm_digits_classes.png",
-      "alt": "Feature-matching digits. Some class rows are digits, others are repeated speckle.",
-      "caption": "Feature matching on digits. 0, 1, and 3 are stable. The other rows are one speckled shape each."
+      "alt": "Feature-matching digits. Some class rows are digits, and others are a repeated speckle.",
+      "caption": "Feature matching on digits. 0, 1, and 3 are stable. Each of the other rows is one speckled shape."
     },
     {
       "src": "figures/ext/cgan_fashion_classes.png",
-      "alt": "cGAN Fashion class grid. Some rows are garments, lower rows are static noise.",
-      "caption": "cGAN Fashion. Trousers and shirts are noisy but separate. Bags, sandals, and boots are mostly static."
+      "alt": "Conditional GAN Fashion-MNIST class grid. Some rows are garments, and the lower rows are static noise.",
+      "caption": "Conditional GAN on Fashion-MNIST. Trousers and shirts are noisy but separate. Bags, sandals, and boots are mostly static."
     },
     {
       "src": "figures/cgan/digits/loss.png",
-      "alt": "cGAN digits losses. Generator loss rises while discriminator loss stays lower.",
-      "caption": "cGAN digits. Train generator loss climbs away from the discriminator, which stays near 1 and then falls. Generator BCE is the brown line under the green one."
+      "alt": "Conditional GAN digit losses. Generator loss rises while discriminator loss stays lower.",
+      "caption": "Conditional GAN on digits. The training generator loss climbs away from the discriminator, which stays near 1 and then falls. Generator cross-entropy is the brown line under the green one."
     },
     {
       "src": "figures/cgan/fashion/loss.png",
-      "alt": "cGAN Fashion losses. Generator loss is high and jagged. Discriminator loss stays low.",
-      "caption": "cGAN Fashion. Generator loss runs up and stays noisy. The discriminator settles low. That is the vanilla Fashion pattern, without the single shirt."
+      "alt": "Conditional GAN Fashion-MNIST losses. Generator loss is high and jagged. Discriminator loss stays low.",
+      "caption": "Conditional GAN on Fashion-MNIST. Generator loss runs up and stays noisy. The discriminator settles low. That is the vanilla Fashion-MNIST pattern, without the single shirt."
     }
   ],
   "sources": [

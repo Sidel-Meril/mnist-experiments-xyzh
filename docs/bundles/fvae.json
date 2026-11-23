@@ -1,25 +1,25 @@
 {
   "id": "fvae",
   "nav": "f-VAE",
-  "lede": "A RealNVP inside the latent code reconstructs softly on both datasets. Samples beat RealNVP and sit in the same family as the VAE.",
+  "lede": "A flow in the latent code reconstructs softly, clearer than RealNVP and close to an ordinary VAE.",
   "accent": "#3d6b4f",
-  "points": "VAE · normalizing flow in the latent space",
+  "points": "Normalizing flow in the latent space",
   "title": "f-VAE",
   "question": "Does a RealNVP inside the VAE latent space improve reconstruction and likelihood on digits?",
   "process": [
-    "FVAE.forward is the VAE sample with a RealNVP inserted before the decoder. The same CouplingLayer as the image flow acts on the latent vector: mask 1 is kept, mask 0 is scaled and shifted, and the log-determinant sums s only on the changed coordinates.",
+    "This model is a VAE with a RealNVP flow on the latent sample, before the decoder. Each coupling keeps one part of the vector and scales and shifts the rest. The log-determinant adds the scale only on the coordinates that change.",
     "\\[ z_0 = \\mu + \\varepsilon \\odot \\exp(\\tfrac{1}{2}\\log\\sigma^2) \\]",
     "\\[ z_K, \\log|\\det| = \\mathrm{flow}(z_0), \\qquad \\hat x = \\mathrm{decode}(z_K) \\]",
-    "_flow_kl is the change-of-variables KL of that pushforward against the unit normal. It is one Monte Carlo term per image:",
+    "The KL term is the change-of-variables divergence of that transformed sample from the unit normal. There is one Monte Carlo estimate per image:",
     "\\[ \\mathrm{KL} = \\log q(z_0\\mid x) - \\log \\mathcal{N}(z_K; 0, I) - \\log|\\det \\tfrac{\\partial z_K}{\\partial z_0}| \\]",
-    "_fvae_loss has the same shape as _vae_loss. The squared error is summed over pixels. β multiplies the flowed KL. Both are batch means.",
-    "Gallery samples do not call inverse. They draw z from N(0, I) and decode it. The flow is inside the posterior, not on the way out of the prior.",
-    "Both full-split runs use latent 32 and four couplings. Digits test MSE 0.0554, ELBO −69.35, log-det −12.87. Fashion test MSE 0.0621, ELBO −65.00, log-det −9.07."
+    "The loss has the same shape as the ordinary VAE loss. Squared error is summed over pixels, β multiplies the KL after the flow, and both terms are averaged over the batch.",
+    "Samples in the gallery do not invert the flow. They draw z from N(0, I) and decode it. The flow sits inside the posterior, not on the path from the prior to the image.",
+    "Both runs use the full training split, latent size 32, and four couplings. On digits, test MSE is 0.0554, ELBO is −69.35, and the log-determinant is −12.87. On Fashion-MNIST, test MSE is 0.0621, ELBO is −65.00, and the log-determinant is −9.07."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Train and test agree on both full splits. Hover a row for the reconstruction, the ELBO, and the comparison with RealNVP and the vanilla VAE.",
-    "hover": "Hover a row for the number behind that sentence."
+    "summary": "Training and test agree on both full splits. Each row gives the reconstruction, the ELBO, or the comparison with RealNVP and the ordinary VAE.",
+    "hover": "Each row is one part of the test record."
   },
   "charts": [
     {
@@ -28,82 +28,250 @@
       "marks": [
         {
           "label": "Reconstruction",
-          "valueText": "test MSE 0.0554 · MAE 0.0920",
+          "valueText": "Test MSE 0.0554, MAE 0.0920",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Test MSE 0.0554 and MAE 0.0920. Train is 0.0555 and 0.0923. The flowed posterior mean keeps the digit and softens the stroke. This is a full 60,000-image run at latent 32, so it is not the same setup as the latent-8 slice VAE.",
-          "hover": "test MSE 0.0554\ntrain MSE 0.0555"
+          "summary": "Test MSE is 0.0554 and MAE is 0.0920. The training figures are 0.0555 and 0.0923. The flowed posterior mean keeps the digit and softens the stroke. This is a full run of 60,000 images at latent size 32, so it is not the same setup as the latent-8 slice used for the ordinary VAE.",
+          "hover": "Test MSE 0.0554. Training MSE 0.0555."
         },
         {
           "label": "Likelihood",
-          "valueText": "test ELBO −69.35 · BPD 0.953",
+          "valueText": "Test ELBO −69.35, BPD 0.953",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Test ELBO −69.35 and BPD 0.953, against train ELBO −69.40 and BPD 0.953. The bound held on the 10,000 test images. A Gaussian decoder can report a decent BPD while the pictures stay soft, because the likelihood averages over stroke positions.",
-          "hover": "test ELBO −69.35\ntest BPD 0.953"
+          "summary": "Test ELBO is −69.35 and bits per dimension are 0.953, against a training ELBO of −69.40 and the same 0.953 bits per dimension. The bound held on the 10,000 test images. A Gaussian decoder can report a decent bits-per-dimension figure while the pictures stay soft, because the likelihood averages over where the stroke sits.",
+          "hover": "Test ELBO −69.35. Test bits per dimension 0.953."
         },
         {
           "label": "Flow",
-          "valueText": "4 couplings · test log-det −12.87",
+          "valueText": "4 couplings, test log-det −12.87",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Test log-det is −12.87 and train is −12.85. The flow is not an identity at the end of training: it rescales latent volume. KL stays near 19.5 on both splits. The sample picture is still a decode of N(0, I); the inverse flow is used in the posterior, not as the gallery generator.",
-          "hover": "log-det −12.87\nKL 19.51"
+          "summary": "The test log-determinant is −12.87 and the training value is −12.85. The flow is not an identity at the end of training: it rescales volume in the latent space. The KL stays near 19.5 on both splits. A gallery image is still a decode of N(0, I). The inverse flow is used in the posterior, not as the generator for the gallery.",
+          "hover": "Log-determinant −12.87. KL 19.51."
         },
         {
           "label": "Prior samples",
-          "valueText": "many digit classes, soft strokes",
+          "valueText": "Many digit classes, soft strokes",
           "state": "have",
           "answers": "What didn't turn out as expected?",
-          "summary": "The 64 digit samples cover 0–9 and a few ambiguous blobs. They are cleaner than the RealNVP inverse grid, which is stroke fragments. They are softer than a sharp GAN and in the same family as the vanilla VAE samples. The vanilla VAE digits run is a 10,000-image slice at latent 8 with test MSE 0.0852. This run is the full split at latent 32 with test MSE 0.0554, so the lower error is a larger experiment, not a paired win. The gallery decodes N(0, I). The inverse flow is inside the posterior.",
-          "hover": "generated_samples.png · N(0, I)",
+          "summary": "The 64 digit samples cover 0 through 9, plus a few ambiguous blobs. They are cleaner than the RealNVP inverse grid, which is mostly stroke fragments. They are softer than a sharp GAN, and they sit in the same family as the ordinary VAE samples. That ordinary digit VAE is a 10,000-image slice at latent size 8, with test MSE 0.0852. This run is the full split at latent size 32, with test MSE 0.0554, so the lower error is a larger experiment, not a paired win. The gallery decodes N(0, I). The inverse flow stays inside the posterior.",
+          "hover": "Samples drawn from N(0, I).",
           "frame": "figures/fvae/generated_samples.png",
-          "frameCaption": "f-VAE digits from N(0, I)."
+          "frameCaption": "f-VAE digits drawn from N(0, I)."
         },
         {
           "label": "Fashion-MNIST",
-          "valueText": "test ELBO −65.00 · MSE 0.0621",
+          "valueText": "Test ELBO −65.00, MSE 0.0621",
           "state": "have",
           "answers": "What worked well?",
-          "summary": "Same hyperparameters, 20 epochs, full split. Test ELBO −65.00 and BPD 0.945, against train ELBO −64.33. Test MSE 0.0621 and MAE 0.1328. KL 12.95 and log-det −9.07. Prior samples read as shirts, trousers, dresses, shoes, and bags, which is clearer than the RealNVP Fashion blobs. The vanilla Fashion VAE (latent 8, slice) has test MSE 0.0749 and ELBO −71.09. The shirt logo and the thin sandal still disappear, the same failure as that VAE.",
-          "hover": "test ELBO −65.00\ntest MSE 0.0621\nlog-det −9.07",
+          "summary": "Same hyperparameters, 20 epochs, and the full split. Test ELBO is −65.00 and bits per dimension are 0.945, against a training ELBO of −64.33. Test MSE is 0.0621 and MAE is 0.1328. The KL is 12.95 and the log-determinant is −9.07. Samples from the prior read as shirts, trousers, dresses, shoes, and bags, which is clearer than the RealNVP Fashion-MNIST blobs. The ordinary Fashion-MNIST VAE, at latent size 8 on a slice, has test MSE 0.0749 and ELBO −71.09. The shirt logo and the thin sandal still disappear, the same failure as that VAE.",
+          "hover": "Test ELBO −65.00. Test MSE 0.0621. Log-determinant −9.07.",
           "frame": "figures/fvae/fashion/generated_samples.png",
-          "frameCaption": "f-VAE Fashion from N(0, I). Garments without print or straps."
+          "frameCaption": "f-VAE Fashion-MNIST drawn from N(0, I). Garments, without print or straps."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: train and test agree on both full splits, log-det is −12.87 on digits and −9.07 on Fashion, and the sample grids cover many classes. Those grids are clearer than the RealNVP inverses.",
-    "unexpected": "Measured: Fashion’s better ELBO (−65.00 against −69.35) comes with a worse pixel error (MSE 0.0621 against 0.0554). The shirt print is gone, and the Fashion loss is still falling at epoch 20. The pictures stay in the same soft family as the vanilla VAE.",
-    "why": "Measured: samples decode N(0, I) and do not invert the flow. The BPD near 0.95 is the Gaussian-decoder ELBO, a different number from the RealNVP BPD of 3.263. Guess: squared error averages away a logo and a sandal strap because many weaves share one code.",
-    "improve": "Train Fashion past epoch 20. Match the vanilla VAE’s split and latent size before calling this a win. A sharper print needs a different decoder likelihood. More couplings will not sharpen a Gaussian decoder by themselves."
+    "worked": "Training and test agree on both full splits. The log-determinant is −12.87 on digits and −9.07 on Fashion-MNIST, and the sample grids cover many classes. Those grids are clearer than the RealNVP inverses.",
+    "unexpected": "Fashion-MNIST’s better ELBO (−65.00 against −69.35) comes with a worse pixel error (MSE 0.0621 against 0.0554). The shirt print is gone, and the Fashion-MNIST loss is still falling at epoch 20. The pictures stay in the same soft family as the ordinary VAE.",
+    "why": "Samples decode N(0, I) and do not invert the flow. Bits per dimension near 0.95 are the ELBO of a Gaussian decoder, a different number from the RealNVP value of 3.263. A reasonable reading is that squared error averages away a logo and a sandal strap, because many textures share one code.",
+    "improve": "Train Fashion-MNIST past epoch 20. Match the ordinary VAE’s split and latent size before calling this a win. A sharper print needs a different decoder likelihood. More couplings will not, by themselves, sharpen a Gaussian decoder."
   },
   "live": {
     "src": "figures/fvae/generated_samples.png",
-    "alt": "64 soft multi-class digits sampled from the f-VAE prior.",
-    "caption": "f-VAE digits from the prior. Hover Fashion-MNIST to put that garment grid here."
+    "alt": "Sixty-four soft digits from several classes, sampled from the f-VAE prior.",
+    "caption": "f-VAE digits drawn from N(0, I).",
+    "views": [
+      {
+        "id": "digits",
+        "label": "Digits",
+        "src": "figures/fvae/generated_samples.png",
+        "alt": "Sixty-four soft digits from several classes, sampled from the f-VAE prior.",
+        "caption": "f-VAE digits drawn from N(0, I)."
+      },
+      {
+        "id": "fashion",
+        "label": "Fashion",
+        "src": "figures/fvae/fashion/generated_samples.png",
+        "alt": "Sixty-four soft garments from several classes, sampled from the f-VAE prior.",
+        "caption": "f-VAE Fashion-MNIST drawn from N(0, I). Garments, without print or straps."
+      }
+    ],
+    "sequences": [
+      {
+        "play": "Play Digits",
+        "playName": "Play digit epochs",
+        "pauseName": "Pause digit epochs",
+        "frames": [
+          {
+            "src": "figures/fvae/epoch_0001.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 1."
+          },
+          {
+            "src": "figures/fvae/epoch_0002.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 2."
+          },
+          {
+            "src": "figures/fvae/epoch_0003.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 3."
+          },
+          {
+            "src": "figures/fvae/epoch_0004.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 4."
+          },
+          {
+            "src": "figures/fvae/epoch_0005.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 5."
+          },
+          {
+            "src": "figures/fvae/epoch_0006.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 6."
+          },
+          {
+            "src": "figures/fvae/epoch_0007.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 7."
+          },
+          {
+            "src": "figures/fvae/epoch_0008.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 8."
+          },
+          {
+            "src": "figures/fvae/epoch_0009.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 9."
+          },
+          {
+            "src": "figures/fvae/epoch_0010.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 10."
+          },
+          {
+            "src": "figures/fvae/epoch_0011.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 11."
+          },
+          {
+            "src": "figures/fvae/epoch_0012.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 12."
+          },
+          {
+            "src": "figures/fvae/epoch_0013.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 13."
+          },
+          {
+            "src": "figures/fvae/epoch_0014.png",
+            "caption": "f-VAE digits drawn from N(0, I), epoch 14."
+          }
+        ]
+      },
+      {
+        "play": "Play Fashion",
+        "playName": "Play Fashion-MNIST epochs",
+        "pauseName": "Pause Fashion-MNIST epochs",
+        "frames": [
+          {
+            "src": "figures/fvae/fashion/epoch_0001.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 1."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0002.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 2."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0003.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 3."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0004.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 4."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0005.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 5."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0006.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 6."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0007.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 7."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0008.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 8."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0009.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 9."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0010.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 10."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0011.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 11."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0012.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 12."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0013.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 13."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0014.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 14."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0015.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 15."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0016.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 16."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0017.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 17."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0018.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 18."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0019.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 19."
+          },
+          {
+            "src": "figures/fvae/fashion/epoch_0020.png",
+            "caption": "f-VAE Fashion-MNIST drawn from N(0, I), epoch 20."
+          }
+        ]
+      }
+    ]
   },
   "figures": [
     {
       "src": "figures/fvae/reconstructions_test.png",
       "alt": "Digits 0 to 9 and softer f-VAE reconstructions.",
-      "caption": "Original 0–9. Reconstructions keep the class. The 5, 6, and 8 lose their thin strokes."
+      "caption": "Original digits 0 through 9. The reconstructions keep the class. The 5, the 6, and the 8 lose their thin strokes."
     },
     {
       "src": "figures/fvae/fashion/reconstructions_test.png",
-      "alt": "Fashion test images and f-VAE reconstructions that drop print and thin straps.",
+      "alt": "Fashion-MNIST test images and f-VAE reconstructions that drop print and thin straps.",
       "caption": "The printed sweatshirt loses its letters. The sandal collapses to a bar. The boot and the trousers remain."
     },
     {
       "src": "figures/fvae/fashion/loss.png",
-      "alt": "Fashion f-VAE loss still descending near epoch 19.",
-      "caption": "Fashion f-VAE loss through the right edge of the plot. Test is still falling there, so this run did not plateau."
+      "alt": "Fashion-MNIST f-VAE loss still descending near epoch 19.",
+      "caption": "Fashion-MNIST f-VAE loss through the right edge of the plot. The test loss is still falling there, so this run did not plateau."
     },
     {
       "src": "figures/fvae/loss.png",
-      "alt": "Digits f-VAE loss falling through about epoch 14.",
-      "caption": "Digits f-VAE loss. The saved curve ends near epoch 14, with test still near 70 and still descending."
+      "alt": "Digit f-VAE loss falling through about epoch 14.",
+      "caption": "Digit f-VAE loss. The saved curve ends near epoch 14, with the test loss still near 70 and still descending."
     }
   ],
   "sources": [

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import os
 import random
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -254,10 +255,12 @@ class VAE(nn.Module):
         *,
         epochs: int,
         seed: int,
+        on_epoch: Callable[[int, dict[str, list[float]]], None] | None = None,
     ) -> dict[str, list[float]]:
         """Adam on the sampled ELBO, reading batches from data loaders.
 
-        The eval loss is recorded and does not pick weights.
+        The eval loss is recorded and does not pick weights. ``on_epoch`` runs
+        after each recorded epoch, while the weights are still on the training device.
         """
         if epochs < 1:
             raise ValueError("epochs must be at least 1")
@@ -275,7 +278,7 @@ class VAE(nn.Module):
             weight_decay=float(hparams["weight_decay"]),
         )
         history: dict[str, list[float]] = {"train": [], "eval": []}
-        for _epoch in range(epochs):
+        for epoch in range(epochs):
             self.train()
             total = 0.0
             seen = 0
@@ -292,6 +295,8 @@ class VAE(nn.Module):
                 seen += len(batch_y)
             history["train"].append(total / seen)
             history["eval"].append(_mean_loss(self, eval_loader, device, beta))
+            if on_epoch is not None:
+                on_epoch(epoch, history)
         self.eval()
         self.cpu()
         return history

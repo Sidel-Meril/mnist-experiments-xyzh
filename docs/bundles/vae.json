@@ -1,47 +1,47 @@
 {
   "id": "vae",
   "nav": "VAE",
-  "lede": "Latent 8 wins the search. Fashion reconstructs and samples more cleanly than digits, and both are clearer than RealNVP.",
+  "lede": "Latent size 8 wins the search, and Fashion-MNIST comes out cleaner than digits.",
   "accent": "#1e3a5f",
-  "points": "VAE · 10pt",
+  "points": "VAE",
   "title": "Digits against Fashion-MNIST",
-  "question": "With the same VAE, how do reconstruction, likelihood, and prior samples differ on the two datasets?",
+  "question": "With the same VAE, how do reconstruction, likelihood, and samples from the prior differ on the two datasets?",
   "process": [
-    "The encoder does not emit a single code. encode returns the mean and the log-variance of a diagonal Gaussian q(z|x). reparameterize draws a sample that still has a gradient:",
+    "The encoder does not return a single code. It returns the mean and the log-variance of a diagonal Gaussian q(z|x). A sample is drawn so that a gradient still passes through it:",
     "\\[ z = \\mu + \\varepsilon \\odot \\exp(\\tfrac{1}{2}\\log\\sigma^2), \\qquad \\varepsilon \\sim \\mathcal{N}(0, I) \\]",
-    "decode maps that sample back to pixels. _vae_loss adds a reconstruction term to a closed-form KL against N(0, I). The sum is over pixels for the error and over latent axes for the KL, then both are averaged over the batch:",
+    "The decoder maps that sample back to pixels. The loss adds reconstruction error to a closed-form KL divergence against N(0, I). Squared error is summed over pixels, the KL is summed over latent axes, and both terms are averaged over the batch:",
     "\\[ \\|x-\\hat x\\|^2 = \\sum_p (x_p-\\hat x_p)^2 \\]",
     "\\[ \\mathrm{KL} = -\\frac{1}{2}\\sum_j \\bigl(1 + \\log\\sigma_j^2 - \\mu_j^2 - \\sigma_j^2\\bigr) \\]",
     "\\[ \\mathcal{L} = \\mathrm{mean}_i\\|x_i-\\hat x_i\\|^2 + \\beta\\,\\mathrm{mean}_i\\,\\mathrm{KL}_i \\]",
-    "In this comparison β is fixed at 1. A reconstruction decodes the posterior mean. A sample decodes a draw from N(0, I), with no encoder.",
-    "Optuna’s four trials scored latent sizes 2, 8, 16, 32 at validation losses 118.1, 95.9, 101.4, and 107.4. Latent 8 was kept. On the 1,000-per-class slice, Fashion test MSE is 0.075 and ELBO −71.1. Digits test MSE is 0.085 and ELBO −82.2."
+    "In this comparison β is fixed at 1. A reconstruction decodes the posterior mean. A sample decodes a draw from N(0, I), with the encoder left out.",
+    "Four Optuna trials scored latent sizes 2, 8, 16, and 32, with validation losses 118.1, 95.9, 101.4, and 107.4. Latent size 8 was kept. On a slice of 1,000 images per class, Fashion-MNIST reaches test MSE 0.075 and ELBO −71.1. Digits reach test MSE 0.085 and ELBO −82.2."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Latent 8 is bold: lowest validation loss of the four trials. The panels beside it are the final test scores on the two datasets.",
-    "hover": "Hover a dataset, then the latent-size search."
+    "summary": "Latent size 8 has the lowest validation loss of the four trials, and both datasets were scored with that checkpoint.",
+    "hover": "Compare the two datasets, then the search over latent size."
   },
   "charts": [
     {
       "type": "panels",
-      "title": "Test scores, same model recipe",
+      "title": "Test scores for the same model",
       "xKey": "dataset",
       "panels": [
         {
           "yKey": "mse",
-          "label": "test MSE"
+          "label": "Test MSE"
         },
         {
           "yKey": "elbo",
-          "label": "test ELBO"
+          "label": "Test ELBO"
         },
         {
           "yKey": "kl",
-          "label": "test KL"
+          "label": "Test KL"
         },
         {
           "yKey": "kid",
-          "label": "domain KID"
+          "label": "Domain KID"
         }
       ],
       "marks": [
@@ -52,10 +52,10 @@
           "kl": 15.41,
           "kid": 3.1052,
           "answers": "What didn't turn out as expected?",
-          "summary": "Digits test MSE is 0.0852, KL is 15.41, ELBO is −82.21. Domain KID is 3.1052. Prior samples still look like digits, but thin strokes are the first thing a blurry decoder drops, and the spatial KID says those samples sit farther from the test set than the Fashion samples do.",
-          "hover": "digits · MSE 0.0852 · ELBO −82.21 · KL 15.41 · KID 3.1052",
+          "summary": "On digits, test MSE is 0.0852, KL is 15.41, and ELBO is −82.21. Domain KID is 3.1052. Samples from the prior still look like digits, but a blurry decoder drops thin strokes first. The spatial KID says those samples sit farther from the test set than the Fashion-MNIST samples do.",
+          "hover": "Digits. MSE 0.0852, ELBO −82.21, KL 15.41, KID 3.1052.",
           "frame": "figures/vae/digits/generated_samples.png",
-          "frameCaption": "Digits prior samples. Thick strokes, many classes."
+          "frameCaption": "Digit samples from the prior. Thick strokes, and many classes."
         },
         {
           "dataset": "fashion",
@@ -64,20 +64,20 @@
           "kl": 12.34,
           "kid": 0.2043,
           "answers": "What worked well?",
-          "summary": "Fashion test MSE is 0.0749, KL is 12.34, ELBO is −71.09. Domain KID is 0.2043. Shirts, shoes, trousers, and bags still read as those objects when the decoder is soft, because the silhouette is wide. The same blur hurts a one-pixel stroke much more.",
-          "hover": "fashion · MSE 0.0749 · ELBO −71.09 · KL 12.34 · KID 0.2043",
+          "summary": "On Fashion-MNIST, test MSE is 0.0749, KL is 12.34, and ELBO is −71.09. Domain KID is 0.2043. Shirts, shoes, trousers, and bags still read as those objects when the decoder is soft, because the silhouette is wide. The same blur hurts a one-pixel stroke much more.",
+          "hover": "Fashion-MNIST. MSE 0.0749, ELBO −71.09, KL 12.34, KID 0.2043.",
           "frame": "figures/vae/fashion/generated_samples.png",
-          "frameCaption": "Fashion prior samples. Shirts, trousers, shoes, and bags."
+          "frameCaption": "Fashion-MNIST samples from the prior. Shirts, trousers, shoes, and bags."
         }
       ]
     },
     {
       "type": "line",
-      "title": "Optuna validation loss against latent size",
+      "title": "Validation loss by latent size",
       "xKey": "latent",
       "yKey": "val_loss",
-      "xLabel": "latent size",
-      "yLabel": "validation loss",
+      "xLabel": "Latent size",
+      "yLabel": "Validation loss",
       "xScale": "log",
       "yFromZero": false,
       "marks": [
@@ -85,45 +85,237 @@
           "latent": 2,
           "val_loss": 118.064,
           "answers": "What didn't turn out as expected?",
-          "summary": "Latent 2 is the worst of the four finished trials, validation loss 118.06. Every other hyperparameter was held fixed: hidden 256, dropout 0.1, learning rate 0.001, weight decay 1e-6, batch 128. The code is too small for the ELBO on this slice.",
-          "hover": "latent 2 · val loss 118.06"
+          "summary": "Latent size 2 is the worst of the four finished trials, with validation loss 118.06. Every other setting was held fixed: hidden size 256, dropout 0.1, learning rate 0.001, weight decay 1e-6, and batch size 128. The code is too small for the ELBO on this slice.",
+          "hover": "Latent size 2, validation loss 118.06."
         },
         {
           "latent": 8,
           "val_loss": 95.927,
           "selected": true,
-          "bestLabel": "picked",
+          "bestLabel": "chosen",
           "answers": "What worked well?",
-          "summary": "Latent 8 is bold because it is the minimum validation loss, 95.93, and Optuna minimizes that loss. best_params.json records this trial. The digits and Fashion checkpoints both use it. Latent 16 scores 101.37 and latent 32 scores 107.42, so a wider code made this short search worse.",
-          "hover": "latent 8 · val loss 95.93"
+          "summary": "Latent size 8 is marked because it has the minimum validation loss, 95.93, and Optuna minimizes that loss. The saved hyperparameters record this trial. Both the digit and Fashion-MNIST checkpoints use it. Latent size 16 scores 101.37 and latent size 32 scores 107.42, so a wider code made this short search worse.",
+          "hover": "Latent size 8, validation loss 95.93."
         },
         {
           "latent": 16,
           "val_loss": 101.365,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Latent 16 scores validation loss 101.37, above latent 8. Four epochs on the slice is a short fit, and the extra coordinates are not yet paying for themselves in the ELBO.",
-          "hover": "latent 16 · val loss 101.37"
+          "summary": "Latent size 16 scores a validation loss of 101.37, above latent size 8. Four epochs on this slice is a short fit, and the extra coordinates are not yet paying for themselves in the ELBO.",
+          "hover": "Latent size 16, validation loss 101.37."
         },
         {
           "latent": 32,
           "val_loss": 107.421,
           "answers": "How could the results be improved?",
-          "summary": "Latent 32 scores 107.42, the second-worst trial. A longer train on the full 60,000 images is the next measurement. The f-VAE run below does use latent 32 on the full split, so it is a different experiment.",
-          "hover": "latent 32 · val loss 107.42"
+          "summary": "Latent size 32 scores 107.42, the second-worst trial. A longer training run on the full 60,000 images is the next measurement. The f-VAE below does use latent size 32 on the full split, so it is a different experiment.",
+          "hover": "Latent size 32, validation loss 107.42."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: latent 8 wins the four-trial search at validation loss 95.9. On the scored slice, Fashion beats digits on MSE, ELBO, KL, and KID, and both sample grids are readable, unlike the RealNVP inverses.",
-    "unexpected": "Measured: latent 16 and 32 score worse than latent 8 on this short search (101.4 and 107.4). Digit samples look readable and still lose domain KID, 3.11 against 0.20.",
-    "why": "Measured: both scored runs use 1,000 images per class, and the per-epoch record is the loss PNG, not a JSON series. Guess: the same blur removes a one-pixel stroke and leaves a shirt, which is why KID splits the datasets harder than MSE.",
-    "improve": "Retrain both on the full 60,000-image split and write the per-epoch ELBO next to the final table. Do not compare this slice with the full-split f-VAE as if they were the same experiment."
+    "worked": "Latent size 8 wins the four-trial search, at validation loss 95.9. On the scored slice, Fashion-MNIST beats digits on MSE, ELBO, KL, and KID, and both sample grids are readable. The RealNVP inverses are not.",
+    "unexpected": "Latent sizes 16 and 32 score worse than 8 on this short search, at 101.4 and 107.4. Digit samples look readable and still lose on domain KID, 3.11 against 0.20.",
+    "why": "Both scored runs use 1,000 images per class, and the per-epoch record is the loss figure rather than a numeric series. A reasonable reading is that the same blur removes a one-pixel stroke and leaves a shirt, which is why KID separates the datasets more sharply than MSE.",
+    "improve": "Retrain both models on the full split of 60,000 images, and write the per-epoch ELBO next to the final table. This slice and the full-split f-VAE are different experiments, and should not be compared as if they were the same run."
   },
   "live": {
     "src": "figures/vae/digits/generated_samples.png",
-    "alt": "64 blurry but class-recognizable MNIST digits from the VAE prior.",
-    "caption": "Digits from N(0, I). Hover Fashion to put the garment grid in this frame."
+    "alt": "Sixty-four blurry but recognizable MNIST digits drawn from the VAE prior.",
+    "caption": "Digit samples from the prior. Thick strokes, and many classes.",
+    "views": [
+      {
+        "id": "digits",
+        "label": "Digits",
+        "src": "figures/vae/digits/generated_samples.png",
+        "alt": "Sixty-four blurry but recognizable MNIST digits drawn from the VAE prior.",
+        "caption": "Digit samples from the prior. Thick strokes, and many classes."
+      },
+      {
+        "id": "fashion",
+        "label": "Fashion",
+        "src": "figures/vae/fashion/generated_samples.png",
+        "alt": "Sixty-four soft but recognizable Fashion-MNIST samples from the VAE prior.",
+        "caption": "Fashion-MNIST samples from the prior. Shirts, trousers, shoes, and bags."
+      }
+    ],
+    "sequences": [
+      {
+        "play": "Play Digits",
+        "playName": "Play digit epochs",
+        "pauseName": "Pause digit epochs",
+        "frames": [
+          {
+            "src": "figures/vae/digits/epoch_0001.png",
+            "caption": "Digit samples from the prior, epoch 1."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0002.png",
+            "caption": "Digit samples from the prior, epoch 2."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0003.png",
+            "caption": "Digit samples from the prior, epoch 3."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0004.png",
+            "caption": "Digit samples from the prior, epoch 4."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0005.png",
+            "caption": "Digit samples from the prior, epoch 5."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0006.png",
+            "caption": "Digit samples from the prior, epoch 6."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0007.png",
+            "caption": "Digit samples from the prior, epoch 7."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0008.png",
+            "caption": "Digit samples from the prior, epoch 8."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0009.png",
+            "caption": "Digit samples from the prior, epoch 9."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0010.png",
+            "caption": "Digit samples from the prior, epoch 10."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0011.png",
+            "caption": "Digit samples from the prior, epoch 11."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0012.png",
+            "caption": "Digit samples from the prior, epoch 12."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0013.png",
+            "caption": "Digit samples from the prior, epoch 13."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0014.png",
+            "caption": "Digit samples from the prior, epoch 14."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0015.png",
+            "caption": "Digit samples from the prior, epoch 15."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0016.png",
+            "caption": "Digit samples from the prior, epoch 16."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0017.png",
+            "caption": "Digit samples from the prior, epoch 17."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0018.png",
+            "caption": "Digit samples from the prior, epoch 18."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0019.png",
+            "caption": "Digit samples from the prior, epoch 19."
+          },
+          {
+            "src": "figures/vae/digits/epoch_0020.png",
+            "caption": "Digit samples from the prior, epoch 20."
+          }
+        ]
+      },
+      {
+        "play": "Play Fashion",
+        "playName": "Play Fashion-MNIST epochs",
+        "pauseName": "Pause Fashion-MNIST epochs",
+        "frames": [
+          {
+            "src": "figures/vae/fashion/epoch_0001.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 1."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0002.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 2."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0003.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 3."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0004.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 4."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0005.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 5."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0006.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 6."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0007.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 7."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0008.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 8."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0009.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 9."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0010.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 10."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0011.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 11."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0012.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 12."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0013.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 13."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0014.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 14."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0015.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 15."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0016.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 16."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0017.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 17."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0018.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 18."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0019.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 19."
+          },
+          {
+            "src": "figures/vae/fashion/epoch_0020.png",
+            "caption": "Fashion-MNIST samples from the prior, epoch 20."
+          }
+        ]
+      }
+    ]
   },
   "figures": [
     {
@@ -133,23 +325,23 @@
     },
     {
       "src": "figures/vae/fashion/reconstructions_test.png",
-      "alt": "Ten Fashion test images and reconstructions that keep the silhouette and drop the detail.",
-      "caption": "The garment silhouette returns. The dress print, the sandal, and the lamp do not."
+      "alt": "Ten Fashion-MNIST test images and reconstructions that keep the silhouette and drop the detail.",
+      "caption": "The garment silhouette comes back. The dress print, the sandal, and the lamp do not."
     },
     {
       "src": "figures/vae/fashion/generated_samples.png",
-      "alt": "64 soft but recognizable Fashion samples from the VAE prior.",
-      "caption": "Fashion draws from the same normal. Shirts, trousers, shoes, and bags are recognizable, which the RealNVP Fashion grid is not."
+      "alt": "Sixty-four soft but recognizable Fashion-MNIST samples from the VAE prior.",
+      "caption": "Fashion-MNIST draws from the same normal distribution. Shirts, trousers, shoes, and bags are recognizable. The RealNVP Fashion-MNIST grid is not."
     },
     {
       "src": "figures/vae/digits/loss.png",
-      "alt": "Digits VAE train and test loss falling over about 20 epochs.",
-      "caption": "Digits VAE loss over the scored run. Test falls from about 137 to about 86 and flattens, under the train line the whole way."
+      "alt": "Digit VAE training and test loss falling over about 20 epochs.",
+      "caption": "Digit VAE loss over the scored run. The test loss falls from about 137 to about 86 and then flattens, staying under the training line the whole way."
     },
     {
       "src": "figures/vae/fashion/loss.png",
-      "alt": "Fashion VAE train and test loss falling, test ending near 74.",
-      "caption": "Fashion VAE loss. Test ends near 74, under the digits curve, which is the same ordering as the final ELBO."
+      "alt": "Fashion-MNIST VAE training and test loss falling, with the test loss ending near 74.",
+      "caption": "Fashion-MNIST VAE loss. The test loss ends near 74, under the digit curve, which is the same ordering as the final ELBO."
     }
   ],
   "sources": [

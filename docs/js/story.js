@@ -31,7 +31,6 @@ function fill(template, row) {
 
 function activate(article, stop, event) {
   if (!stop) return;
-  article.querySelector("[data-answers]").textContent = stop.answers;
   const summary = article.querySelector("[data-summary]");
   const summaryChanged = summary._raw !== stop.summary;
   if (summaryChanged) {
@@ -46,6 +45,9 @@ function activate(article, stop, event) {
       if (stop.frameCaption) img.alt = stop.frameCaption;
     }
     if (cap && stop.frameCaption) cap.textContent = stop.frameCaption;
+    article.querySelectorAll(".live .switcher button").forEach((button) => {
+      button.classList.toggle("is-on", button.dataset.src === stop.frame);
+    });
   }
   article.querySelectorAll(".reflection li").forEach((item) => {
     item.classList.toggle("is-hot", item.dataset.q === stop.answers);
@@ -125,9 +127,18 @@ function drawLine(host, chart, article) {
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
   const marks = chart.marks;
-  const x = chart.xScale === "log"
-    ? d3.scaleLog().domain(d3.extent(marks, (d) => d[chart.xKey])).range([0, innerW])
-    : d3.scaleLinear().domain(d3.extent(marks, (d) => d[chart.xKey])).range([0, innerW]);
+  const xValues = marks.map((d) => d[chart.xKey]);
+  let x;
+  if (chart.xScale === "log") {
+    const lo = Math.min(...xValues);
+    const hi = Math.max(...xValues);
+    const logLo = Math.log(lo);
+    const logHi = Math.log(hi);
+    const pad = (logHi - logLo) * 0.14 || Math.log(1.6);
+    x = d3.scaleLog().domain([Math.exp(logLo - pad), Math.exp(logHi + pad)]).range([0, innerW]);
+  } else {
+    x = d3.scaleLinear().domain(d3.extent(xValues)).range([0, innerW]);
+  }
   const yValues = marks.map((d) => d[chart.yKey]);
   const yMax = Math.max(...yValues);
   const yMin = Math.min(...yValues);
@@ -146,7 +157,7 @@ function drawLine(host, chart, article) {
     .attr("stroke-width", 2)
     .attr("d", d3.line().x((d) => x(d[chart.xKey])).y((d) => y(d[chart.yKey])));
   const axis = d3.axisBottom(x);
-  if (chart.xScale === "log") axis.tickValues(marks.map((d) => d[chart.xKey])).tickFormat(d3.format("d"));
+  if (chart.xScale === "log") axis.tickValues(xValues).tickFormat((d) => fmt(d));
   g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`).call(axis);
   g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4));
   g.append("text").attr("x", innerW / 2).attr("y", innerH + 32).attr("text-anchor", "middle").attr("class", "row-label").text(chart.xLabel);
@@ -286,7 +297,7 @@ function drawRows(host, chart, article) {
     .attr("font-weight", (d) => (d.selected ? 700 : 400))
     .text((d) => d.valueText);
   rows.selectAll("text, circle").attr("pointer-events", "none");
-  bindMark(rows, article, svg, (d) => d);
+  bindMark(rows.select("rect"), article, svg, (d) => d);
   chart.marks.forEach((mark) => article._stops.push(mark));
 }
 
@@ -302,21 +313,21 @@ function seriesStop(chart, dataset, row) {
   const beat = (chart.beats || []).find((item) => item.dataset === dataset && item.epoch === row.epoch);
   const frame = nearestFrame(chart, dataset, row.epoch);
   const summary = beat ? fill(beat.summary, row) : fill(chart.fallback, row);
-  const note = frame && frame.epoch !== row.epoch ? ` Nearest saved grid is epoch ${frame.epoch}.` : "";
+  const note = frame && frame.epoch !== row.epoch ? ` The nearest saved grid is epoch ${frame.epoch}.` : "";
   return {
     answers: beat ? beat.answers : chart.fallbackAnswers,
     summary: summary + note,
     hover: [
-      `${dataset} · epoch ${row.epoch}`,
+      `${dataset}, epoch ${row.epoch}`,
       row.eval_g_bce == null
-        ? `eval D ${fmt(row.eval_d)} · eval G ${fmt(row.eval_g)}`
-        : `eval D ${fmt(row.eval_d)} · eval G ${fmt(row.eval_g)} · eval G BCE ${fmt(row.eval_g_bce)}`,
-      `train D ${fmt(row.train_d)} · train G ${fmt(row.train_g)}`,
-      `logged sample std ${fmt(row.sample_std)}`,
+        ? `Held-out discriminator ${fmt(row.eval_d)}, generator ${fmt(row.eval_g)}`
+        : `Held-out discriminator ${fmt(row.eval_d)}, generator ${fmt(row.eval_g)}, generator cross-entropy ${fmt(row.eval_g_bce)}`,
+      `Training discriminator ${fmt(row.train_d)}, generator ${fmt(row.train_g)}`,
+      `Logged sample standard deviation ${fmt(row.sample_std)}`,
     ].join("\n"),
     frame: frame && frame.src,
     frameCaption: frame
-      ? `${dataset}, epoch ${row.epoch}. Eval D ${fmt(row.eval_d)}, eval G ${fmt(row.eval_g)}.${frame.epoch === row.epoch ? "" : ` Nearest saved grid is epoch ${frame.epoch}.`}`
+      ? `${dataset}, epoch ${row.epoch}. Held-out discriminator loss ${fmt(row.eval_d)}, generator loss ${fmt(row.eval_g)}.${frame.epoch === row.epoch ? "" : ` The nearest saved grid is epoch ${frame.epoch}.`}`
       : "",
   };
 }
@@ -343,11 +354,11 @@ function drawSeries(host, chart, history, article) {
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
     g.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(4).tickSize(-innerW).tickFormat(""));
     const keys = [
-      { key: "eval_d", color: "#1c1915", label: "eval D" },
-      { key: "eval_g", color: "var(--accent)", label: "eval G" },
+      { key: "eval_d", color: "#1c1915", label: "D loss" },
+      { key: "eval_g", color: "var(--accent)", label: "G loss" },
     ];
     if (rows.some((row) => row.eval_g_bce != null)) {
-      keys.push({ key: "eval_g_bce", color: "#8a5a2a", label: "eval G BCE" });
+      keys.push({ key: "eval_g_bce", color: "#8a5a2a", label: "G BCE" });
     }
     keys.forEach((series) => {
       g.append("path")
@@ -397,6 +408,15 @@ function drawSeries(host, chart, history, article) {
 
   host.dataset.current = state.dataset;
   render();
+  host.__showEpoch = (dataset, epoch) => {
+    if (state.dataset !== dataset) {
+      state.dataset = dataset;
+      host.dataset.current = dataset;
+      switcher.selectAll("button").classed("is-on", (item) => item.id === dataset);
+      render();
+    }
+    if (host.__focus) host.__focus(epoch);
+  };
   (chart.beats || []).forEach((beat) => {
     const row = history[beat.dataset].find((item) => item.epoch === beat.epoch);
     if (!row) return;
@@ -424,10 +444,69 @@ function drawChart(host, chart, history, article) {
 
 function setPlaying(button, playing) {
   if (!button) return;
-  button.textContent = playing ? "Pause" : "Play";
+  const playText = button.dataset.play || "Play";
+  const pauseText = button.dataset.pause || "Pause";
+  button.textContent = playing ? pauseText : playText;
   button.classList.toggle("is-on", playing);
   button.setAttribute("aria-pressed", playing ? "true" : "false");
-  button.setAttribute("aria-label", playing ? "Pause this chart" : "Play this chart");
+  button.setAttribute("aria-label", playing
+    ? (button.dataset.pauseName || "Pause this chart")
+    : (button.dataset.playName || "Play this chart"));
+}
+
+function playSequence(button, frames, show) {
+  if (!frames.length) return;
+  if (button._timer) {
+    window.clearInterval(button._timer);
+    button._timer = 0;
+    setPlaying(button, false);
+    return;
+  }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    show(frames[0]);
+    return;
+  }
+  let index = button._index || 0;
+  if (index >= frames.length) index = 0;
+  const step = () => {
+    show(frames[index]);
+    index += 1;
+    button._index = index;
+    if (index >= frames.length) {
+      window.clearInterval(button._timer);
+      button._timer = 0;
+      setPlaying(button, false);
+    }
+  };
+  step();
+  if (index < frames.length) {
+    setPlaying(button, true);
+    button._timer = window.setInterval(step, 700);
+  }
+}
+
+function addEpochPlay(parent, label, frames, show) {
+  const button = el("button", "play", label.play);
+  button.type = "button";
+  button.dataset.play = label.play;
+  button.dataset.pause = "Pause";
+  button.dataset.playName = label.playName;
+  button.dataset.pauseName = label.pauseName;
+  button.setAttribute("aria-pressed", "false");
+  button.setAttribute("aria-label", label.playName);
+  parent.append(button);
+  button.addEventListener("click", () => playSequence(button, frames, show));
+}
+
+function epochFrames(chart, dataset, history) {
+  const table = chart.frames[dataset];
+  const rows = history[dataset] || [];
+  return Object.keys(table).map(Number).sort((a, b) => a - b).map((epoch) => ({
+    dataset,
+    epoch,
+    src: table[String(epoch)],
+    row: rows.find((item) => item.epoch === epoch),
+  }));
 }
 
 function showStop(host, article, stop) {
@@ -536,13 +615,8 @@ function renderChapter(bundle, history) {
     charts.append(host);
   });
   const finding = el("aside", "finding");
-  finding.append(el("p", "who"));
-  finding.querySelector(".who").dataset.answers = "";
   finding.append(el("p", "summary"));
   finding.querySelector(".summary").dataset.summary = "";
-  finding.append(el("p", "hint", bundle.play === false
-    ? "Hover a mark. This chart does not play."
-    : "Hover keeps this sentence. Play and pause sit under each chart."));
   stage.append(charts, finding);
   article.append(stage);
 
@@ -562,27 +636,79 @@ function renderChapter(bundle, history) {
     img.src = bundle.live.src;
     img.alt = bundle.live.alt;
     const cap = el("figcaption", null, bundle.live.caption);
-    fig.append(img, cap);
+    fig.append(img);
+    const views = bundle.live.views || [];
+    if (views.length > 1) {
+      const switcher = el("div", "switcher");
+      switcher.setAttribute("role", "group");
+      switcher.setAttribute("aria-label", "Sample grid");
+      views.forEach((view) => {
+        const button = el("button", null, view.label);
+        button.type = "button";
+        button.dataset.src = view.src;
+        button.classList.toggle("is-on", view.src === bundle.live.src);
+        button.addEventListener("click", () => {
+          const mark = (bundle.charts || []).flatMap((chart) => chart.marks || []).find((item) => item.frame === view.src);
+          if (mark) {
+            activate(article, mark);
+            return;
+          }
+          img.src = view.src;
+          img.alt = view.alt;
+          cap.textContent = view.caption;
+          switcher.querySelectorAll("button").forEach((item) => {
+            item.classList.toggle("is-on", item === button);
+          });
+        });
+        switcher.append(button);
+      });
+      fig.append(switcher);
+    }
+    fig.append(cap);
+    const plays = el("div", "epoch-plays");
+    const sequences = [];
     if (bundle.live.sequence && bundle.live.sequence.length) {
-      const reel = el("button", "play", "Play epochs");
-      reel.type = "button";
-      fig.append(reel);
-      reel.addEventListener("click", () => {
-        const frames = bundle.live.sequence;
-        let index = 0;
-        const step = () => {
-          const frame = frames[index];
-          img.src = frame.src;
-          img.alt = frame.caption;
-          cap.textContent = frame.caption;
-          index += 1;
-          if (index >= frames.length) window.clearInterval(article._reel);
-        };
-        window.clearInterval(article._reel);
-        step();
-        article._reel = window.setInterval(step, 700);
+      sequences.push({
+        play: "Play epochs",
+        playName: "Play epochs",
+        pauseName: "Pause epochs",
+        frames: bundle.live.sequence,
       });
     }
+    (bundle.live.sequences || []).forEach((item) => sequences.push(item));
+    sequences.forEach((item) => {
+      addEpochPlay(plays, {
+        play: item.play,
+        playName: item.playName,
+        pauseName: item.pauseName,
+      }, item.frames, (frame) => {
+        img.src = frame.src;
+        img.alt = frame.caption;
+        cap.textContent = frame.caption;
+      });
+    });
+    const series = bundle.charts.find((chart) => chart.frames);
+    if (series) {
+      series.datasets.forEach((dataset) => {
+        const frames = epochFrames(series, dataset.id, history);
+        addEpochPlay(plays, {
+          play: `Play ${dataset.label}`,
+          playName: `Play ${dataset.label} epochs`,
+          pauseName: `Pause ${dataset.label} epochs`,
+        }, frames, (frame) => {
+          img.src = frame.src;
+          const text = frame.row
+            ? `${dataset.label}, epoch ${frame.epoch}. Held-out discriminator loss ${fmt(frame.row.eval_d)}, generator loss ${fmt(frame.row.eval_g)}.`
+            : `${dataset.label}, epoch ${frame.epoch}`;
+          img.alt = text;
+          cap.textContent = text;
+          const host = article.querySelector(".chart");
+          if (host && host.__showEpoch) host.__showEpoch(frame.dataset, frame.epoch);
+          if (frame.row) activate(article, seriesStop(series, frame.dataset, frame.row));
+        });
+      });
+    }
+    if (plays.childElementCount) fig.append(plays);
     figures.append(fig);
   }
   bundle.figures.forEach((figure) => {
@@ -633,7 +759,7 @@ function renderNav(bundles) {
 
 async function boot() {
   if (!window.d3) {
-    document.getElementById("chapters").append(el("p", null, "D3 failed to load, so the charts cannot be drawn."));
+    document.getElementById("chapters").append(el("p", null, "The charts could not be drawn."));
     return;
   }
   try {
@@ -646,7 +772,7 @@ async function boot() {
     document.getElementById("chapters").append(el(
       "p",
       null,
-      "The bundles did not load. Serve the docs folder over HTTP (python -m http.server -d docs) or publish GitHub Pages from /docs.",
+      "The chapter files did not load.",
     ));
     console.error(error);
   }

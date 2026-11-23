@@ -2,83 +2,83 @@
   "play": false,
   "id": "pgan",
   "nav": "Progressive GAN",
-  "lede": "The CIFAR run grows from 4×4 to 32×32. Logged sample std falls from 0.58 to 0.10, and the last grid is one gray field.",
+  "lede": "Resolution grows from 4×4 to 32×32, and the last grid is one gray field.",
   "accent": "#4a5560",
-  "points": "GAN · bonus progressive growing",
+  "points": "Progressive GAN",
   "title": "Progressive GAN on CIFAR-10",
-  "question": "Does growing the resolution from 4×4 to 32×32 stabilize CIFAR-10 samples?",
+  "question": "Does growing the resolution from 4×4 to 32×32 keep CIFAR-10 samples stable?",
   "process": [
-    "The generator and discriminator losses are the same pair as the vanilla GAN. What changes is the resolution. _phases schedules a stable block at 4×4, then a fade and a stable block at 8, 16, and 32. During a fade, _blend mixes the new block in with a weight that moves from 0 to 1 across that phase:",
+    "The generator and discriminator losses are the same pair as in the vanilla GAN. What changes is the resolution. Training starts with a stable block at 4×4, then a fade and a stable block at 8×8, 16×16, and 32×32. During a fade, the new block is mixed in with a weight that moves from 0 to 1:",
     "\\[ \\alpha = \\frac{\\text{epoch in phase}+1}{\\text{epochs in phase}} \\]",
-    "A new sample is the old resolution blended with the new one by α. The inverse blend is in the discriminator. The CIFAR run uses 200 images per class and two epochs per phase, 14 epochs in total. Epoch 6 is the last varied 8×8 batch. The scored 32×32 grid is one gray field, sample std 0.104 against real std 0.493."
+    "A new sample blends the previous resolution with the new one by α. The discriminator uses the inverse blend. The CIFAR-10 run uses 200 images per class and two epochs in each phase, 14 epochs in all. Epoch 6 is the last 8×8 batch that still looks varied. The scored 32×32 grid is one gray field, with sample standard deviation 0.104 against 0.493 on real images."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Epoch 6 is bold: the last 8×8 batch that still looks varied. Epoch 14 is the scored 32×32 field.",
-    "hover": "Hover an epoch."
+    "summary": "Epoch 6 is marked: it is the last 8×8 batch that still looks varied. Epoch 14 is the scored 32×32 field.",
+    "hover": "Each point is one epoch of the growth."
   },
   "charts": [
     {
       "type": "line",
-      "title": "Logged sample std while resolution grows",
+      "title": "Logged sample standard deviation as resolution grows",
       "xKey": "epoch",
       "yKey": "sample_std",
-      "xLabel": "epoch",
-      "yLabel": "logged sample std",
+      "xLabel": "Epoch",
+      "yLabel": "Sample std. dev.",
       "marks": [
         {
           "epoch": 1,
           "sample_std": 0.5809,
           "answers": "What worked well?",
-          "summary": "Epoch 1 is 4×4 stable, alpha 1. Logged sample std is 0.581. Eval D 1.458, eval G 0.774. The frames are large color blocks, and they are not copies of each other.",
-          "hover": "epoch 1 · 4×4 stable · sample std 0.581",
+          "summary": "Epoch 1 is a stable 4×4 phase, with blend weight 1. The logged sample standard deviation is 0.581. The held-out discriminator loss is 1.458 and the generator loss is 0.774. The frames are large blocks of color, and they are not copies of one another.",
+          "hover": "Epoch 1, stable 4×4, sample standard deviation 0.581.",
           "frame": "figures/pgan/epoch_0001_res04_stable.png",
-          "frameCaption": "Epoch 1, 4×4 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 1, stable 4×4."
         },
         {
           "epoch": 2,
           "sample_std": 0.6119,
           "answers": "What worked well?",
-          "summary": "Epoch 2 stays at 4×4. Logged sample std is 0.612, the high point of the run. Eval D 1.403, eval G 0.857.",
-          "hover": "epoch 2 · 4×4 stable · sample std 0.612",
+          "summary": "Epoch 2 stays at 4×4. The logged sample standard deviation is 0.612, the high point of the run. The held-out discriminator loss is 1.403 and the generator loss is 0.857.",
+          "hover": "Epoch 2, stable 4×4, sample standard deviation 0.612.",
           "frame": "figures/pgan/epoch_0002_res04_stable.png",
-          "frameCaption": "Epoch 2, 4×4 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 2, stable 4×4."
         },
         {
           "epoch": 3,
           "sample_std": 0.4146,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 3 fades in 8×8 at alpha 0.5. Logged sample std drops to 0.415. Eval D 1.367, eval G 0.759. The new block is only half blended.",
-          "hover": "epoch 3 · 8×8 fade α 0.5 · sample std 0.415",
+          "summary": "Epoch 3 fades in 8×8 at blend weight 0.5. The logged sample standard deviation drops to 0.415. The held-out discriminator loss is 1.367 and the generator loss is 0.759. The new block is only half blended in.",
+          "hover": "Epoch 3, 8×8 fade at 0.5, sample standard deviation 0.415.",
           "frame": "figures/pgan/epoch_0003_res08_fade.png",
-          "frameCaption": "Epoch 3, 8×8 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 3, 8×8 fade."
         },
         {
           "epoch": 4,
           "sample_std": 0.4054,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 4 finishes the 8×8 fade at alpha 1. Logged sample std is 0.405. Eval D 1.132, eval G 1.071.",
-          "hover": "epoch 4 · 8×8 fade α 1 · sample std 0.405",
+          "summary": "Epoch 4 finishes the 8×8 fade at blend weight 1. The logged sample standard deviation is 0.405. The held-out discriminator loss is 1.132 and the generator loss is 1.071.",
+          "hover": "Epoch 4, 8×8 fade at 1, sample standard deviation 0.405.",
           "frame": "figures/pgan/epoch_0004_res08_fade.png",
-          "frameCaption": "Epoch 4, 8×8 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 4, 8×8 fade."
         },
         {
           "epoch": 5,
           "sample_std": 0.5039,
           "answers": "What worked well?",
-          "summary": "Epoch 5 is the first 8×8 stable epoch. Logged sample std bounces back to 0.504. Eval D 0.945, eval G 1.092. The grid is still colorful and varied.",
-          "hover": "epoch 5 · 8×8 stable · sample std 0.504",
+          "summary": "Epoch 5 is the first stable 8×8 epoch. The logged sample standard deviation bounces back to 0.504. The held-out discriminator loss is 0.945 and the generator loss is 1.092. The grid is still colorful and varied.",
+          "hover": "Epoch 5, stable 8×8, sample standard deviation 0.504.",
           "frame": "figures/pgan/epoch_0005_res08_stable.png",
-          "frameCaption": "Epoch 5, 8×8 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 5, stable 8×8."
         },
         {
           "epoch": 6,
           "sample_std": 0.4142,
           "answers": "What worked well?",
-          "summary": "Epoch 6 is bold because it is the last 8×8 stable epoch where the fixed-noise batch still looks like different color fields. Logged sample std is 0.414. Eval D is 0.734 and eval G is 1.786. Later growth makes the batch more alike. Epoch 14 is the scored 32×32 checkpoint, and that grid is one gray field.",
-          "hover": "epoch 6 · 8×8 stable · sample std 0.414",
+          "summary": "Epoch 6 is marked because it is the last stable 8×8 epoch where the fixed-noise batch still looks like different fields of color. The logged sample standard deviation is 0.414. The held-out discriminator loss is 0.734 and the generator loss is 1.786. Later growth makes the batch more alike. Epoch 14 is the scored 32×32 checkpoint, and that grid is one gray field.",
+          "hover": "Epoch 6, stable 8×8, sample standard deviation 0.414.",
           "frame": "figures/pgan/epoch_0006_res08_stable.png",
-          "frameCaption": "Epoch 6, 8×8 stable. One frame of the 14-epoch growth.",
+          "frameCaption": "Epoch 6, stable 8×8.",
           "selected": true,
           "bestLabel": "varied"
         },
@@ -86,161 +86,161 @@
           "epoch": 7,
           "sample_std": 0.2735,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 7 fades in 16×16 at alpha 0.5 and logged sample std falls to 0.274. Eval D 1.329, eval G 0.713. Growing the canvas coincides with the samples getting more alike.",
-          "hover": "epoch 7 · 16×16 fade α 0.5 · sample std 0.274",
+          "summary": "Epoch 7 fades in 16×16 at blend weight 0.5, and the logged sample standard deviation falls to 0.274. The held-out discriminator loss is 1.329 and the generator loss is 0.713. Growing the canvas lines up with the samples becoming more alike.",
+          "hover": "Epoch 7, 16×16 fade at 0.5, sample standard deviation 0.274.",
           "frame": "figures/pgan/epoch_0007_res16_fade.png",
-          "frameCaption": "Epoch 7, 16×16 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 7, 16×16 fade."
         },
         {
           "epoch": 8,
           "sample_std": 0.4495,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 8 completes the 16×16 fade at alpha 1. Logged sample std rebounds to 0.450. Eval D 1.102, eval G 0.890. Two epochs is a short stay at the new resolution.",
-          "hover": "epoch 8 · 16×16 fade α 1 · sample std 0.450",
+          "summary": "Epoch 8 completes the 16×16 fade at blend weight 1. The logged sample standard deviation rebounds to 0.450. The held-out discriminator loss is 1.102 and the generator loss is 0.890. Two epochs is a short stay at the new resolution.",
+          "hover": "Epoch 8, 16×16 fade at 1, sample standard deviation 0.450.",
           "frame": "figures/pgan/epoch_0008_res16_fade.png",
-          "frameCaption": "Epoch 8, 16×16 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 8, 16×16 fade."
         },
         {
           "epoch": 9,
           "sample_std": 0.4057,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Epoch 9 is 16×16 stable. Logged sample std is 0.406. Eval D 1.043, eval G 1.190.",
-          "hover": "epoch 9 · 16×16 stable · sample std 0.406",
+          "summary": "Epoch 9 is a stable 16×16 phase. The logged sample standard deviation is 0.406. The held-out discriminator loss is 1.043 and the generator loss is 1.190.",
+          "hover": "Epoch 9, stable 16×16, sample standard deviation 0.406.",
           "frame": "figures/pgan/epoch_0009_res16_stable.png",
-          "frameCaption": "Epoch 9, 16×16 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 9, stable 16×16."
         },
         {
           "epoch": 10,
           "sample_std": 0.3316,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 10 is the second 16×16 stable epoch. Logged sample std is 0.332. Eval D 1.094, eval G 1.216. The frames are mottled and closer to each other than the 8×8 row.",
-          "hover": "epoch 10 · 16×16 stable · sample std 0.332",
+          "summary": "Epoch 10 is the second stable 16×16 epoch. The logged sample standard deviation is 0.332. The held-out discriminator loss is 1.094 and the generator loss is 1.216. The frames are mottled, and closer to one another than the 8×8 row.",
+          "hover": "Epoch 10, stable 16×16, sample standard deviation 0.332.",
           "frame": "figures/pgan/epoch_0010_res16_stable.png",
-          "frameCaption": "Epoch 10, 16×16 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 10, stable 16×16."
         },
         {
           "epoch": 11,
           "sample_std": 0.2165,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 11 fades in 32×32 at alpha 0.5. Logged sample std is 0.217. Eval D 1.098, eval G 0.760. The batch is tightening as the full CIFAR resolution appears.",
-          "hover": "epoch 11 · 32×32 fade α 0.5 · sample std 0.217",
+          "summary": "Epoch 11 fades in 32×32 at blend weight 0.5. The logged sample standard deviation is 0.217. The held-out discriminator loss is 1.098 and the generator loss is 0.760. The batch tightens as the full CIFAR resolution appears.",
+          "hover": "Epoch 11, 32×32 fade at 0.5, sample standard deviation 0.217.",
           "frame": "figures/pgan/epoch_0011_res32_fade.png",
-          "frameCaption": "Epoch 11, 32×32 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 11, 32×32 fade."
         },
         {
           "epoch": 12,
           "sample_std": 0.2047,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 12 finishes the 32×32 fade at alpha 1. Logged sample std is 0.205. Eval D 1.170, eval G 0.748.",
-          "hover": "epoch 12 · 32×32 fade α 1 · sample std 0.205",
+          "summary": "Epoch 12 finishes the 32×32 fade at blend weight 1. The logged sample standard deviation is 0.205. The held-out discriminator loss is 1.170 and the generator loss is 0.748.",
+          "hover": "Epoch 12, 32×32 fade at 1, sample standard deviation 0.205.",
           "frame": "figures/pgan/epoch_0012_res32_fade.png",
-          "frameCaption": "Epoch 12, 32×32 fade. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 12, 32×32 fade."
         },
         {
           "epoch": 13,
           "sample_std": 0.1307,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 13 is the first 32×32 stable epoch. Logged sample std drops to 0.131. Eval D 0.634, eval G 1.403. The frames are pale and nearly the same.",
-          "hover": "epoch 13 · 32×32 stable · sample std 0.131",
+          "summary": "Epoch 13 is the first stable 32×32 epoch. The logged sample standard deviation drops to 0.131. The held-out discriminator loss is 0.634 and the generator loss is 1.403. The frames are pale and nearly the same.",
+          "hover": "Epoch 13, stable 32×32, sample standard deviation 0.131.",
           "frame": "figures/pgan/epoch_0013_res32_stable.png",
-          "frameCaption": "Epoch 13, 32×32 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 13, stable 32×32."
         },
         {
           "epoch": 14,
           "sample_std": 0.1041,
           "answers": "What didn't turn out as expected?",
-          "summary": "Epoch 14 is 32×32 stable. Logged sample std is 0.104. The scored grid has sample std 0.1040 against real std 0.493, a ratio of 0.211. mode_collapse stays false because the cutoff is 0.20. The picture is one gray-purple field repeated across the batch. Eval D on the log is 1.520 and eval G is 0.700. Two epochs at 32×32 was enough for the samples to agree with each other and not enough to grow an object.",
-          "hover": "epoch 14 · 32×32 stable · scored ratio 0.211 · flag false",
+          "summary": "Epoch 14 is a stable 32×32 phase. The logged sample standard deviation is 0.104. The scored grid has sample standard deviation 0.1040 against 0.493 on real images, a ratio of 0.211. The collapse flag stays off because the cutoff is 0.20. The picture is one gray-purple field, repeated across the batch. On the log, the held-out discriminator loss is 1.520 and the generator loss is 0.700. Two epochs at 32×32 were enough for the samples to agree with one another, and not enough to grow an object.",
+          "hover": "Epoch 14, stable 32×32, scored ratio 0.211, collapse flag off.",
           "frame": "figures/pgan/epoch_0014_res32_stable.png",
-          "frameCaption": "Epoch 14, 32×32 stable. One frame of the 14-epoch growth."
+          "frameCaption": "Epoch 14, stable 32×32."
         }
       ]
     }
   ],
   "reflection": {
-    "worked": "Measured: all seven phases ran, and epoch 6, the last stable 8×8, still shows different colour fields. Early discriminator and generator losses stay near 1.",
-    "unexpected": "Measured: by the scored 32×32 grid every cell is one gray field, sample std 0.104 against real std 0.493. The collapse flag stays false because the ratio is 0.211, just above 0.2.",
-    "why": "Measured: each new resolution gets two epochs on 2,000 images, and one of those epochs is a half-blended fade. Guess: that is long enough to find one average colour and too short to fit airplanes and trucks.",
-    "improve": "Give the 16×16 and 32×32 stable phases more epochs before judging CIFAR, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag."
+    "worked": "Epoch 6, the last stable 8×8 phase, still shows different fields of color. Early discriminator and generator losses stay near 1.",
+    "unexpected": "By the scored 32×32 grid, every cell is one gray field, with sample standard deviation 0.104 against 0.493 on real images. The collapse flag stays off because the ratio is 0.211, just above 0.2.",
+    "why": "Each new resolution gets two epochs on 2,000 images, and one of those epochs is a fade that is only half blended. A reasonable reading is that this is long enough to find one average color and too short to fit airplanes and trucks.",
+    "improve": "Give the stable 16×16 and 32×32 phases more epochs before judging CIFAR-10, and plot the spread ratio against the 0.2 line so a batch of identical gray squares cannot sit just outside the flag."
   },
   "live": {
     "src": "figures/pgan/growth_timeline.png",
-    "alt": "Progressive GAN timeline from varied 4 by 4 blocks to a repeated 32 by 32 field.",
-    "caption": "Growth from 4×4 to 32×32. Play epochs to step through all 14 saved grids. The line chart stays still.",
+    "alt": "Progressive GAN timeline, from varied 4×4 blocks to a repeated 32×32 field.",
+    "caption": "Growth from 4×4 to 32×32, one saved grid for each of the 14 epochs.",
     "sequence": [
       {
         "src": "figures/pgan/epoch_0001_res04_stable.png",
-        "caption": "Epoch 1, 4×4 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 1, stable 4×4."
       },
       {
         "src": "figures/pgan/epoch_0002_res04_stable.png",
-        "caption": "Epoch 2, 4×4 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 2, stable 4×4."
       },
       {
         "src": "figures/pgan/epoch_0003_res08_fade.png",
-        "caption": "Epoch 3, 8×8 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 3, 8×8 fade."
       },
       {
         "src": "figures/pgan/epoch_0004_res08_fade.png",
-        "caption": "Epoch 4, 8×8 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 4, 8×8 fade."
       },
       {
         "src": "figures/pgan/epoch_0005_res08_stable.png",
-        "caption": "Epoch 5, 8×8 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 5, stable 8×8."
       },
       {
         "src": "figures/pgan/epoch_0006_res08_stable.png",
-        "caption": "Epoch 6, 8×8 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 6, stable 8×8."
       },
       {
         "src": "figures/pgan/epoch_0007_res16_fade.png",
-        "caption": "Epoch 7, 16×16 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 7, 16×16 fade."
       },
       {
         "src": "figures/pgan/epoch_0008_res16_fade.png",
-        "caption": "Epoch 8, 16×16 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 8, 16×16 fade."
       },
       {
         "src": "figures/pgan/epoch_0009_res16_stable.png",
-        "caption": "Epoch 9, 16×16 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 9, stable 16×16."
       },
       {
         "src": "figures/pgan/epoch_0010_res16_stable.png",
-        "caption": "Epoch 10, 16×16 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 10, stable 16×16."
       },
       {
         "src": "figures/pgan/epoch_0011_res32_fade.png",
-        "caption": "Epoch 11, 32×32 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 11, 32×32 fade."
       },
       {
         "src": "figures/pgan/epoch_0012_res32_fade.png",
-        "caption": "Epoch 12, 32×32 fade. One frame of the 14-epoch growth."
+        "caption": "Epoch 12, 32×32 fade."
       },
       {
         "src": "figures/pgan/epoch_0013_res32_stable.png",
-        "caption": "Epoch 13, 32×32 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 13, stable 32×32."
       },
       {
         "src": "figures/pgan/epoch_0014_res32_stable.png",
-        "caption": "Epoch 14, 32×32 stable. One frame of the 14-epoch growth."
+        "caption": "Epoch 14, stable 32×32."
       }
     ]
   },
   "figures": [
     {
       "src": "figures/pgan/final.png",
-      "alt": "32 by 32 progressive GAN samples. Every cell is the same gray-purple field.",
-      "caption": "The scored 32×32 grid. One gray-purple field. Sample std 0.104 against real std 0.493, and the flag stays false because 0.211 is just over 0.2."
+      "alt": "32×32 progressive GAN samples. Every cell is the same gray-purple field.",
+      "caption": "The scored 32×32 grid. One gray-purple field. Sample standard deviation 0.104 against 0.493 on real images, and the flag stays off because 0.211 is just over 0.2."
     },
     {
       "src": "figures/pgan/real_test.png",
       "alt": "Real CIFAR-10 test images from the training slice.",
-      "caption": "Real CIFAR-10 from the same slice: animals, vehicles, boats. None of that is in the generated grid."
+      "caption": "Real CIFAR-10 from the same slice: animals, vehicles, and boats. None of that appears in the generated grid."
     },
     {
       "src": "figures/pgan/epoch_0001_res04_stable.png",
-      "alt": "Epoch 1, 4 by 4 stable. Different color blocks.",
-      "caption": "Epoch 1 at 4×4. The cells are different color blocks. This is the stage that still looks varied."
+      "alt": "Epoch 1, stable 4×4. The cells are different blocks of color.",
+      "caption": "Epoch 1 at 4×4. The cells are different blocks of color. This is the stage that still looks varied."
     }
   ],
   "sources": [

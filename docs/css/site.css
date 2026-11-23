@@ -200,16 +200,7 @@ mjx-container {
   top: 1rem;
 }
 
-.finding .who {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.finding .summary { margin: 0.45rem 0 0; font-size: 1.05rem; }
+.finding .summary { margin: 0; font-size: 1.05rem; }
 
 .hint { margin: 0.8rem 0 0; color: var(--muted); font-size: 0.86rem; }
 
@@ -256,7 +247,8 @@ figure img {
 }
 
 .live img { outline: 2px solid var(--accent); outline-offset: 2px; }
-.live .play { margin-top: 0.45rem; }
+.live .switcher { justify-content: flex-start; margin-top: 0.45rem; }
+.epoch-plays { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.45rem; }
 
 figcaption { color: var(--muted); font-size: 0.86rem; margin-top: 0.35rem; }
 
@@ -292,11 +284,86 @@ figcaption { color: var(--muted); font-size: 0.86rem; margin-top: 0.35rem; }
 
 .guide-label { font-size: 11px; fill: var(--accent); }
 
+.section {
+  margin-top: 2.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 0.75rem;
+}
+
+.section h3 { margin: 1.1rem 0 0.4rem; font-size: 1.35rem; }
+
+.modeling { max-width: 46rem; }
+
+.plot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.plot-block {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem 0.85rem;
+  scroll-margin-top: 0.75rem;
+  min-width: 0;
+}
+
+.plot-block.wide { grid-column: 1 / -1; }
+
+.plot-block h4 { margin-bottom: 0.45rem; }
+
+.plot-block img {
+  max-width: 100%;
+  max-height: 240px;
+  width: auto;
+  height: auto;
+  display: block;
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.still { margin: 0.2rem 0 0; }
+
+.still img { max-height: 320px; }
+
+.ruler svg, .plot svg, .mini-plot svg { display: block; width: 100%; height: auto; }
+
+.tick-label, .bold-value {
+  font-family: var(--sans);
+  font-size: 11px;
+  fill: var(--muted);
+}
+
+.bold-value { font-weight: 700; fill: var(--ink); }
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 0.45rem;
+}
+
+.mini-title { margin: 0 0 0.15rem; font-size: 0.82rem; font-weight: 600; }
+
+.discussion h4 {
+  font-family: var(--sans);
+  font-size: 0.98rem;
+  margin: 0.85rem 0 0.2rem;
+}
+
+.discussion p { margin: 0.15rem 0 0.35rem; max-width: 48rem; }
+
+.plot-link { color: var(--accent); font-weight: 600; }
+
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; gap: 0.5rem; }
   .nav { position: static; }
   #toc { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; }
-  .stage, .reflection { grid-template-columns: 1fr; }
+  .stage, .reflection, .plot-grid { grid-template-columns: 1fr; }
+  .plot-block.wide { grid-column: auto; }
   .finding { position: static; }
   .chapter-head { flex-direction: column; align-items: start; }
 }

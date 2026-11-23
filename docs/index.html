@@ -26,24 +26,25 @@
   <div class="shell">
     <nav class="nav" aria-label="Sections">
       <a class="brand" href="#top">MNIST report</a>
-      <p class="nav-note">Hover a mark. A bold mark is the chosen epoch or trial. Formulas are MathJax.</p>
+      <p class="nav-note">Each section is one model. A link in the discussion opens the chart it uses.</p>
       <ol id="toc"></ol>
     </nav>
     <main id="top">
       <header class="hero">
-        <p class="eyebrow">Homework report · digits, Fashion-MNIST, CIFAR-10</p>
+        <p class="eyebrow">Report · Digits, Fashion-MNIST, and CIFAR-10</p>
         <h1>Generative models on MNIST</h1>
-        <p class="lede">Likelihood and reconstruction moved. Unconditional samples stayed soft or collapsed, until a class label or a decoder trained on the prior gave the generator a mode to hit. Numbers are the JSON scores and the Optuna trials. Curves that were never exported stay the PNGs.</p>
+        <p class="lede">Eight models, each with the training math, the saved plots, and a short reading of what the scores say.</p>
         <ul class="jump" id="jump"></ul>
       </header>
       <div id="chapters"></div>
       <footer class="colophon">
-        <p>Numbers come from <code>reports/</code>, <code>reference/</code>, and the Optuna studies. Chapter text is <code>docs/bundles/</code>. Hover copy is the same files. A <code>file://</code> tab cannot load them. Serve this folder: <code>python -m http.server -d docs</code>.</p>
+        <p>The scores come from the saved evaluation files and the Optuna studies.</p>
       </footer>
     </main>
   </div>
   <div id="tip" class="tip" role="status" hidden></div>
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-  <script src="js/story.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/report.js"></script>
 </body>
 </html>

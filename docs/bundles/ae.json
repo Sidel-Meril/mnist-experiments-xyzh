@@ -1,88 +1,88 @@
 {
   "id": "ae",
   "nav": "Autoencoder",
-  "lede": "Validation MSE falls until latent 16–32. Latent 128 is the lowest point and the scored checkpoint.",
+  "lede": "Validation error levels off after latent size 32, and the scored model uses 128.",
   "accent": "#9a3412",
-  "points": "VAE · autoencoder compression",
+  "points": "Autoencoder compression",
   "title": "Autoencoder compression",
   "question": "How does latent size change reconstruction error on MNIST digits?",
   "process": [
-    "Autoencoder.forward is a deterministic code. encode compresses the 784 pixels, decode maps the code back, and the two are composed:",
+    "The autoencoder maps each image to one code and back again. The encoder compresses the 784 pixels, and the decoder turns that code back into an image:",
     "\\[ \\hat x = \\mathrm{decode}(\\mathrm{encode}(x)) \\]",
-    "The training step is mean squared error, the line loss = mse(self(batch_x), batch_y):",
+    "Training minimizes the mean squared error between each image and its reconstruction:",
     "\\[ \\mathcal{L} = \\frac{1}{B}\\sum_i \\frac{1}{784}\\sum_p \\bigl(x_{ip}-\\hat x_{ip}\\bigr)^2 \\]",
-    "There is no latent distribution and no KL. The compression ratio is 784 divided by the length of the code.",
-    "The saved validation curve falls from about 0.187 at latent 2 to 0.096 at latent 128. The scored checkpoint is latent 128: test MSE 0.0414, MAE 0.0771. mnist_ae.db has no completed trial."
+    "There is no distribution over the code, and no KL term. The compression ratio is 784 divided by the length of the code.",
+    "On the saved validation curve, the error falls from about 0.187 at latent size 2 to 0.096 at latent size 128. The scored checkpoint uses latent size 128: test MSE 0.0414 and MAE 0.0771. The hyperparameter search recorded no finished trial."
   ],
   "opening": {
     "answers": "What worked well?",
-    "summary": "Latent 128 is bold: lowest validation MSE on the saved curve, and the checkpoint that was scored. The Optuna database itself never finished.",
-    "hover": "Hover a latent size. The bold point is latent 128."
+    "summary": "Latent size 128 is marked. It has the lowest validation MSE on the saved curve, and it is the checkpoint that was scored. The hyperparameter search itself never finished a trial.",
+    "hover": "Latent size 128 is the marked point."
   },
   "charts": [
     {
       "type": "line",
-      "title": "Validation MSE against latent size",
+      "title": "Validation MSE by latent size",
       "xKey": "latent",
       "yKey": "val_mse",
-      "xLabel": "latent size",
-      "yLabel": "validation MSE",
+      "xLabel": "Latent size",
+      "yLabel": "Validation MSE",
       "xScale": "log",
       "marks": [
         {
           "latent": 2,
           "val_mse": 0.1867,
           "answers": "What didn't turn out as expected?",
-          "summary": "Latent 2 is a 392× compression. Validation MSE is 0.1867. A code that short keeps a blurry class average: the digit class may survive, the stroke does not.",
-          "hover": "latent 2 · 392× · val MSE 0.1867",
+          "summary": "Latent size 2 is a 392× compression, and the validation MSE is 0.1867. A code that short keeps a blurry class average: the digit class may survive, but the stroke does not.",
+          "hover": "Latent size 2, 392× compression, validation MSE 0.1867.",
           "selected": false
         },
         {
           "latent": 4,
           "val_mse": 0.1496,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Latent 4 is 196× and validation MSE is 0.1496. The bottleneck is still too small for thickness and slant, so the error stays high.",
-          "hover": "latent 4 · 196× · val MSE 0.1496",
+          "summary": "Latent size 4 is a 196× compression, and the validation MSE is 0.1496. The bottleneck is still too small for stroke thickness and slant, so the error stays high.",
+          "hover": "Latent size 4, 196× compression, validation MSE 0.1496.",
           "selected": false
         },
         {
           "latent": 8,
           "val_mse": 0.1154,
           "answers": "How could the results be improved?",
-          "summary": "Latent 8 is 98× and validation MSE is 0.1154. This is the steep part of the curve. The next doublings are where digits usually become recognizable.",
-          "hover": "latent 8 · 98× · val MSE 0.1154",
+          "summary": "Latent size 8 is a 98× compression, and the validation MSE is 0.1154. This is the steep part of the curve. The next doublings are where digits usually become recognizable.",
+          "hover": "Latent size 8, 98× compression, validation MSE 0.1154.",
           "selected": false
         },
         {
           "latent": 16,
           "val_mse": 0.1042,
           "answers": "What worked well?",
-          "summary": "Latent 16 is 49× and validation MSE is 0.1042. This is the start of the useful range: a code of this length can store thickness and slant.",
-          "hover": "latent 16 · 49× · val MSE 0.1042",
+          "summary": "Latent size 16 is a 49× compression, and the validation MSE is 0.1042. This is where the useful range starts: a code of this length can hold thickness and slant.",
+          "hover": "Latent size 16, 49× compression, validation MSE 0.1042.",
           "selected": false
         },
         {
           "latent": 32,
           "val_mse": 0.0999,
           "answers": "What worked well?",
-          "summary": "Latent 32 is 24.5× and validation MSE is 0.0999. Recognizable digits show up around 16–32. Past this point the curve is almost flat.",
-          "hover": "latent 32 · 24.5× · val MSE 0.0999",
+          "summary": "Latent size 32 is a 24.5× compression, and the validation MSE is 0.0999. Digits are usually recognizable around 16 to 32. Past this point the curve is almost flat.",
+          "hover": "Latent size 32, 24.5× compression, validation MSE 0.0999.",
           "selected": false
         },
         {
           "latent": 64,
           "val_mse": 0.0975,
           "answers": "Why do you think the results might not be great?",
-          "summary": "Latent 64 is 12.25× and validation MSE is 0.0975. The drop from 32 is 0.0024. Extra coordinates are copying detail the decoder already approximated.",
-          "hover": "latent 64 · 12.25× · val MSE 0.0975",
+          "summary": "Latent size 64 is a 12.25× compression, and the validation MSE is 0.0975. The drop from latent size 32 is only 0.0024. The extra coordinates are copying detail the decoder already approximated.",
+          "hover": "Latent size 64, 12.25× compression, validation MSE 0.0975.",
           "selected": false
         },
         {
           "latent": 128,
           "val_mse": 0.0964,
           "answers": "What worked well?",
-          "summary": "Latent 128 is bold because it is the minimum of this validation curve, MSE 0.0964, and the checkpoint that was evaluated. Compression is 6.12×. Test MSE is 0.0414 and test MAE is 0.0771. The drop from latent 32 (0.0999) to here is 0.0035, so the practical code is already in the 16–32 range. The reconstruction grid is this checkpoint: 7, 2, 1, 0, 4, and 9 stay readable and slightly soft.",
-          "hover": "latent 128 · 6.12× · val MSE 0.0964 · test MSE 0.0414",
+          "summary": "Latent size 128 is marked because it is the minimum of this validation curve, at MSE 0.0964, and it is the checkpoint that was evaluated. The compression is 6.12×. Test MSE is 0.0414 and test MAE is 0.0771. The drop from latent size 32 (0.0999) to here is 0.0035, so a practical code is already in the range 16 to 32. On the reconstruction grid for this checkpoint, 7, 2, 1, 0, 4, and 9 stay readable, and a little soft.",
+          "hover": "Latent size 128, 6.12× compression, validation MSE 0.0964, test MSE 0.0414.",
           "selected": true,
           "bestLabel": "lowest"
         }
@@ -90,26 +90,65 @@
     }
   ],
   "reflection": {
-    "worked": "Measured: the training loss falls, and the latent-128 checkpoint copies the test digit at MSE 0.0414.",
-    "unexpected": "Measured: validation MSE only moves from 0.0975 at latent 64 to 0.0964 at 128. The Optuna database has no finished trial, so hidden size, dropout, and learning rate have no score.",
-    "why": "Measured: almost all of the drop on the saved curve is over by latent 16. Guess: a digit stroke fits in that many coordinates, so further ones have little left to store. The curve and the 0.0414 test score come from different stages.",
-    "improve": "For compression, stop near latent 16–32. Finish the study before treating any other hyperparameter as tested. A sharper copy needs a different loss, not a longer code."
+    "worked": "The training loss falls, and the latent-128 checkpoint copies a test digit at MSE 0.0414.",
+    "unexpected": "Validation MSE only moves from 0.0975 at latent size 64 to 0.0964 at 128. The hyperparameter search has no finished trial, so hidden size, dropout, and learning rate were never scored.",
+    "why": "Almost all of the drop on the saved curve is finished by latent size 16. The curve and the test score of 0.0414 come from different stages. A reasonable reading is that a digit stroke fits in about that many coordinates, so further ones have little left to store.",
+    "improve": "For compression, stop near latent size 16 or 32. Finish the hyperparameter search before treating any other setting as tested. A sharper copy needs a different loss, not a longer code."
+  },
+  "live": {
+    "src": "figures/ae/epoch_0008.png",
+    "alt": "Original digits and autoencoder reconstructions at epoch 8.",
+    "caption": "Autoencoder reconstructions through training. The top row stays the same digits.",
+    "sequence": [
+      {
+        "src": "figures/ae/epoch_0001.png",
+        "caption": "Autoencoder reconstruction, epoch 1. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0002.png",
+        "caption": "Autoencoder reconstruction, epoch 2. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0003.png",
+        "caption": "Autoencoder reconstruction, epoch 3. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0004.png",
+        "caption": "Autoencoder reconstruction, epoch 4. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0005.png",
+        "caption": "Autoencoder reconstruction, epoch 5. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0006.png",
+        "caption": "Autoencoder reconstruction, epoch 6. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0007.png",
+        "caption": "Autoencoder reconstruction, epoch 7. Original digits on the top row."
+      },
+      {
+        "src": "figures/ae/epoch_0008.png",
+        "caption": "Autoencoder reconstruction, epoch 8. Original digits on the top row."
+      }
+    ]
   },
   "figures": [
     {
       "src": "figures/ae/reconstruction_error_vs_latent.png",
-      "alt": "Validation reconstruction MSE falling then flattening from latent 2 to 128.",
-      "caption": "Validation MSE against latent size. The drop is spent by 16. Latent 128, the scored model, sits on the flat tail."
+      "alt": "Validation reconstruction MSE falling, then flattening, from latent size 2 to 128.",
+      "caption": "Validation MSE against latent size. Most of the drop is spent by 16. Latent size 128, the scored model, sits on the flat tail."
     },
     {
       "src": "figures/ae/reconstructions_test.png",
-      "alt": "Eight test digits and softer reconstructions of the same digits.",
-      "caption": "Original row 7, 2, 1, 0, 4, 1, 4, 9. The reconstruction keeps the class and softens the 0 and the 4. That is the latent-128 test MSE of 0.041."
+      "alt": "Eight test digits beside softer reconstructions of the same digits.",
+      "caption": "The original row is 7, 2, 1, 0, 4, 1, 4, 9. The reconstruction keeps the class and softens the 0 and the 4. That is the latent-128 test MSE of 0.041."
     },
     {
       "src": "figures/ae/loss.png",
-      "alt": "Autoencoder train and test MSE falling to about 0.065 and 0.041.",
-      "caption": "Reconstruction MSE for that checkpoint. Test ends at 0.041, the scored test error. The axis runs to epoch 7."
+      "alt": "Autoencoder training and test MSE falling to about 0.065 and 0.041.",
+      "caption": "Reconstruction MSE for that checkpoint. The test curve ends at 0.041, the scored test error. The axis runs to epoch 7."
     }
   ],
   "sources": [

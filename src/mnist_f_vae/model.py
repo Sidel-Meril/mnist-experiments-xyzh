@@ -31,6 +31,7 @@ from __future__ import annotations
 import math
 import os
 import random
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -415,10 +416,12 @@ class FVAE(nn.Module):
         *,
         epochs: int,
         seed: int,
+        on_epoch: Callable[[int, dict[str, list[float]]], None] | None = None,
     ) -> dict[str, list[float]]:
         """Adam on the sampled ELBO, reading batches from data loaders.
 
-        The eval loss is recorded and does not pick weights.
+        The eval loss is recorded and does not pick weights. ``on_epoch`` runs
+        after each recorded epoch, while the weights are still on the training device.
         """
         if epochs < 1:
             raise ValueError("epochs must be at least 1")
@@ -460,6 +463,8 @@ class FVAE(nn.Module):
                 f"eval={history['eval'][-1]:.4f} log_det={det_total / seen:.4f}",
                 flush=True,
             )
+            if on_epoch is not None:
+                on_epoch(epoch, history)
         self.eval()
         self.cpu()
         return history
